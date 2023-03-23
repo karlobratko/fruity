@@ -2,13 +2,13 @@ package hr.algebra.fruity.model.codebook;
 
 public enum WorkTypes {
 
-  MOWING(1, "Košnja", true, true, true, true, false, false),
-  PLANTING(2, "Sadnja", true, true, true, true, false, false),
-  PRUNING(3, "Rezidba", true, true, true, true, false, false),
-  IRRIGATION(4, "Navodnjavanje", true, true, true, true, false, false),
-  DRESSING(5, "Prihrana", true, true, true, true, true, false),
-  PROTECTION(6, "Zaštita", true, true, true, true, true, false),
-  HARVEST(7, "Berba", true, true, true, true, false, true);
+  MOWING(1, "košnja", true, true, true, true, false, false),
+  PLANTING(2, "sadnja", true, true, true, true, false, false),
+  PRUNING(3, "rezidba", true, true, true, true, false, false),
+  IRRIGATION(4, "navodnjavanje", true, true, true, true, false, false),
+  DRESSING(5, "prihrana", true, true, true, true, true, false),
+  PROTECTION(6, "zaštita", true, true, true, true, true, false),
+  HARVEST(7, "berba", true, true, true, true, false, true);
 
   private final Integer id;
 

@@ -9,7 +9,6 @@ import hr.algebra.fruity.model.CadastralParcel;
 import hr.algebra.fruity.model.CadastralParcelOwnershipStatus;
 import hr.algebra.fruity.model.County;
 import hr.algebra.fruity.model.Employee;
-import hr.algebra.fruity.model.EmployeePrivilege;
 import hr.algebra.fruity.model.EmployeeRole;
 import hr.algebra.fruity.model.Equipment;
 import hr.algebra.fruity.model.FruitCultivar;
@@ -21,6 +20,7 @@ import hr.algebra.fruity.model.RealisationAttachment;
 import hr.algebra.fruity.model.RealisationEquipment;
 import hr.algebra.fruity.model.RealisationHarvest;
 import hr.algebra.fruity.model.RealisationRow;
+import hr.algebra.fruity.model.RegistrationToken;
 import hr.algebra.fruity.model.Row;
 import hr.algebra.fruity.model.RowCluster;
 import hr.algebra.fruity.model.UnitOfMeasure;
@@ -34,7 +34,6 @@ import hr.algebra.fruity.model.WorkRow;
 import hr.algebra.fruity.model.WorkType;
 import hr.algebra.fruity.model.codebook.AgentStates;
 import hr.algebra.fruity.model.codebook.CadastralParcelOwnershipStatuses;
-import hr.algebra.fruity.model.codebook.EmployeePrivileges;
 import hr.algebra.fruity.model.codebook.EmployeeRoles;
 import hr.algebra.fruity.model.codebook.HarvestedFruitClasses;
 import hr.algebra.fruity.model.codebook.WorkTypes;
@@ -46,7 +45,6 @@ import hr.algebra.fruity.repository.CadastralMunicipalityRepository;
 import hr.algebra.fruity.repository.CadastralParcelOwnershipStatusRepository;
 import hr.algebra.fruity.repository.CadastralParcelRepository;
 import hr.algebra.fruity.repository.CountyRepository;
-import hr.algebra.fruity.repository.EmployeePrivilegeRepository;
 import hr.algebra.fruity.repository.EmployeeRepository;
 import hr.algebra.fruity.repository.EmployeeRoleRepository;
 import hr.algebra.fruity.repository.EquipmentRepository;
@@ -59,6 +57,7 @@ import hr.algebra.fruity.repository.RealisationEquipmentRepository;
 import hr.algebra.fruity.repository.RealisationHarvestRepository;
 import hr.algebra.fruity.repository.RealisationRepository;
 import hr.algebra.fruity.repository.RealisationRowRepository;
+import hr.algebra.fruity.repository.RegistrationTokenRepository;
 import hr.algebra.fruity.repository.RowClusterRepository;
 import hr.algebra.fruity.repository.RowRepository;
 import hr.algebra.fruity.repository.UnitOfMeasureRepository;
@@ -73,7 +72,6 @@ import hr.algebra.fruity.repository.WorkTypeRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.springframework.boot.CommandLineRunner;
@@ -108,7 +106,7 @@ public class BootstrapDbRunner implements CommandLineRunner {
 
   private final EmployeeRoleRepository employeeRoleRepository;
 
-  private final EmployeePrivilegeRepository employeePrivilegeRepository;
+  private final RegistrationTokenRepository registrationTokenRepository;
 
   private final EmployeeRepository employeeRepository;
 
@@ -344,28 +342,10 @@ public class BootstrapDbRunner implements CommandLineRunner {
     );
     // END INSERT ROWS
 
-    // BEGIN INSERT EMPLOYEE_PRIVILEGES
-    val employeePrivilege1 = EmployeePrivilege.builder().name(EmployeePrivileges.PRIVILEGE_CREATE_CADASTRAL_PARCEL.name()).build();
-    val employeePrivilege2 = EmployeePrivilege.builder().name(EmployeePrivileges.PRIVILEGE_READ_CADASTRAL_PARCEL.name()).build();
-    val employeePrivilege3 = EmployeePrivilege.builder().name(EmployeePrivileges.PRIVILEGE_UPDATE_CADASTRAL_PARCEL.name()).build();
-    val employeePrivilege4 = EmployeePrivilege.builder().name(EmployeePrivileges.PRIVILEGE_DELETE_CADASTRAL_PARCEL.name()).build();
-
-    employeePrivilegeRepository.saveAll(
-      List.of(
-        employeePrivilege1, employeePrivilege2, employeePrivilege3, employeePrivilege4
-      )
-    );
-    // END INSERT EMPLOYEE_PRIVILEGES
-
     // BEGIN INSERT EMPLOYEE_ROLES
     val employeeRole1 = EmployeeRole.builder()
       .name(EmployeeRoles.ROLE_MANAGER.name())
       .displayName(EmployeeRoles.ROLE_MANAGER.displayName())
-      .privileges(
-        Set.of(
-          employeePrivilege1, employeePrivilege2, employeePrivilege3, employeePrivilege4
-        )
-      )
       .build();
 
     val employeeRole2 = EmployeeRole.builder()
@@ -380,21 +360,35 @@ public class BootstrapDbRunner implements CommandLineRunner {
     );
     // END INSERT EMPLOYEE_ROLES
 
+    // BEGIN INSERT REGISTRATION_TOKENS
+    val registrationToken1 = RegistrationToken.builder().confirmDateTime(LocalDateTime.now().plusMinutes(10)).build();
+
+    registrationTokenRepository.saveAll(
+      List.of(
+        registrationToken1
+      )
+    );
+    // END INSERT REGISTRATION_TOKENS
+
     // BEGIN INSERT EMPLOYEES
     val employee1 = Employee.builder()
       .user(user1)
       .firstName("Gordana")
       .lastName("Bratko")
+      .username("opgbratko")
       .email("gbratko@gmail.com")
       .phoneNumber("091/526-0832")
       .costPerHour(BigDecimal.valueOf(6.50))
       .password(passwordEncoder.encode("Pa$$w0rd"))
       .role(employeeRole1)
+      .registrationToken(registrationToken1)
+      .enabled(true)
+      .locked(false)
       .build();
-    val employee2 = Employee.builder().user(user1).firstName("Drago").lastName("Bratko").costPerHour(BigDecimal.valueOf(6.50)).role(employeeRole2).build();
-    val employee3 = Employee.builder().user(user1).firstName("Marija").lastName("Hajdinjak").costPerHour(BigDecimal.valueOf(4.25)).role(employeeRole2).build();
-    val employee4 = Employee.builder().user(user1).firstName("Dora").lastName("Bratko").costPerHour(BigDecimal.valueOf(4.00)).role(employeeRole2).build();
-    val employee5 = Employee.builder().user(user1).firstName("Karlo").lastName("Bratko").costPerHour(BigDecimal.valueOf(4.00)).role(employeeRole2).build();
+    val employee2 = Employee.builder().user(user1).firstName("Drago").lastName("Bratko").costPerHour(BigDecimal.valueOf(6.50)).role(employeeRole2).enabled(true).locked(false).build();
+    val employee3 = Employee.builder().user(user1).firstName("Marija").lastName("Hajdinjak").costPerHour(BigDecimal.valueOf(4.25)).role(employeeRole2).enabled(true).locked(false).build();
+    val employee4 = Employee.builder().user(user1).firstName("Dora").lastName("Bratko").costPerHour(BigDecimal.valueOf(4.00)).role(employeeRole2).enabled(true).locked(false).build();
+    val employee5 = Employee.builder().user(user1).firstName("Karlo").lastName("Bratko").costPerHour(BigDecimal.valueOf(4.00)).role(employeeRole2).enabled(true).locked(false).build();
 
     employeeRepository.saveAll(
       List.of(

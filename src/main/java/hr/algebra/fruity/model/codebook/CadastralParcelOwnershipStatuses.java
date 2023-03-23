@@ -2,8 +2,8 @@ package hr.algebra.fruity.model.codebook;
 
 public enum CadastralParcelOwnershipStatuses {
 
-  OWNED(1, "U vlasništvu"),
-  LEASED(2, "U zakupu");
+  OWNED(1, "u vlasništvu"),
+  LEASED(2, "u zakupu");
 
   private final Integer id;
 

@@ -2,8 +2,8 @@ package hr.algebra.fruity.model.codebook;
 
 public enum EmployeeRoles {
 
-  ROLE_MANAGER(1, "Voditelj"),
-  ROLE_PERFORMER(2, "Izvršitelj");
+  ROLE_MANAGER(1, "voditelj"),
+  ROLE_PERFORMER(2, "izvršitelj");
 
   private final Integer id;
 

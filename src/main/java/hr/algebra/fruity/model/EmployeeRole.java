@@ -6,9 +6,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -58,15 +55,6 @@ public class EmployeeRole {
   @Singular
   private Set<Employee> employees;
 
-  @ManyToMany(fetch = FetchType.EAGER)
-  @JoinTable(
-    name = Constants.employeeRolePrivilegeJoinTableName,
-    joinColumns = @JoinColumn(name = Constants.joinColumnName),
-    inverseJoinColumns = @JoinColumn(name = EmployeePrivilege.Constants.joinColumnName)
-  )
-  @Singular
-  private Set<EmployeePrivilege> privileges;
-
   @PrePersist
   private void prePersist() {
     this.uuid = UUID.randomUUID();
@@ -84,8 +72,6 @@ public class EmployeeRole {
     public static final String name = "name";
 
     public static final String employees = "employees";
-
-    public static final String privileges = "privileges";
 
   }
 

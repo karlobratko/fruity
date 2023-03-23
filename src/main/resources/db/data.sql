@@ -25,8 +25,8 @@ VALUES (1, gen_random_uuid(), 'BBŽ', 'Bjelovarsko-bilogorska županija'),
        (21, gen_random_uuid(), 'GZG', 'Grad Zagreb');
 
 INSERT INTO cadastral_parcel_ownership_statuses (cadastral_parcel_ownership_status_id, uuid, name, display_name)
-VALUES (1, gen_random_uuid(), 'OWNED', 'U vlasništvu'),
-       (2, gen_random_uuid(), 'LEASED', 'U zakupu');
+VALUES (1, gen_random_uuid(), 'OWNED', 'u vlasništvu'),
+       (2, gen_random_uuid(), 'LEASED', 'u zakupu');
 
 INSERT INTO cadastral_municipalities (cadastral_municipality_id,
                                       uuid,
@@ -4643,51 +4643,8 @@ VALUES (1, gen_random_uuid(), 1, 'G.Delicious'),
        (1021, gen_random_uuid(), 16, 'Yapincak');
 
 INSERT INTO employee_roles (employee_role_id, uuid, name, display_name)
-VALUES (1, gen_random_uuid(), 'ROLE_MANAGER', 'Voditelj'),
-       (2, gen_random_uuid(), 'ROLE_PERFORMER', 'Izvršitelj');
-
-INSERT INTO employee_privileges (employee_privilege_id, uuid, name)
-VALUES (1, gen_random_uuid(), 'CREATE_ARCODE_PARCEL_PRIVILEGE'),
-       (2, gen_random_uuid(), 'READ_ARCODE_PARCEL_PRIVILEGE'),
-       (3, gen_random_uuid(), 'UPDATE_ARCODE_PARCEL_PRIVILEGE'),
-       (4, gen_random_uuid(), 'DELETE_ARCODE_PARCEL_PRIVILEGE'),
-       (5, gen_random_uuid(), 'CREATE_CADASTRAL_PARCEL_PRIVILEGE'),
-       (6, gen_random_uuid(), 'READ_CADASTRAL_PARCEL_PRIVILEGE'),
-       (7, gen_random_uuid(), 'UPDATE_CADASTRAL_PARCEL_PRIVILEGE'),
-       (8, gen_random_uuid(), 'DELETE_CADASTRAL_PARCEL_PRIVILEGE'),
-       (9, gen_random_uuid(), 'CREATE_EMPLOYEE_PRIVILEGE'),
-       (10, gen_random_uuid(), 'READ_EMPLOYEE_PRIVILEGE'),
-       (11, gen_random_uuid(), 'UPDATE_EMPLOYEE_PRIVILEGE'),
-       (12, gen_random_uuid(), 'DELETE_EMPLOYEE_PRIVILEGE'),
-       (13, gen_random_uuid(), 'CREATE_ROW_PRIVILEGE'),
-       (14, gen_random_uuid(), 'READ_ROW_PRIVILEGE'),
-       (15, gen_random_uuid(), 'UPDATE_ROW_PRIVILEGE'),
-       (16, gen_random_uuid(), 'DELETE_ROW_PRIVILEGE'),
-       (17, gen_random_uuid(), 'CREATE_ROW_CLUSTER_PRIVILEGE'),
-       (18, gen_random_uuid(), 'READ_ROW_CLUSTER_PRIVILEGE'),
-       (19, gen_random_uuid(), 'UPDATE_ROW_CLUSTER_PRIVILEGE'),
-       (20, gen_random_uuid(), 'DELETE_ROW_CLUSTER_PRIVILEGE');
-
-INSERT INTO employee_roles_employee_privileges (employee_role_fk, employee_privilege_fk)
-VALUES (1, 2),
-       (1, 3),
-       (1, 4),
-       (1, 5),
-       (1, 6),
-       (1, 7),
-       (1, 8),
-       (1, 9),
-       (1, 10),
-       (1, 11),
-       (1, 12),
-       (1, 13),
-       (1, 14),
-       (1, 15),
-       (1, 16),
-       (1, 17),
-       (1, 18),
-       (1, 19),
-       (1, 20);
+VALUES (1, gen_random_uuid(), 'ROLE_MANAGER', 'voditelj'),
+       (2, gen_random_uuid(), 'ROLE_PERFORMER', 'izvršitelj');
 
 INSERT INTO work_types (work_type_id,
                         uuid,
@@ -4699,20 +4656,20 @@ INSERT INTO work_types (work_type_id,
                         attachments_tab,
                         agents_tab,
                         quantities_tab)
-VALUES (1, gen_random_uuid(), 'MOWING', 'Košnja', true, true, true, true, false, false),
-       (2, gen_random_uuid(), 'PLANTING', 'Sadnja', true, true, true, true, false, false),
-       (3, gen_random_uuid(), 'PRUNING', 'Rezidba', true, true, true, true, false, false),
-       (4, gen_random_uuid(), 'IRRIGATION', 'Navodnjavanje', true, true, true, true, false, false),
-       (5, gen_random_uuid(), 'DRESSING', 'Prihrana', true, true, true, true, true, false),
-       (6, gen_random_uuid(), 'PROTECTION', 'Zaštita', true, true, true, true, true, false),
-       (7, gen_random_uuid(), 'HARVEST', 'Berba', true, true, true, true, false, true);
+VALUES (1, gen_random_uuid(), 'MOWING', 'košnja', true, true, true, true, false, false),
+       (2, gen_random_uuid(), 'PLANTING', 'sadnja', true, true, true, true, false, false),
+       (3, gen_random_uuid(), 'PRUNING', 'rezidba', true, true, true, true, false, false),
+       (4, gen_random_uuid(), 'IRRIGATION', 'navodnjavanje', true, true, true, true, false, false),
+       (5, gen_random_uuid(), 'DRESSING', 'prihrana', true, true, true, true, true, false),
+       (6, gen_random_uuid(), 'PROTECTION', 'zaštita', true, true, true, true, true, false),
+       (7, gen_random_uuid(), 'HARVEST', 'berba', true, true, true, true, false, true);
 
 INSERT INTO agent_states (agent_state_id, uuid, name, display_name)
-VALUES (1, gen_random_uuid(), 'HARD', 'Kruto'),
-       (2, gen_random_uuid(), 'LIQUID', 'Tekuće'),
-       (3, gen_random_uuid(), 'GRANULAR', 'Granulirano'),
-       (4, gen_random_uuid(), 'CRYSTAL_GRANULES', 'Kristalne granule'),
-       (5, gen_random_uuid(), 'UNKNOWN', 'Nepoznato');
+VALUES (1, gen_random_uuid(), 'HARD', 'kruto'),
+       (2, gen_random_uuid(), 'LIQUID', 'tekuće'),
+       (3, gen_random_uuid(), 'GRANULAR', 'granulirano'),
+       (4, gen_random_uuid(), 'CRYSTAL_GRANULES', 'kristalne granule'),
+       (5, gen_random_uuid(), 'UNKNOWN', 'nepoznato');
 
 INSERT INTO agents (agent_id, uuid, manufacturer, name, agent_state_fk)
 VALUES (1, gen_random_uuid(), 'Yara', 'ALBATROS HYDRO', 1),

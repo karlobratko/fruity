@@ -2,11 +2,11 @@ package hr.algebra.fruity.model.codebook;
 
 public enum AgentStates {
 
-  HARD(1, "Kruto"),
-  LIQUID(2, "Tekuće"),
-  GRANULAR(3, "Granulirano"),
-  CRYSTAL_GRANULES(4, "Kristalne granule"),
-  UNKNOWN(5, "Nepoznato");
+  HARD(1, "kruto"),
+  LIQUID(2, "tekuće"),
+  GRANULAR(3, "granulirano"),
+  CRYSTAL_GRANULES(4, "kristalne granule"),
+  UNKNOWN(5, "nepoznato");
 
   private final Integer id;
 

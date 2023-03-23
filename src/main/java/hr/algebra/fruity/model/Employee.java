@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreRemove;
 import jakarta.persistence.Table;
@@ -17,6 +18,7 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -35,6 +37,9 @@ import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Table(name = Employee.Constants.tableName)
@@ -48,7 +53,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE Employee SET deleteDate = CURRENT_DATE WHERE id = ?", check = ResultCheckStyle.COUNT)
 @Where(clause = Employee.Constants.deleteDateColumnName + " IS NULL")
-public class Employee {
+public class Employee implements UserDetails {
 
   @Id
   @Column(name = Constants.idColumnName)
@@ -77,7 +82,7 @@ public class Employee {
 
   @ManyToOne(optional = false, fetch = FetchType.LAZY)
   @JoinColumn(name = User.Constants.joinColumnName, nullable = false)
-  private @NonNull User user;
+  private User user;
 
   @Column(name = Constants.firstNameColumnName, nullable = false, length = 50)
   @ToString.Include
@@ -87,6 +92,9 @@ public class Employee {
   @ToString.Include
   private @NonNull String lastName;
 
+  @Column(name = Constants.usernameColumnName, length = 50)
+  private String username;
+
   @Column(name = Constants.emailColumnName, length = 254)
   private String email;
 
@@ -94,14 +102,31 @@ public class Employee {
   private String phoneNumber;
 
   @Column(name = Constants.costPerHourColumnName, precision = 15, scale = 6, nullable = false)
-  private @NonNull BigDecimal costPerHour;
+  @Builder.Default
+  private BigDecimal costPerHour = BigDecimal.ZERO;
 
-  @Column(name = Constants.passwordColumnName, length = 512)
+  @Column(name = Constants.passwordColumnName, length = 250)
   private String password;
+
+  @Column(name = Constants.enabledColumnName, nullable = false)
+  @Builder.Default
+  private boolean enabled = false;
+
+  @Column(name = Constants.lockedColumnName, nullable = false)
+  @Builder.Default
+  private boolean locked = true;
 
   @ManyToOne(optional = false, fetch = FetchType.EAGER)
   @JoinColumn(name = EmployeeRole.Constants.joinColumnName, nullable = false)
   private @NonNull EmployeeRole role;
+
+  @OneToOne(optional = true, orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(
+    name = RegistrationToken.Constants.joinColumnName,
+    referencedColumnName = RegistrationToken.Constants.idColumnName,
+    nullable = true
+  )
+  private RegistrationToken registrationToken;
 
   @OneToMany(mappedBy = WorkEmployee.Fields.employee, fetch = FetchType.LAZY)
   @Singular
@@ -119,6 +144,31 @@ public class Employee {
   @PreRemove
   private void preRemove() {
     this.deleteDate = LocalDate.now();
+  }
+
+  public void activate() {
+    this.enabled = true;
+    this.locked = false;
+  }
+
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return Set.of(new SimpleGrantedAuthority(role.getName()));
+  }
+
+  @Override
+  public boolean isAccountNonExpired() {
+    return true;
+  }
+
+  @Override
+  public boolean isAccountNonLocked() {
+    return !locked;
+  }
+
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return true;
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -144,11 +194,19 @@ public class Employee {
 
     public static final String costPerHour = "costPerHour";
 
+    public static final String username = "username";
+
     public static final String email = "email";
 
     public static final String password = "password";
 
+    public static final String enabled = "enabled";
+
+    public static final String locked = "locked";
+
     public static final String role = "role";
+
+    public static final String registrationToken = "registrationToken";
 
     public static final String works = "works";
 
@@ -181,9 +239,15 @@ public class Employee {
 
     public static final String costPerHourColumnName = "cost_per_hour";
 
+    public static final String usernameColumnName = "username";
+
     public static final String emailColumnName = "email";
 
     public static final String passwordColumnName = "password";
+
+    public static final String enabledColumnName = "enabled";
+
+    public static final String lockedColumnName = "locked";
 
   }
 
