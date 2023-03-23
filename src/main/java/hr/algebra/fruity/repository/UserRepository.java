@@ -11,4 +11,6 @@ public interface UserRepository extends PagingAndSortingRepository<User, Long>, 
 
   Optional<User> findByOib(String oib);
 
+  Boolean existsByOib(String oib);
+
 }

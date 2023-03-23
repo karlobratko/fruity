@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class FruityApiApplicationTests {
+class FruityApiApplicationTests implements IntegrationTest {
 
   @Test
   void contextLoads() {

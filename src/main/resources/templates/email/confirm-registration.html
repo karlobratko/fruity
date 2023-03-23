@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Fruity | Potvrda registracije</title>
+</head>
+<body>
+<p>Poštovani,</p>
+<p>Pritisnite na link kako biste potvrdili registraciju:<br/><a th:href="@{link}" th:text="${link}"></a></p>
+<p>Link vrijedi slijedećih 15 minuta.</p>
+<p>Lijep pozdrav,<br/>Fruity tim</p>
+</body>
+</html>
