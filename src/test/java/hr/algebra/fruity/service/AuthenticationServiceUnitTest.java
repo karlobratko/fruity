@@ -16,6 +16,8 @@ import hr.algebra.fruity.utils.mother.dto.FullEmployeeResponseDtoMother;
 import hr.algebra.fruity.utils.mother.dto.LoginRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.RegisterRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.RegistrationTokenResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.ResendRegistrationRequestDtoMother;
+import hr.algebra.fruity.utils.mother.model.EmailMother;
 import hr.algebra.fruity.utils.mother.model.EmployeeMother;
 import hr.algebra.fruity.utils.mother.model.RegistrationTokenMother;
 import hr.algebra.fruity.utils.mother.model.UserMother;
@@ -42,6 +44,7 @@ import static com.googlecode.catchexception.apis.BDDCatchException.when;
 import static org.assertj.core.api.BDDAssertions.and;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthenticationService Unit Test")
@@ -102,6 +105,11 @@ class AuthenticationServiceUnitTest {
       // ... ConversionService successfully converts from Employee to FullEmployeeResponseDto
       val expectedResponseDto = FullEmployeeResponseDtoMother.completeAndBuilt();
       given(conversionService.convert(employee, FullEmployeeResponseDto.class)).willReturn(expectedResponseDto);
+      // ... EmailComposerService successfully composes Email given Employee, String, and UUID
+      val email = EmailMother.complete().build();
+      given(emailComposerService.composeConfirmRegistrationEmail(employee, requestDto.confirmRegistrationUrl(), registrationToken.getUuid())).willReturn(email);
+      // ... EmailSenderService successfully sends email given Email
+      willDoNothing().given(emailSenderService).send(email);
 
       // WHEN
       // ... register is called
@@ -241,18 +249,20 @@ class AuthenticationServiceUnitTest {
   class WHEN_resendRegistrationToken {
 
     @Test
-    @DisplayName("GIVEN invalid UUID " +
+    @DisplayName("GIVEN invalid UUID and ResendRegistrationRequestDto" +
       "... THEN NotFoundException is thrown")
     public void GIVEN_invalidUUID_THEN_NotFoundException() {
       // GIVEN
       // ... UUID
       val uuid = UUID.randomUUID();
+      // ... ResendRegistrationRequestDto
+      val requestDto = ResendRegistrationRequestDtoMother.completeAndBuilt();
       // ... RegistrationTokenRepository fails to find RegistrationToken by UUID
       given(registrationTokenRepository.findByUuid(uuid)).willReturn(Optional.empty());
 
       // WHEN
       // ... confirmRegistration is called
-      when(() -> authenticationService.resendRegistrationToken(uuid));
+      when(() -> authenticationService.resendRegistrationToken(uuid, requestDto));
 
       // THEN
       // ... NotFoundException is thrown
@@ -263,12 +273,14 @@ class AuthenticationServiceUnitTest {
     }
 
     @Test
-    @DisplayName("GIVEN UUID " +
+    @DisplayName("GIVEN UUID and ResendRegistrationRequestDto" +
       "... THEN RegistrationTokenResponseDto is returned")
     public void GIVEN_UUID_THEN_RegistrationTokenResponseDto() {
       // GIVEN
       // ... UUID
       val uuid = UUID.randomUUID();
+      // ... ResendRegistrationRequestDto
+      val requestDto = ResendRegistrationRequestDtoMother.completeAndBuilt();
       // ... RegistrationTokenRepository fails to find RegistrationToken by UUID
       val employee = EmployeeMother.complete().build();
       val registrationToken = RegistrationTokenMother.complete()
@@ -281,13 +293,18 @@ class AuthenticationServiceUnitTest {
       val resetRegistrationToken = RegistrationTokenMother.complete().build();
       resetRegistrationToken.reset();
       given(registrationTokenRepository.save(registrationToken)).willReturn(resetRegistrationToken);
+      // ... EmailComposerService successfully composes Email given Employee, String, and UUID
+      val email = EmailMother.complete().build();
+      given(emailComposerService.composeConfirmRegistrationEmail(employee, requestDto.confirmRegistrationUrl(), registrationToken.getUuid())).willReturn(email);
+      // ... EmailSenderService successfully sends email given Email
+      willDoNothing().given(emailSenderService).send(email);
       // ... ConversionService successfully converts from Employee to FullEmployeeResponseDto
       val expectedResponseDto = RegistrationTokenResponseDtoMother.completeAndBuilt();
       given(conversionService.convert(registrationToken, RegistrationTokenResponseDto.class)).willReturn(expectedResponseDto);
 
       // WHEN
       // ... confirmRegistration is called
-      val responseDto = authenticationService.resendRegistrationToken(uuid);
+      val responseDto = authenticationService.resendRegistrationToken(uuid, requestDto);
 
       // THEN
       // ... NotFoundException is thrown

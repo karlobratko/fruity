@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
 public record RegisterRequestDto(
   @NotNull(message = "Ime je obavezno polje.")
@@ -27,8 +29,30 @@ public record RegisterRequestDto(
   @UniqueOib
   String oib,
   @NotNull(message = "Lozinka je obavezno polje.")
-  @Size(min = 8, message = "Lozinka mora biti duljine minimalno 8 i  maksimalno 250 znakova.")
-  @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,255}$", message = "Lozinka mora sadržavati minimalno jedan broj, jedno malo slovo, jedno veliko slovo, jedan specijlni znak i ne smije sadržavati razmake.")
-  String password
+  @Size(min = 8, message = "Lozinka mora biti duljine minimalno 8 i maksimalno 250 znakova.")
+  @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,255}$", message = "Lozinka mora sadržavati minimalno jedan broj, jedno malo slovo, jedno veliko slovo, jedan specijalni znak i ne smije sadržavati razmake.")
+  String password,
+  @NotNull(message = "Putanja do stranice za potvrdu registracije je nepoznata.")
+  String confirmRegistrationUrl
 ) {
+
+  @NoArgsConstructor(access = AccessLevel.PRIVATE)
+  public static class Fields {
+
+    public static final String firstName = "firstName";
+
+    public static final String lastName = "lastName";
+
+    public static final String username = "username";
+
+    public static final String email = "email";
+
+    public static final String oib = "oib";
+
+    public static final String password = "password";
+
+    public static final String confirmRegistrationUrl = "confirmRegistrationUrl";
+
+  }
+
 }

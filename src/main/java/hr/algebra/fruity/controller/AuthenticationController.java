@@ -3,6 +3,7 @@ package hr.algebra.fruity.controller;
 import hr.algebra.fruity.constants.ApplicationConstants;
 import hr.algebra.fruity.dto.request.LoginRequestDto;
 import hr.algebra.fruity.dto.request.RegisterRequestDto;
+import hr.algebra.fruity.dto.request.ResendRegistrationRequestDto;
 import hr.algebra.fruity.dto.response.ApiResponse;
 import hr.algebra.fruity.dto.response.AuthenticationResponseDto;
 import hr.algebra.fruity.dto.response.FullEmployeeResponseDto;
@@ -53,11 +54,11 @@ public class AuthenticationController {
   }
 
   @GetMapping(Constants.resendRegistrationTokenGetMapping)
-  public ResponseEntity<ApiResponse<RegistrationTokenResponseDto>> resendRegistrationToken(@PathVariable UUID uuid) {
+  public ResponseEntity<ApiResponse<RegistrationTokenResponseDto>> resendRegistrationToken(@PathVariable UUID uuid, @Valid @RequestBody ResendRegistrationRequestDto requestDto) {
     return ResponseEntity
       .ok(
         ApiResponse.ok(
-          authenticationService.resendRegistrationToken(uuid),
+          authenticationService.resendRegistrationToken(uuid, requestDto),
           "Registracijski token ponovno poslan."
         )
       );

@@ -20,6 +20,7 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @ControllerAdvice
 @Slf4j
@@ -42,6 +43,20 @@ public class ApplicationAdvice {
         ErrorApiResponse.of(
           HttpStatus.BAD_REQUEST,
           e.getMessage(),
+          request.getRequestURL().toString()
+        )
+      );
+  }
+
+  @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+  public ResponseEntity<ErrorApiResponse> handleMethodArgumentTypeMismatchException(HttpServletRequest request, RuntimeException e) {
+    log.debug(e.getMessage());
+    return ResponseEntity
+      .status(HttpStatus.BAD_REQUEST)
+      .body(
+        ErrorApiResponse.of(
+          HttpStatus.BAD_REQUEST,
+          "Parametar poslan u metodu nije ispravnog tipa.",
           request.getRequestURL().toString()
         )
       );

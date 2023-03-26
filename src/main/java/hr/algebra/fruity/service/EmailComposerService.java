@@ -6,6 +6,6 @@ import java.util.UUID;
 
 public interface EmailComposerService {
 
-  Email composeConfirmRegistrationEmail(Employee employee, UUID registrationToken);
+  Email composeConfirmRegistrationEmail(Employee employee, String registrationUrl, UUID registrationToken);
 
 }

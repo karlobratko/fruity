@@ -2,6 +2,7 @@ package hr.algebra.fruity.service.impl;
 
 import hr.algebra.fruity.dto.request.LoginRequestDto;
 import hr.algebra.fruity.dto.request.RegisterRequestDto;
+import hr.algebra.fruity.dto.request.ResendRegistrationRequestDto;
 import hr.algebra.fruity.dto.response.AuthenticationResponseDto;
 import hr.algebra.fruity.dto.response.FullEmployeeResponseDto;
 import hr.algebra.fruity.dto.response.RegistrationTokenResponseDto;
@@ -66,6 +67,14 @@ public class JwtAuthenticationService implements AuthenticationService {
     employee.setRegistrationToken(registrationToken);
     employeeRepository.save(employee);
 
+    emailSenderService.send(
+      emailComposerService.composeConfirmRegistrationEmail(
+        employee,
+        requestDto.confirmRegistrationUrl(),
+        registrationToken.getUuid()
+      )
+    );
+
     return conversionService.convert(employee, FullEmployeeResponseDto.class);
   }
 
@@ -93,12 +102,23 @@ public class JwtAuthenticationService implements AuthenticationService {
 
   @Override
   @Transactional
-  public RegistrationTokenResponseDto resendRegistrationToken(UUID uuid) {
+  public RegistrationTokenResponseDto resendRegistrationToken(UUID uuid, ResendRegistrationRequestDto requestDto) {
     val registrationToken = registrationTokenRepository.findByUuid(uuid)
       .orElseThrow(() -> new NotFoundException("Registracijski token nije važeći."));
 
+    if (registrationToken.isConfirmed())
+      throw new BadRequestException("Registracijski token je već bio potvrđen.");
+
     registrationToken.reset();
     registrationTokenRepository.save(registrationToken);
+
+    emailSenderService.send(
+      emailComposerService.composeConfirmRegistrationEmail(
+        registrationToken.getEmployee(),
+        requestDto.confirmRegistrationUrl(),
+        registrationToken.getUuid()
+      )
+    );
 
     return conversionService.convert(registrationToken, RegistrationTokenResponseDto.class);
   }

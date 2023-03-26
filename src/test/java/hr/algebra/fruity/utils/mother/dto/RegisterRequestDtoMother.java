@@ -14,7 +14,8 @@ public class RegisterRequestDtoMother {
       Constants.instanceUsername,
       Constants.instanceEmail,
       Constants.instanceOib,
-      Constants.instancePassword
+      Constants.instancePassword,
+      Constants.instanceConfirmRegistrationUrl
     );
   }
 
@@ -32,6 +33,8 @@ public class RegisterRequestDtoMother {
     public static final String instanceOib = "01234567890";
 
     public static final String instancePassword = "password";
+
+    public static final String instanceConfirmRegistrationUrl = "http://localhost:3000/confirm-registration";
 
   }
 
