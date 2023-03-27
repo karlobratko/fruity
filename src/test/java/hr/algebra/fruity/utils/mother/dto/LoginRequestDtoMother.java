@@ -8,11 +8,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class LoginRequestDtoMother {
 
-  public static LoginRequestDto completeAndBuilt() {
-    return new LoginRequestDto(
-      Constants.instanceUsername,
-      Constants.instancePassword
-    );
+  public static LoginRequestDto.LoginRequestDtoBuilder complete() {
+    return LoginRequestDto.builder()
+      .username(Constants.instanceUsername)
+      .password(Constants.instancePassword);
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)

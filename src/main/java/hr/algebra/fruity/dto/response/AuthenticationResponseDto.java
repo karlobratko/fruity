@@ -1,8 +1,10 @@
 package hr.algebra.fruity.dto.response;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
+@Builder
 public record AuthenticationResponseDto(
   String token
 ) {

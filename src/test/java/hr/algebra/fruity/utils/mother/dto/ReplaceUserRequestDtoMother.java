@@ -7,14 +7,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ReplaceUserRequestDtoMother {
 
-  public static ReplaceUserRequestDto completeAndBuilt() {
-    return new ReplaceUserRequestDto(
-      Constants.instanceName,
-      Constants.instanceOib,
-      Constants.instancePhoneNumber,
-      Constants.instanceAddress,
-      Constants.instanceCountryFk
-    );
+  public static ReplaceUserRequestDto.ReplaceUserRequestDtoBuilder complete() {
+    return ReplaceUserRequestDto.builder()
+      .name(Constants.instanceName)
+      .oib(Constants.instanceOib)
+      .phoneNumber(Constants.instancePhoneNumber)
+      .address(Constants.instanceAddress)
+      .countyFk(Constants.instanceCountyFk);
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -28,7 +27,7 @@ public class ReplaceUserRequestDtoMother {
 
     public static final String instanceAddress = "address";
 
-    public static final Integer instanceCountryFk = 1;
+    public static final Integer instanceCountyFk = 1;
 
   }
 

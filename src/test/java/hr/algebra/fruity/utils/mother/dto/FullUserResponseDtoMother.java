@@ -9,16 +9,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FullUserResponseDtoMother {
 
-  public static FullUserResponseDto completeAndBuilt() {
-    return new FullUserResponseDto(
-      Constants.instanceId,
-      Constants.instanceUuid,
-      Constants.instanceName,
-      Constants.instanceOib,
-      Constants.instancePhoneNumber,
-      Constants.instanceAddress,
-      Constants.instanceCountry
-    );
+  public static FullUserResponseDto.FullUserResponseDtoBuilder complete() {
+    return FullUserResponseDto.builder()
+      .id(Constants.instanceId)
+      .uuid(Constants.instanceUuid)
+      .name(Constants.instanceName)
+      .oib(Constants.instanceOib)
+      .phoneNumber(Constants.instancePhoneNumber)
+      .address(Constants.instanceAddress)
+      .county(Constants.instanceCounty);
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -36,7 +35,7 @@ public class FullUserResponseDtoMother {
 
     public static final String instanceAddress = "address";
 
-    public static final CountyResponseDto instanceCountry = CountyResponseDtoMother.completeAndBuilt();
+    public static final CountyResponseDto instanceCounty = CountyResponseDtoMother.complete().build();
 
   }
 

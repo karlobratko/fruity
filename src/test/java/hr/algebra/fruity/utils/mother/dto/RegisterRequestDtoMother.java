@@ -7,16 +7,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RegisterRequestDtoMother {
 
-  public static RegisterRequestDto completeAndBuilt() {
-    return new RegisterRequestDto(
-      Constants.instanceFirstName,
-      Constants.instanceLastName,
-      Constants.instanceUsername,
-      Constants.instanceEmail,
-      Constants.instanceOib,
-      Constants.instancePassword,
-      Constants.instanceConfirmRegistrationUrl
-    );
+  public static RegisterRequestDto.RegisterRequestDtoBuilder complete() {
+    return RegisterRequestDto.builder()
+      .firstName(Constants.instanceFirstName)
+      .lastName(Constants.instanceLastName)
+      .username(Constants.instanceUsername)
+      .email(Constants.instanceEmail)
+      .oib(Constants.instanceOib)
+      .password(Constants.instancePassword)
+      .confirmRegistrationUrl(Constants.instanceConfirmRegistrationUrl);
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)

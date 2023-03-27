@@ -3,8 +3,10 @@ package hr.algebra.fruity.dto.response;
 import java.math.BigDecimal;
 import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
+@Builder
 public record EmployeeResponseDto(
   Long id,
   UUID uuid,

@@ -9,13 +9,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CountyResponseDtoMother {
 
-  public static CountyResponseDto completeAndBuilt() {
-    return new CountyResponseDto(
-      Constants.instanceId,
-      Constants.instanceUuid,
-      Constants.instanceName,
-      Constants.displayName
-    );
+  public static CountyResponseDto.CountyResponseDtoBuilder complete() {
+    return CountyResponseDto.builder()
+      .id(Constants.instanceId)
+      .uuid(Constants.instanceUuid)
+      .name(Constants.instanceName)
+      .name(Constants.instanceDisplayName);
   }
 
   public static class Constants {
@@ -26,7 +25,7 @@ public class CountyResponseDtoMother {
 
     public static final String instanceName = "name";
 
-    public static final String displayName = "displayName";
+    public static final String instanceDisplayName = "displayName";
 
   }
 

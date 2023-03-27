@@ -3,8 +3,10 @@ package hr.algebra.fruity.dto.request;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
+@Builder
 public record LoginRequestDto(
   @NotNull(message = "Korisničko ime je obavezno polje.")
   @Size(min = 5, max = 50, message = "Korisničko ime mora biti duljine minimalno 5 i maksimalno 50 znakova.")

@@ -2,8 +2,10 @@ package hr.algebra.fruity.dto.response;
 
 import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
+@Builder
 public record CountyResponseDto(
   Integer id,
   UUID uuid,

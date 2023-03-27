@@ -2,8 +2,10 @@ package hr.algebra.fruity.dto;
 
 import java.util.List;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
+@Builder
 public record JwtDto(
   Long userId,
   Long employeeId,

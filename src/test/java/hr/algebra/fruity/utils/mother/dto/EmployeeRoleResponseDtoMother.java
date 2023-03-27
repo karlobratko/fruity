@@ -8,13 +8,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EmployeeRoleResponseDtoMother {
 
-  public static EmployeeRoleResponseDto completeAndBuilt() {
-    return new EmployeeRoleResponseDto(
-      Constants.instanceId,
-      Constants.instanceUuid,
-      Constants.instanceName,
-      Constants.displayName
-    );
+  public static EmployeeRoleResponseDto.EmployeeRoleResponseDtoBuilder complete() {
+    return EmployeeRoleResponseDto.builder()
+      .id(Constants.instanceId)
+      .uuid(Constants.instanceUuid)
+      .name(Constants.instanceName)
+      .displayName(Constants.instanceDisplayName);
   }
 
   public static class Constants {
@@ -25,7 +24,7 @@ public class EmployeeRoleResponseDtoMother {
 
     public static final String instanceName = "name";
 
-    public static final String displayName = "displayName";
+    public static final String instanceDisplayName = "displayName";
 
   }
 

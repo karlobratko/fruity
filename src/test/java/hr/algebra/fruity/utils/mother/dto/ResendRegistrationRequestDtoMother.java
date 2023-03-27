@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ResendRegistrationRequestDtoMother {
 
-  public static ResendRegistrationRequestDto completeAndBuilt() {
-    return new ResendRegistrationRequestDto(Constants.instanceConfirmRegistrationUrl);
+  public static ResendRegistrationRequestDto.ResendRegistrationRequestDtoBuilder complete() {
+    return ResendRegistrationRequestDto.builder()
+      .confirmRegistrationUrl(Constants.instanceConfirmRegistrationUrl);
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)

@@ -43,6 +43,7 @@ import static com.googlecode.catchexception.apis.BDDCatchException.caughtExcepti
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
 import static org.assertj.core.api.BDDAssertions.and;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 
@@ -88,28 +89,28 @@ class AuthenticationServiceUnitTest {
     public void GIVEN_RegisterRequestDto_THEN_FullEmployeeResponseDto() {
       // GIVEN
       // ... RegisterRequestDto
-      val requestDto = RegisterRequestDtoMother.completeAndBuilt();
+      val requestDto = RegisterRequestDtoMother.complete().build();
       // ... ConversionService successfully converts from RegisterRequestDto to User
       val user = UserMother.complete().build();
-      given(conversionService.convert(requestDto, User.class)).willReturn(user);
+      given(conversionService.convert(same(requestDto), same(User.class))).willReturn(user);
       // ... UserRepository successfully saves User
-      given(userRepository.save(user)).willReturn(user);
+      given(userRepository.save(same(user))).willReturn(user);
       // ... RegistrationTokenRepository successfully saves RegistrationToken
       val registrationToken = RegistrationTokenMother.complete().build();
       given(registrationTokenRepository.save(any(RegistrationToken.class))).willReturn(registrationToken);
       // ... ConversionService successfully converts from RegisterRequestDto to Employee
       val employee = EmployeeMother.complete().user(null).registrationToken(null).build();
-      given(conversionService.convert(requestDto, Employee.class)).willReturn(employee);
+      given(conversionService.convert(same(requestDto), same(Employee.class))).willReturn(employee);
       // ... EmployeeRepository successfully saves Employee
-      given(employeeRepository.save(employee)).willReturn(employee);
+      given(employeeRepository.save(same(employee))).willReturn(employee);
       // ... ConversionService successfully converts from Employee to FullEmployeeResponseDto
-      val expectedResponseDto = FullEmployeeResponseDtoMother.completeAndBuilt();
-      given(conversionService.convert(employee, FullEmployeeResponseDto.class)).willReturn(expectedResponseDto);
+      val expectedResponseDto = FullEmployeeResponseDtoMother.complete().build();
+      given(conversionService.convert(same(employee), same(FullEmployeeResponseDto.class))).willReturn(expectedResponseDto);
       // ... EmailComposerService successfully composes Email given Employee, String, and UUID
       val email = EmailMother.complete().build();
-      given(emailComposerService.composeConfirmRegistrationEmail(employee, requestDto.confirmRegistrationUrl(), registrationToken.getUuid())).willReturn(email);
+      given(emailComposerService.composeConfirmRegistrationEmail(same(employee), same(requestDto.confirmRegistrationUrl()), same(registrationToken.getUuid()))).willReturn(email);
       // ... EmailSenderService successfully sends email given Email
-      willDoNothing().given(emailSenderService).send(email);
+      willDoNothing().given(emailSenderService).send(same(email));
 
       // WHEN
       // ... register is called
@@ -140,7 +141,7 @@ class AuthenticationServiceUnitTest {
       // ... UUID
       val uuid = UUID.randomUUID();
       // ... RegistrationTokenRepository fails to find RegistrationToken by UUID
-      given(registrationTokenRepository.findByUuid(uuid)).willReturn(Optional.empty());
+      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.empty());
 
       // WHEN
       // ... confirmRegistration is called
@@ -163,7 +164,7 @@ class AuthenticationServiceUnitTest {
       val uuid = UUID.randomUUID();
       // ... RegistrationTokenRepository successfully finds RegistrationToken by UUID which is confirmed
       val registrationToken = RegistrationTokenMother.complete().confirmDateTime(LocalDateTime.now()).build();
-      given(registrationTokenRepository.findByUuid(uuid)).willReturn(Optional.of(registrationToken));
+      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.of(registrationToken));
 
       // WHEN
       // ... confirmRegistration is called
@@ -189,7 +190,7 @@ class AuthenticationServiceUnitTest {
         .createDateTime(LocalDateTime.now().minusMinutes(30))
         .expireDateTime(LocalDateTime.now().minusMinutes(15))
         .build();
-      given(registrationTokenRepository.findByUuid(uuid)).willReturn(Optional.of(registrationToken));
+      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.of(registrationToken));
 
       // WHEN
       // ... confirmRegistration is called
@@ -215,16 +216,16 @@ class AuthenticationServiceUnitTest {
       val registrationToken = RegistrationTokenMother.complete()
         .employee(employee)
         .build();
-      given(registrationTokenRepository.findByUuid(uuid)).willReturn(Optional.of(registrationToken));
+      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.of(registrationToken));
       // ... RegistrationTokenRepository successfully saves RegistrationToken
       val confirmedRegistrationToken = RegistrationTokenMother.complete().build();
       confirmedRegistrationToken.confirm();
-      given(registrationTokenRepository.save(registrationToken)).willReturn(confirmedRegistrationToken);
+      given(registrationTokenRepository.save(same(registrationToken))).willReturn(confirmedRegistrationToken);
       // ... EmployeeRepository successfully saves Employee
-      given(employeeRepository.save(employee)).willReturn(employee);
+      given(employeeRepository.save(same(employee))).willReturn(employee);
       // ... ConversionService successfully converts from RegistrationToken to RegistrationTokenResponseDto
-      val expectedResponseDto = RegistrationTokenResponseDtoMother.completeAndBuilt();
-      given(conversionService.convert(registrationToken, RegistrationTokenResponseDto.class)).willReturn(expectedResponseDto);
+      val expectedResponseDto = RegistrationTokenResponseDtoMother.complete().build();
+      given(conversionService.convert(same(registrationToken), same(RegistrationTokenResponseDto.class))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... confirmRegistration is called
@@ -256,9 +257,9 @@ class AuthenticationServiceUnitTest {
       // ... UUID
       val uuid = UUID.randomUUID();
       // ... ResendRegistrationRequestDto
-      val requestDto = ResendRegistrationRequestDtoMother.completeAndBuilt();
+      val requestDto = ResendRegistrationRequestDtoMother.complete().build();
       // ... RegistrationTokenRepository fails to find RegistrationToken by UUID
-      given(registrationTokenRepository.findByUuid(uuid)).willReturn(Optional.empty());
+      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.empty());
 
       // WHEN
       // ... resendRegistrationToken is called
@@ -280,7 +281,7 @@ class AuthenticationServiceUnitTest {
       // ... UUID
       val uuid = UUID.randomUUID();
       // ... ResendRegistrationRequestDto
-      val requestDto = ResendRegistrationRequestDtoMother.completeAndBuilt();
+      val requestDto = ResendRegistrationRequestDtoMother.complete().build();
       // ... RegistrationTokenRepository fails to find RegistrationToken by UUID
       val employee = EmployeeMother.complete().build();
       val registrationToken = RegistrationTokenMother.complete()
@@ -288,19 +289,19 @@ class AuthenticationServiceUnitTest {
         .createDateTime(LocalDateTime.now().minusMinutes(30))
         .expireDateTime(LocalDateTime.now().minusMinutes(15))
         .build();
-      given(registrationTokenRepository.findByUuid(uuid)).willReturn(Optional.of(registrationToken));
+      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.of(registrationToken));
       // ... RegistrationTokenRepository successfully saves RegistrationToken
       val resetRegistrationToken = RegistrationTokenMother.complete().build();
       resetRegistrationToken.reset();
-      given(registrationTokenRepository.save(registrationToken)).willReturn(resetRegistrationToken);
+      given(registrationTokenRepository.save(same(registrationToken))).willReturn(resetRegistrationToken);
       // ... EmailComposerService successfully composes Email given Employee, String, and UUID
       val email = EmailMother.complete().build();
-      given(emailComposerService.composeConfirmRegistrationEmail(employee, requestDto.confirmRegistrationUrl(), registrationToken.getUuid())).willReturn(email);
+      given(emailComposerService.composeConfirmRegistrationEmail(same(employee), same(requestDto.confirmRegistrationUrl()), same(registrationToken.getUuid()))).willReturn(email);
       // ... EmailSenderService successfully sends email given Email
-      willDoNothing().given(emailSenderService).send(email);
+      willDoNothing().given(emailSenderService).send(same(email));
       // ... ConversionService successfully converts from Employee to FullEmployeeResponseDto
-      val expectedResponseDto = RegistrationTokenResponseDtoMother.completeAndBuilt();
-      given(conversionService.convert(registrationToken, RegistrationTokenResponseDto.class)).willReturn(expectedResponseDto);
+      val expectedResponseDto = RegistrationTokenResponseDtoMother.complete().build();
+      given(conversionService.convert(same(registrationToken), same(RegistrationTokenResponseDto.class))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... resendRegistrationToken is called
@@ -329,13 +330,13 @@ class AuthenticationServiceUnitTest {
     public void GIVEN_invalidLoginRequestDto_THEN_BadCredentialsException() {
       // GIVEN
       // ... invalid LoginRequestDto
-      val requestDto = LoginRequestDtoMother.completeAndBuilt();
+      val requestDto = LoginRequestDtoMother.complete().build();
       // ... AuthenticationManager fails to authenticate UsernamePasswordAuthenticationToken
       val token = new UsernamePasswordAuthenticationToken(requestDto.username(), requestDto.password());
       given(authenticationManager.authenticate(token)).willThrow(BadCredentialsException.class);
       // ... EmployeeRepository fails to find Employee by username
       val username = requestDto.username();
-      given(employeeRepository.findByUsername(username)).willReturn(Optional.empty());
+      given(employeeRepository.findByUsername(same(username))).willReturn(Optional.empty());
 
       // WHEN
       // ... login is called
@@ -355,14 +356,14 @@ class AuthenticationServiceUnitTest {
     public void GIVEN_LoginRequestDtoAndDisabledEmployee_THEN_DisabledException() {
       // GIVEN
       // ... invalid LoginRequestDto
-      val requestDto = LoginRequestDtoMother.completeAndBuilt();
+      val requestDto = LoginRequestDtoMother.complete().build();
       // ... AuthenticationManager fails to authenticate UsernamePasswordAuthenticationToken
       val token = new UsernamePasswordAuthenticationToken(requestDto.username(), requestDto.password());
       given(authenticationManager.authenticate(token)).willThrow(DisabledException.class);
       // ... EmployeeRepository fails to find Employee by username
       val username = requestDto.username();
       val employee = EmployeeMother.complete().enabled(false).locked(true).build();
-      given(employeeRepository.findByUsername(username)).willReturn(Optional.of(employee));
+      given(employeeRepository.findByUsername(same(username))).willReturn(Optional.of(employee));
 
       // WHEN
       // ... login is called
@@ -382,14 +383,14 @@ class AuthenticationServiceUnitTest {
     public void GIVEN_LoginRequestDtoAndLockedEmployee_THEN_LockedException() {
       // GIVEN
       // ... invalid LoginRequestDto
-      val requestDto = LoginRequestDtoMother.completeAndBuilt();
+      val requestDto = LoginRequestDtoMother.complete().build();
       // ... AuthenticationManager fails to authenticate UsernamePasswordAuthenticationToken
       val token = new UsernamePasswordAuthenticationToken(requestDto.username(), requestDto.password());
       given(authenticationManager.authenticate(token)).willThrow(DisabledException.class);
       // ... EmployeeRepository fails to find Employee by username
       val username = requestDto.username();
       val employee = EmployeeMother.complete().enabled(true).locked(true).build();
-      given(employeeRepository.findByUsername(username)).willReturn(Optional.of(employee));
+      given(employeeRepository.findByUsername(same(username))).willReturn(Optional.of(employee));
 
       // WHEN
       // ... login is called

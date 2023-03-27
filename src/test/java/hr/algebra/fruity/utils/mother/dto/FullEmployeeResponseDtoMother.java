@@ -12,20 +12,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class FullEmployeeResponseDtoMother {
 
-  public static FullEmployeeResponseDto completeAndBuilt() {
-    return new FullEmployeeResponseDto(
-      Constants.instanceId,
-      Constants.instanceUuid,
-      Constants.instanceUser,
-      Constants.instanceFirstName,
-      Constants.instanceLastName,
-      Constants.instanceUsername,
-      Constants.instanceEmail,
-      Constants.instancePhoneNumber,
-      Constants.instanceCostPerHour,
-      Constants.instanceEmployeeRole,
-      Constants.instanceRegistrationToken
-    );
+  public static FullEmployeeResponseDto.FullEmployeeResponseDtoBuilder complete() {
+    return FullEmployeeResponseDto.builder()
+      .id(Constants.instanceId)
+      .uuid(Constants.instanceUuid)
+      .user(Constants.instanceUser)
+      .firstName(Constants.instanceFirstName)
+      .lastName(Constants.instanceLastName)
+      .username(Constants.instanceUsername)
+      .email(Constants.instanceEmail)
+      .phoneNumber(Constants.instancePhoneNumber)
+      .costPerHour(Constants.instanceCostPerHour)
+      .employeeRole(Constants.instanceEmployeeRole)
+      .registrationToken(Constants.instanceRegistrationToken);
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -35,7 +34,7 @@ public class FullEmployeeResponseDtoMother {
 
     public static final UUID instanceUuid = UUID.randomUUID();
 
-    public static final UserResponseDto instanceUser = UserResponseDtoMother.completeAndBuilt();
+    public static final UserResponseDto instanceUser = UserResponseDtoMother.complete().build();
 
     public static final String instanceFirstName = "firstName";
 
@@ -49,9 +48,9 @@ public class FullEmployeeResponseDtoMother {
 
     public static final BigDecimal instanceCostPerHour = BigDecimal.ZERO;
 
-    public static final EmployeeRoleResponseDto instanceEmployeeRole = EmployeeRoleResponseDtoMother.completeAndBuilt();
+    public static final EmployeeRoleResponseDto instanceEmployeeRole = EmployeeRoleResponseDtoMother.complete().build();
 
-    public static final RegistrationTokenResponseDto instanceRegistrationToken = RegistrationTokenResponseDtoMother.completeAndBuilt();
+    public static final RegistrationTokenResponseDto instanceRegistrationToken = RegistrationTokenResponseDtoMother.complete().build();
 
   }
 

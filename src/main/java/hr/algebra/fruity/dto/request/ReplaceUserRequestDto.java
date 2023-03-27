@@ -3,8 +3,10 @@ package hr.algebra.fruity.dto.request;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
+@Builder
 public record ReplaceUserRequestDto(
   @Size(min = 5, max = 75, message = "Naziv mora biti duljine minimalno 5 i maksimalno 75 znakova.")
   String name,

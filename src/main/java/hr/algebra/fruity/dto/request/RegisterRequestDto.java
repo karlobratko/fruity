@@ -7,8 +7,10 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 
+@Builder
 public record RegisterRequestDto(
   @NotNull(message = "Ime je obavezno polje.")
   @Size(min = 2, max = 50, message = "Ime mora biti duljine minimalno 2 i maksimalno 50 znakova.")

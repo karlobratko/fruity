@@ -9,14 +9,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RegistrationTokenResponseDtoMother {
 
-  public static RegistrationTokenResponseDto completeAndBuilt() {
-    return new RegistrationTokenResponseDto(
-      Constants.instanceId,
-      Constants.instanceUuid,
-      Constants.instanceCreateDateTime,
-      Constants.instanceConfirmDateTime,
-      Constants.instanceExpireDateTime
-    );
+  public static RegistrationTokenResponseDto.RegistrationTokenResponseDtoBuilder complete() {
+    return RegistrationTokenResponseDto.builder()
+      .id(Constants.instanceId)
+      .uuid(Constants.instanceUuid)
+      .createDateTime(Constants.instanceCreateDateTime)
+      .confirmDateTime(Constants.instanceConfirmDateTime)
+      .expireDateTime(Constants.instanceExpireDateTime);
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)

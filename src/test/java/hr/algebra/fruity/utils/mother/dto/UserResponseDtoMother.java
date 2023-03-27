@@ -8,16 +8,15 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class UserResponseDtoMother {
 
-  public static UserResponseDto completeAndBuilt() {
-    return new UserResponseDto(
-      Constants.instanceId,
-      Constants.instanceUuid,
-      Constants.instanceName,
-      Constants.instanceOib,
-      Constants.instancePhoneNumber,
-      Constants.instanceAddress,
-      Constants.instanceCountryFk
-    );
+  public static UserResponseDto.UserResponseDtoBuilder complete() {
+    return UserResponseDto.builder()
+      .id(Constants.instanceId)
+      .uuid(Constants.instanceUuid)
+      .name(Constants.instanceName)
+      .oib(Constants.instanceOib)
+      .phoneNumber(Constants.instancePhoneNumber)
+      .address(Constants.instanceAddress)
+      .countyFk(Constants.instanceCountyFk);
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -35,7 +34,7 @@ public class UserResponseDtoMother {
 
     public static final String instanceAddress = "address";
 
-    public static final Integer instanceCountryFk = 1;
+    public static final Integer instanceCountyFk = 1;
 
   }
 

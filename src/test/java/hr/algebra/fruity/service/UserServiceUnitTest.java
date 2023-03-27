@@ -26,6 +26,7 @@ import org.springframework.core.convert.ConversionService;
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
 import static org.assertj.core.api.BDDAssertions.and;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,7 +60,7 @@ public class UserServiceUnitTest {
       // GIVEN
       // ... invalid id
       val id = 1L;
-      given(userRepository.findById(id)).willReturn(Optional.empty());
+      given(userRepository.findById(same(id))).willReturn(Optional.empty());
 
       // WHEN
       // ... getUserById is called
@@ -81,7 +82,7 @@ public class UserServiceUnitTest {
       // ... id
       val id = 1L;
       val user = UserMother.complete().build();
-      given(userRepository.findById(id)).willReturn(Optional.of(user));
+      given(userRepository.findById(same(id))).willReturn(Optional.of(user));
       // ... CurrentUserService's logged-in User is not equal to User
       val loggedInUser = UserMother.complete().id(user.getId() + 1).build();
       given(currentUserService.getLoggedInUser()).willReturn(loggedInUser);
@@ -106,13 +107,13 @@ public class UserServiceUnitTest {
       // ... id
       val id = 1L;
       val user = UserMother.complete().build();
-      given(userRepository.findById(id)).willReturn(Optional.of(user));
+      given(userRepository.findById(same(id))).willReturn(Optional.of(user));
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = user;
       given(currentUserService.getLoggedInUser()).willReturn(user);
       // ... ConversionService successfully converts from User to FullUserResponseDto
-      val expectedResponseDto = FullUserResponseDtoMother.completeAndBuilt();
-      given(conversionService.convert(user, FullUserResponseDto.class)).willReturn(expectedResponseDto);
+      val expectedResponseDto = FullUserResponseDtoMother.complete().build();
+      given(conversionService.convert(same(user), same(FullUserResponseDto.class))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getUserById is called
@@ -138,9 +139,9 @@ public class UserServiceUnitTest {
       // GIVEN
       // ... invalid id
       val id = 1L;
-      given(userRepository.findById(id)).willReturn(Optional.empty());
+      given(userRepository.findById(same(id))).willReturn(Optional.empty());
       // ... ReplaceUserRequestDto
-      val requestDto = ReplaceUserRequestDtoMother.completeAndBuilt();
+      val requestDto = ReplaceUserRequestDtoMother.complete().build();
 
       // WHEN
       // ... updateUserById is called
@@ -162,9 +163,9 @@ public class UserServiceUnitTest {
       // ... id
       val id = 1L;
       val user = UserMother.complete().build();
-      given(userRepository.findById(id)).willReturn(Optional.of(user));
+      given(userRepository.findById(same(id))).willReturn(Optional.of(user));
       // ... ReplaceUserRequestDto
-      val requestDto = ReplaceUserRequestDtoMother.completeAndBuilt();
+      val requestDto = ReplaceUserRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is not equal to User
       val loggedInUser = UserMother.complete().id(user.getId() + 1).build();
       given(currentUserService.getLoggedInUser()).willReturn(loggedInUser);
@@ -189,15 +190,15 @@ public class UserServiceUnitTest {
       // ... id
       val id = 1L;
       val user = UserMother.complete().build();
-      given(userRepository.findById(id)).willReturn(Optional.of(user));
+      given(userRepository.findById(same(id))).willReturn(Optional.of(user));
       // ... ReplaceUserRequestDto
-      val requestDto = ReplaceUserRequestDtoMother.completeAndBuilt();
+      val requestDto = ReplaceUserRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = user;
       given(currentUserService.getLoggedInUser()).willReturn(loggedInUser);
       // ... oib in other User
       val otherUser = UserMother.complete().id(user.getId() + 1).build();
-      given(userRepository.findByOib(user.getOib())).willReturn(Optional.of(otherUser));
+      given(userRepository.findByOib(same(user.getOib()))).willReturn(Optional.of(otherUser));
 
       // WHEN
       // ... updateUserById is called
@@ -219,21 +220,21 @@ public class UserServiceUnitTest {
       // ... id
       val id = 1L;
       val user = UserMother.complete().build();
-      given(userRepository.findById(id)).willReturn(Optional.of(user));
+      given(userRepository.findById(same(id))).willReturn(Optional.of(user));
       // ... ReplaceUserRequestDto
-      val requestDto = ReplaceUserRequestDtoMother.completeAndBuilt();
+      val requestDto = ReplaceUserRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = user;
       given(currentUserService.getLoggedInUser()).willReturn(loggedInUser);
       // ... UserRepository fails to find User by oib
-      given(userRepository.findByOib(user.getOib())).willReturn(Optional.empty());
+      given(userRepository.findByOib(same(user.getOib()))).willReturn(Optional.empty());
       // ... UserMapper successfully partially updates User with ReplaceUserRequestDto
-      given(userMapper.partialUpdate(user, requestDto)).willReturn(user);
+      given(userMapper.partialUpdate(same(user), same(requestDto))).willReturn(user);
       // ... UserRepository successfully saves User
-      given(userRepository.save(user)).willReturn(user);
+      given(userRepository.save(same(user))).willReturn(user);
       // ... ConversionService successfully converts from User to UserResponseDto
-      val expectedResponseDto = UserResponseDtoMother.completeAndBuilt();
-      given(conversionService.convert(user, UserResponseDto.class)).willReturn(expectedResponseDto);
+      val expectedResponseDto = UserResponseDtoMother.complete().build();
+      given(conversionService.convert(same(user), same(UserResponseDto.class))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... updateUserById is called
@@ -254,21 +255,21 @@ public class UserServiceUnitTest {
       // ... id
       val id = 1L;
       val user = UserMother.complete().build();
-      given(userRepository.findById(id)).willReturn(Optional.of(user));
+      given(userRepository.findById(same(id))).willReturn(Optional.of(user));
       // ... ReplaceUserRequestDto
-      val requestDto = ReplaceUserRequestDtoMother.completeAndBuilt();
+      val requestDto = ReplaceUserRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = user;
       given(currentUserService.getLoggedInUser()).willReturn(loggedInUser);
       // ... UserRepository fails to find User by oib
-      given(userRepository.findByOib(user.getOib())).willReturn(Optional.of(user));
+      given(userRepository.findByOib(same(user.getOib()))).willReturn(Optional.of(user));
       // ... UserMapper successfully partially updates User with ReplaceUserRequestDto
-      given(userMapper.partialUpdate(user, requestDto)).willReturn(user);
+      given(userMapper.partialUpdate(same(user), same(requestDto))).willReturn(user);
       // ... UserRepository successfully saves User
-      given(userRepository.save(user)).willReturn(user);
+      given(userRepository.save(same(user))).willReturn(user);
       // ... ConversionService successfully converts from User to UserResponseDto
-      val expectedResponseDto = UserResponseDtoMother.completeAndBuilt();
-      given(conversionService.convert(user, UserResponseDto.class)).willReturn(expectedResponseDto);
+      val expectedResponseDto = UserResponseDtoMother.complete().build();
+      given(conversionService.convert(same(user), same(UserResponseDto.class))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... updateUserById is called
