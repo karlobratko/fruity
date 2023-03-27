@@ -32,7 +32,7 @@ import static org.mockito.BDDMockito.given;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserService Unit Test")
 @SuppressWarnings("static-access")
-public class UserServiceUnitTest {
+public class UserServiceUnitTest implements ServiceUnitTest {
 
   @InjectMocks
   UserServiceImpl userService;

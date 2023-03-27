@@ -50,7 +50,7 @@ import static org.mockito.BDDMockito.willDoNothing;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthenticationService Unit Test")
 @SuppressWarnings("static-access")
-class AuthenticationServiceUnitTest {
+class AuthenticationServiceUnitTest implements ServiceUnitTest {
 
   @InjectMocks
   JwtAuthenticationService authenticationService;

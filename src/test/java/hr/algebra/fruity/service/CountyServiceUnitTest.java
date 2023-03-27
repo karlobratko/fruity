@@ -29,7 +29,7 @@ import static org.mockito.BDDMockito.given;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("County Service Unit Test")
 @SuppressWarnings("static-access")
-public class CountyServiceUnitTest {
+public class CountyServiceUnitTest implements ServiceUnitTest {
 
   @InjectMocks
   private CountyServiceImpl countyService;
