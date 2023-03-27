@@ -17,6 +17,5 @@ public class ConflictException extends RuntimeException {
   public ConflictException(final Throwable cause) {
     super(cause);
   }
-
-
+  
 }

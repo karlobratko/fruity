@@ -2,8 +2,8 @@ package hr.algebra.fruity.service;
 
 import hr.algebra.fruity.dto.response.FullEmployeeResponseDto;
 import hr.algebra.fruity.dto.response.RegistrationTokenResponseDto;
-import hr.algebra.fruity.exception.BadRequestException;
-import hr.algebra.fruity.exception.NotFoundException;
+import hr.algebra.fruity.exception.InvalidRegistrationTokenException;
+import hr.algebra.fruity.exception.RegistrationTokenAlreadyConfirmedException;
 import hr.algebra.fruity.exception.RegistrationTokenExpiredException;
 import hr.algebra.fruity.model.Employee;
 import hr.algebra.fruity.model.RegistrationToken;
@@ -80,7 +80,7 @@ class AuthenticationServiceUnitTest {
 
   @Nested
   @DisplayName("... WHEN register is called")
-  class WHEN_register {
+  public class WHEN_register {
 
     @Test
     @DisplayName("GIVEN RegisterRequestDto " +
@@ -130,12 +130,12 @@ class AuthenticationServiceUnitTest {
 
   @Nested
   @DisplayName("... WHEN confirmRegistration is called")
-  class WHEN_confirmRegistration {
+  public class WHEN_confirmRegistration {
 
     @Test
     @DisplayName("GIVEN invalid UUID " +
-      "... THEN NotFoundException is thrown")
-    public void GIVEN_invalidUUID_THEN_NotFoundException() {
+      "... THEN InvalidRegistrationTokenException is thrown")
+    public void GIVEN_invalidUUID_THEN_InvalidRegistrationTokenException() {
       // GIVEN
       // ... UUID
       val uuid = UUID.randomUUID();
@@ -147,17 +147,17 @@ class AuthenticationServiceUnitTest {
       when(() -> authenticationService.confirmRegistration(uuid));
 
       // THEN
-      // ... NotFoundException is thrown
+      // ... InvalidRegistrationTokenException is thrown
       and.then(caughtException())
-        .isInstanceOf(NotFoundException.class)
-        .hasMessage("Registracijski token nije važeći.")
+        .isInstanceOf(InvalidRegistrationTokenException.class)
+        .hasMessage(InvalidRegistrationTokenException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 
     @Test
     @DisplayName("GIVEN UUID and confirmed RegistrationToken " +
-      "... THEN BadRequestException is thrown")
-    public void GIVEN_UUIDAndConfirmed_THEN_BadRequestException() {
+      "... THEN RegistrationTokenAlreadyConfirmedException is thrown")
+    public void GIVEN_UUIDAndConfirmed_THEN_RegistrationTokenAlreadyConfirmedException() {
       // GIVEN
       // ... UUID
       val uuid = UUID.randomUUID();
@@ -170,10 +170,10 @@ class AuthenticationServiceUnitTest {
       when(() -> authenticationService.confirmRegistration(uuid));
 
       // THEN
-      // ... BadRequestException is thrown
+      // ... RegistrationTokenAlreadyConfirmedException is thrown
       and.then(caughtException())
-        .isInstanceOf(BadRequestException.class)
-        .hasMessage("Registracijski token je već bio potvrđen.")
+        .isInstanceOf(RegistrationTokenAlreadyConfirmedException.class)
+        .hasMessage(RegistrationTokenAlreadyConfirmedException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 
@@ -199,7 +199,7 @@ class AuthenticationServiceUnitTest {
       // ... RegistrationTokenExpiredException is thrown
       and.then(caughtException())
         .isInstanceOf(RegistrationTokenExpiredException.class)
-        .hasMessage("Registracijski token je isteknuo.")
+        .hasMessage(RegistrationTokenExpiredException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 
@@ -231,7 +231,7 @@ class AuthenticationServiceUnitTest {
       val responseDto = authenticationService.confirmRegistration(uuid);
 
       // THEN
-      // ... NotFoundException is thrown
+      // ... RegistrationTokenResponseDto is returned
       and.then(registrationToken.isConfirmed()).isTrue();
       and.then(employee).satisfies(it -> {
         and.then(it.isEnabled()).isTrue();
@@ -246,12 +246,12 @@ class AuthenticationServiceUnitTest {
 
   @Nested
   @DisplayName("... WHEN resendRegistrationToken is called")
-  class WHEN_resendRegistrationToken {
+  public class WHEN_resendRegistrationToken {
 
     @Test
     @DisplayName("GIVEN invalid UUID and ResendRegistrationRequestDto" +
-      "... THEN NotFoundException is thrown")
-    public void GIVEN_invalidUUID_THEN_NotFoundException() {
+      "... THEN InvalidRegistrationTokenException is thrown")
+    public void GIVEN_invalidUUID_THEN_InvalidRegistrationTokenException() {
       // GIVEN
       // ... UUID
       val uuid = UUID.randomUUID();
@@ -261,14 +261,14 @@ class AuthenticationServiceUnitTest {
       given(registrationTokenRepository.findByUuid(uuid)).willReturn(Optional.empty());
 
       // WHEN
-      // ... confirmRegistration is called
+      // ... resendRegistrationToken is called
       when(() -> authenticationService.resendRegistrationToken(uuid, requestDto));
 
       // THEN
-      // ... NotFoundException is thrown
+      // ... InvalidRegistrationTokenException is thrown
       and.then(caughtException())
-        .isInstanceOf(NotFoundException.class)
-        .hasMessage("Registracijski token nije važeći.")
+        .isInstanceOf(InvalidRegistrationTokenException.class)
+        .hasMessage(InvalidRegistrationTokenException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 
@@ -303,11 +303,11 @@ class AuthenticationServiceUnitTest {
       given(conversionService.convert(registrationToken, RegistrationTokenResponseDto.class)).willReturn(expectedResponseDto);
 
       // WHEN
-      // ... confirmRegistration is called
+      // ... resendRegistrationToken is called
       val responseDto = authenticationService.resendRegistrationToken(uuid, requestDto);
 
       // THEN
-      // ... NotFoundException is thrown
+      // ... RegistrationTokenResponseDto is returned
       and.then(registrationToken).satisfies(it -> {
         and.then(it.getCreateDateTime()).isAfter(LocalDateTime.now().minusSeconds(5));
         and.then(it.getExpireDateTime()).isAfter(LocalDateTime.now().plusMinutes(15).minusSeconds(5));
@@ -321,7 +321,7 @@ class AuthenticationServiceUnitTest {
 
   @Nested
   @DisplayName("... WHEN login is called")
-  class WHEN_login {
+  public class WHEN_login {
 
     @Test
     @DisplayName("GIVEN invalid LoginRequestDto " +
@@ -369,7 +369,7 @@ class AuthenticationServiceUnitTest {
       when(() -> authenticationService.login(requestDto));
 
       // THEN
-      // ... BadCredentialsException is thrown
+      // ... DisabledException is thrown
       and.then(caughtException())
         .isInstanceOf(DisabledException.class)
         .hasMessage("Korisnički račun nije omogućen.")
@@ -396,7 +396,7 @@ class AuthenticationServiceUnitTest {
       when(() -> authenticationService.login(requestDto));
 
       // THEN
-      // ... BadCredentialsException is thrown
+      // ... LockedException is thrown
       and.then(caughtException())
         .isInstanceOf(LockedException.class)
         .hasMessage("Korisnički račun je zaključan.")

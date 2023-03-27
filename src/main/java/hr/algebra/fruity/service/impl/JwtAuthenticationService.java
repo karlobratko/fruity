@@ -6,9 +6,10 @@ import hr.algebra.fruity.dto.request.ResendRegistrationRequestDto;
 import hr.algebra.fruity.dto.response.AuthenticationResponseDto;
 import hr.algebra.fruity.dto.response.FullEmployeeResponseDto;
 import hr.algebra.fruity.dto.response.RegistrationTokenResponseDto;
-import hr.algebra.fruity.exception.BadRequestException;
-import hr.algebra.fruity.exception.NotFoundException;
+import hr.algebra.fruity.exception.InvalidRegistrationTokenException;
+import hr.algebra.fruity.exception.RegistrationTokenAlreadyConfirmedException;
 import hr.algebra.fruity.exception.RegistrationTokenExpiredException;
+import hr.algebra.fruity.exception.UsernameNotFoundException;
 import hr.algebra.fruity.model.Employee;
 import hr.algebra.fruity.model.RegistrationToken;
 import hr.algebra.fruity.model.User;
@@ -67,13 +68,7 @@ public class JwtAuthenticationService implements AuthenticationService {
     employee.setRegistrationToken(registrationToken);
     employeeRepository.save(employee);
 
-    emailSenderService.send(
-      emailComposerService.composeConfirmRegistrationEmail(
-        employee,
-        requestDto.confirmRegistrationUrl(),
-        registrationToken.getUuid()
-      )
-    );
+    composeAndSendConfirmRegistrationEmail(employee, registrationToken, requestDto.confirmRegistrationUrl());
 
     return conversionService.convert(employee, FullEmployeeResponseDto.class);
   }
@@ -81,14 +76,10 @@ public class JwtAuthenticationService implements AuthenticationService {
   @Override
   @Transactional
   public RegistrationTokenResponseDto confirmRegistration(UUID uuid) {
-    val registrationToken = registrationTokenRepository.findByUuid(uuid)
-      .orElseThrow(() -> new NotFoundException("Registracijski token nije važeći."));
-
-    if (registrationToken.isConfirmed())
-      throw new BadRequestException("Registracijski token je već bio potvrđen.");
+    val registrationToken = getRegistrationTokenAndValidateIfConfirmed(uuid);
 
     if (registrationToken.isExpired())
-      throw new RegistrationTokenExpiredException("Registracijski token je isteknuo.");
+      throw new RegistrationTokenExpiredException();
 
     registrationToken.confirm();
     registrationTokenRepository.save(registrationToken);
@@ -103,22 +94,12 @@ public class JwtAuthenticationService implements AuthenticationService {
   @Override
   @Transactional
   public RegistrationTokenResponseDto resendRegistrationToken(UUID uuid, ResendRegistrationRequestDto requestDto) {
-    val registrationToken = registrationTokenRepository.findByUuid(uuid)
-      .orElseThrow(() -> new NotFoundException("Registracijski token nije važeći."));
-
-    if (registrationToken.isConfirmed())
-      throw new BadRequestException("Registracijski token je već bio potvrđen.");
+    val registrationToken = getRegistrationTokenAndValidateIfConfirmed(uuid);
 
     registrationToken.reset();
     registrationTokenRepository.save(registrationToken);
 
-    emailSenderService.send(
-      emailComposerService.composeConfirmRegistrationEmail(
-        registrationToken.getEmployee(),
-        requestDto.confirmRegistrationUrl(),
-        registrationToken.getUuid()
-      )
-    );
+    composeAndSendConfirmRegistrationEmail(registrationToken.getEmployee(), registrationToken, requestDto.confirmRegistrationUrl());
 
     return conversionService.convert(registrationToken, RegistrationTokenResponseDto.class);
   }
@@ -135,7 +116,7 @@ public class JwtAuthenticationService implements AuthenticationService {
       );
 
       val employee = employeeRepository.findByUsername(authentication.getName())
-        .orElseThrow(() -> new NotFoundException("Korisničko ime %s ne postoji.".formatted(authentication.getName())));
+        .orElseThrow(() -> new UsernameNotFoundException(authentication.getName()));
 
       return conversionService.convert(jwtTokenService.generate(employee), AuthenticationResponseDto.class);
     } catch (AuthenticationException e) {
@@ -156,5 +137,25 @@ public class JwtAuthenticationService implements AuthenticationService {
       throw new IllegalStateException();
     }
   }
+
+  private void composeAndSendConfirmRegistrationEmail(Employee employee, RegistrationToken registrationToken, String registrationUrl) {
+    emailSenderService.send(
+      emailComposerService.composeConfirmRegistrationEmail(
+        employee,
+        registrationUrl,
+        registrationToken.getUuid()
+      )
+    );
+  }
+
+  private RegistrationToken getRegistrationTokenAndValidateIfConfirmed(UUID uuid) {
+    val registrationToken = registrationTokenRepository.findByUuid(uuid)
+      .orElseThrow(InvalidRegistrationTokenException::new);
+
+    if (registrationToken.isConfirmed())
+      throw new RegistrationTokenAlreadyConfirmedException();
+    return registrationToken;
+  }
+
 
 }

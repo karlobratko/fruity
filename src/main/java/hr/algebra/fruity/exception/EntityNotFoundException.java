@@ -3,20 +3,20 @@ package hr.algebra.fruity.exception;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-public class RegistrationTokenExpiredException extends ConflictException {
+public class EntityNotFoundException extends NotFoundException {
 
-  public RegistrationTokenExpiredException() {
+  public EntityNotFoundException() {
     super(Constants.exceptionMessageFormat);
   }
 
-  public RegistrationTokenExpiredException(final Throwable cause) {
+  public EntityNotFoundException(Throwable cause) {
     super(Constants.exceptionMessageFormat, cause);
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Constants {
 
-    public static final String exceptionMessageFormat = "Registracijski token je isteknuo.";
+    public static final String exceptionMessageFormat = "Entitet s danim identifikatorom ne postoji.";
 
   }
 

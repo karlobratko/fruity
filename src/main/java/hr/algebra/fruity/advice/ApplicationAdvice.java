@@ -3,8 +3,9 @@ package hr.algebra.fruity.advice;
 import hr.algebra.fruity.dto.response.ErrorApiResponse;
 import hr.algebra.fruity.exception.BadRequestException;
 import hr.algebra.fruity.exception.ConflictException;
+import hr.algebra.fruity.exception.InternalServerErrorException;
 import hr.algebra.fruity.exception.NotFoundException;
-import hr.algebra.fruity.exception.RegistrationTokenExpiredException;
+import hr.algebra.fruity.exception.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,15 +29,11 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 public class ApplicationAdvice {
 
   @ExceptionHandler({
-    IllegalArgumentException.class,
-    NoSuchElementException.class,
     BadCredentialsException.class,
     DisabledException.class,
     LockedException.class,
-    HttpMessageNotReadableException.class,
-    BadRequestException.class
   })
-  public ResponseEntity<ErrorApiResponse> handleBadRequestException(HttpServletRequest request, RuntimeException e) {
+  public ResponseEntity<ErrorApiResponse> handleAuthenticationException(HttpServletRequest request, AuthenticationException e) {
     log.debug(e.getMessage());
     return ResponseEntity
       .status(HttpStatus.BAD_REQUEST)
@@ -49,7 +47,7 @@ public class ApplicationAdvice {
   }
 
   @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-  public ResponseEntity<ErrorApiResponse> handleMethodArgumentTypeMismatchException(HttpServletRequest request, RuntimeException e) {
+  public ResponseEntity<ErrorApiResponse> handleMethodArgumentTypeMismatchException(HttpServletRequest request, MethodArgumentTypeMismatchException e) {
     log.debug(e.getMessage());
     return ResponseEntity
       .status(HttpStatus.BAD_REQUEST)
@@ -57,23 +55,6 @@ public class ApplicationAdvice {
         ErrorApiResponse.of(
           HttpStatus.BAD_REQUEST,
           "Parametar poslan u metodu nije ispravnog tipa.",
-          request.getRequestURL().toString()
-        )
-      );
-  }
-
-  @ExceptionHandler({
-    RegistrationTokenExpiredException.class,
-    ConflictException.class
-  })
-  public ResponseEntity<ErrorApiResponse> handleConflictException(HttpServletRequest request, RuntimeException e) {
-    log.debug(e.getMessage());
-    return ResponseEntity
-      .status(HttpStatus.CONFLICT)
-      .body(
-        ErrorApiResponse.of(
-          HttpStatus.CONFLICT,
-          e.getMessage(),
           request.getRequestURL().toString()
         )
       );
@@ -97,7 +78,40 @@ public class ApplicationAdvice {
       );
   }
 
-  @ExceptionHandler({NotFoundException.class})
+  @ExceptionHandler({
+    IllegalArgumentException.class,
+    NoSuchElementException.class,
+    HttpMessageNotReadableException.class,
+    BadRequestException.class
+  })
+  public ResponseEntity<ErrorApiResponse> handleBadRequestException(HttpServletRequest request, RuntimeException e) {
+    log.debug(e.getMessage());
+    return ResponseEntity
+      .status(HttpStatus.BAD_REQUEST)
+      .body(
+        ErrorApiResponse.of(
+          HttpStatus.BAD_REQUEST,
+          e.getMessage(),
+          request.getRequestURL().toString()
+        )
+      );
+  }
+
+  @ExceptionHandler(ConflictException.class)
+  public ResponseEntity<ErrorApiResponse> handleConflictException(HttpServletRequest request, ConflictException e) {
+    log.debug(e.getMessage());
+    return ResponseEntity
+      .status(HttpStatus.CONFLICT)
+      .body(
+        ErrorApiResponse.of(
+          HttpStatus.CONFLICT,
+          e.getMessage(),
+          request.getRequestURL().toString()
+        )
+      );
+  }
+
+  @ExceptionHandler(NotFoundException.class)
   public ResponseEntity<ErrorApiResponse> handleNotFoundException(HttpServletRequest request, NotFoundException e) {
     log.debug(e.getMessage());
     return ResponseEntity
@@ -105,6 +119,34 @@ public class ApplicationAdvice {
       .body(
         ErrorApiResponse.of(
           HttpStatus.NOT_FOUND,
+          e.getMessage(),
+          request.getRequestURL().toString()
+        )
+      );
+  }
+
+  @ExceptionHandler(UnauthorizedException.class)
+  public ResponseEntity<ErrorApiResponse> handleUnauthorizedException(HttpServletRequest request, UnauthorizedException e) {
+    log.debug(e.getMessage());
+    return ResponseEntity
+      .status(HttpStatus.UNAUTHORIZED)
+      .body(
+        ErrorApiResponse.of(
+          HttpStatus.UNAUTHORIZED,
+          e.getMessage(),
+          request.getRequestURL().toString()
+        )
+      );
+  }
+
+  @ExceptionHandler(InternalServerErrorException.class)
+  public ResponseEntity<ErrorApiResponse> handleInternalServerErrorException(HttpServletRequest request, InternalServerErrorException e) {
+    log.error(e.getMessage());
+    return ResponseEntity
+      .status(HttpStatus.INTERNAL_SERVER_ERROR)
+      .body(
+        ErrorApiResponse.of(
+          HttpStatus.INTERNAL_SERVER_ERROR,
           e.getMessage(),
           request.getRequestURL().toString()
         )
