@@ -78,9 +78,10 @@ public class WebSecurityConfiguration {
   public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager, AuthenticationProvider authenticationProvider, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
     return http
       .csrf(AbstractHttpConfigurer::disable)
+      .cors().and()
       .authorizeHttpRequests(requests ->
         requests
-          .requestMatchers(AuthenticationController.Constants.requestMapping + "/**").permitAll()
+          .requestMatchers(AuthenticationController.Mappings.requestMapping + "/**").permitAll()
           .anyRequest().authenticated()
       )
       .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
