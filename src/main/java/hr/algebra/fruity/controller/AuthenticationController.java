@@ -24,13 +24,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(AuthenticationController.Constants.requestMapping)
+@RequestMapping(AuthenticationController.Mappings.requestMapping)
 @RequiredArgsConstructor
 public class AuthenticationController {
 
   private final AuthenticationService authenticationService;
 
-  @PostMapping(Constants.registerPostMapping)
+  @PostMapping(Mappings.registerPostMapping)
   public ResponseEntity<ApiResponse<FullEmployeeResponseDto>> register(@Valid @RequestBody RegisterRequestDto requestDto) {
     return ResponseEntity
       .status(HttpStatus.CREATED)
@@ -42,7 +42,7 @@ public class AuthenticationController {
       );
   }
 
-  @GetMapping(Constants.confirmRegistrationGetMapping)
+  @GetMapping(Mappings.confirmRegistrationGetMapping)
   public ResponseEntity<ApiResponse<RegistrationTokenResponseDto>> confirmRegistration(@PathVariable UUID uuid) {
     return ResponseEntity
       .ok(
@@ -53,7 +53,7 @@ public class AuthenticationController {
       );
   }
 
-  @GetMapping(Constants.resendRegistrationTokenGetMapping)
+  @GetMapping(Mappings.resendRegistrationTokenGetMapping)
   public ResponseEntity<ApiResponse<RegistrationTokenResponseDto>> resendRegistrationToken(@PathVariable UUID uuid, @Valid @RequestBody ResendRegistrationRequestDto requestDto) {
     return ResponseEntity
       .ok(
@@ -64,7 +64,7 @@ public class AuthenticationController {
       );
   }
 
-  @PostMapping(Constants.loginPostMapping)
+  @PostMapping(Mappings.loginPostMapping)
   public ResponseEntity<ApiResponse<AuthenticationResponseDto>> login(@Valid @RequestBody LoginRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
@@ -75,7 +75,7 @@ public class AuthenticationController {
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
-  public static class Constants {
+  public static class Mappings {
 
     public static final String requestMapping = ApplicationConstants.apiUserManagementRequestMapping + "/auth";
 
