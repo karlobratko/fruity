@@ -82,7 +82,7 @@ public class WebSecurityConfiguration {
   public CorsConfiguration corsConfiguration() {
     val corsConfiguration = new CorsConfiguration();
     corsConfiguration.setAllowedHeaders(List.of(HttpHeaders.AUTHORIZATION, HttpHeaders.CACHE_CONTROL, HttpHeaders.CONTENT_TYPE));
-    corsConfiguration.setAllowedOrigins(List.of("*"));
+    corsConfiguration.setAllowedOriginPatterns(List.of("*"));
     corsConfiguration.setAllowedMethods(List.of(HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.DELETE.name()));
     corsConfiguration.setAllowCredentials(true);
     corsConfiguration.setExposedHeaders(List.of(HttpHeaders.AUTHORIZATION));
