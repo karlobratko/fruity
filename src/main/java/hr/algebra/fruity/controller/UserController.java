@@ -1,7 +1,7 @@
 package hr.algebra.fruity.controller;
 
 import hr.algebra.fruity.constants.ApplicationConstants;
-import hr.algebra.fruity.dto.request.ReplaceUserRequestDto;
+import hr.algebra.fruity.dto.request.UpdateUserRequestDto;
 import hr.algebra.fruity.dto.response.ApiResponse;
 import hr.algebra.fruity.dto.response.FullUserResponseDto;
 import hr.algebra.fruity.dto.response.UserResponseDto;
@@ -19,13 +19,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(UserController.Constants.requestMapping)
+@RequestMapping(UserController.Mappings.requestMapping)
 @RequiredArgsConstructor
 public class UserController {
 
   private final UserService userService;
 
-  @GetMapping(Constants.getUserByIdGetMapping)
+  @GetMapping(Mappings.getUserByIdGetMapping)
   public ResponseEntity<ApiResponse<FullUserResponseDto>> getUserById(@PathVariable Long id) {
     return ResponseEntity.ok(
       ApiResponse.ok(
@@ -35,8 +35,8 @@ public class UserController {
     );
   }
 
-  @PutMapping(Constants.updateUserByIdPutMapping)
-  public ResponseEntity<ApiResponse<UserResponseDto>> updateUserById(@PathVariable Long id, @Valid @RequestBody ReplaceUserRequestDto requestDto) {
+  @PutMapping(Mappings.updateUserByIdPutMapping)
+  public ResponseEntity<ApiResponse<UserResponseDto>> updateUserById(@PathVariable Long id, @Valid @RequestBody UpdateUserRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
         userService.updateUserById(id, requestDto),
@@ -46,7 +46,7 @@ public class UserController {
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
-  public static class Constants {
+  public static class Mappings {
 
     public static final String requestMapping = ApplicationConstants.apiUserManagementRequestMapping + "/users";
 

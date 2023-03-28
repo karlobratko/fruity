@@ -1,14 +1,14 @@
 package hr.algebra.fruity.utils.mother.dto;
 
-import hr.algebra.fruity.dto.request.ReplaceUserRequestDto;
+import hr.algebra.fruity.dto.request.UpdateUserRequestDto;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class ReplaceUserRequestDtoMother {
+public class UpdateUserRequestDtoMother {
 
-  public static ReplaceUserRequestDto.ReplaceUserRequestDtoBuilder complete() {
-    return ReplaceUserRequestDto.builder()
+  public static UpdateUserRequestDto.UpdateUserRequestDtoBuilder complete() {
+    return UpdateUserRequestDto.builder()
       .name(Constants.instanceName)
       .oib(Constants.instanceOib)
       .phoneNumber(Constants.instancePhoneNumber)

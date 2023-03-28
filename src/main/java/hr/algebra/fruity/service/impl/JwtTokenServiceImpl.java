@@ -1,6 +1,6 @@
 package hr.algebra.fruity.service.impl;
 
-import hr.algebra.fruity.dto.JwtDto;
+import hr.algebra.fruity.converter.EmployeeToJwtDtoConverter;
 import hr.algebra.fruity.model.Employee;
 import hr.algebra.fruity.properties.JwtProperties;
 import hr.algebra.fruity.service.JwtTokenService;
@@ -9,10 +9,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Objects;
-import lombok.NonNull;
+import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -24,7 +23,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class JwtTokenServiceImpl implements JwtTokenService {
 
-  private final ConversionService conversionService;
+  private final EmployeeToJwtDtoConverter employeeToJwtDtoConverter;
 
   private final JwtProperties jwtProperties;
 
@@ -33,37 +32,47 @@ public class JwtTokenServiceImpl implements JwtTokenService {
   private final JwtDecoder jwtDecoder;
 
   @Override
-  public Instant getExpiresAt(@NonNull String token) {
+  public Instant getExpiresAt(String token) {
     return jwtDecoder.decode(token).getExpiresAt();
   }
 
   @Override
-  public String getSubject(@NonNull String token) {
+  public String getSubject(String token) {
     return jwtDecoder.decode(token).getSubject();
   }
 
   @Override
-  public String getUsername(@NonNull String token) {
+  public String getUsername(String token) {
     return getSubject(token);
   }
 
   @Override
-  public boolean isValid(@NonNull String token, @NonNull UserDetails userDetails) {
+  public <T> T getClaim(String token, Function<Map<String, Object>, T> claimResolver) {
+    return claimResolver.apply(jwtDecoder.decode(token).getClaims());
+  }
+
+  @Override
+  public <T> T getClaim(String token, String claim) {
+    return jwtDecoder.decode(token).getClaim(claim);
+  }
+
+  @Override
+  public boolean isValid(String token, UserDetails userDetails) {
     return getSubject(token).equals(userDetails.getUsername()) && !isTokenExpired(token);
   }
 
   @Override
-  public String generate(@NonNull Employee employee) {
+  public String generate(Employee employee) {
     return generate(
       employee.getUsername(),
       ReflectionUtils.objectToMap(
-        Objects.requireNonNull(conversionService.convert(employee, JwtDto.class))
+        Objects.requireNonNull(employeeToJwtDtoConverter.convert(employee))
       )
     );
   }
 
   @Override
-  public String generate(@NonNull String subject, @NonNull Map<String, Object> claims) {
+  public String generate(String subject, Map<String, Object> claims) {
     val now = Instant.now();
     val jwtClaimsSet = JwtClaimsSet.builder()
       .issuer("self")

@@ -3,22 +3,25 @@ package hr.algebra.fruity.service;
 import hr.algebra.fruity.model.Employee;
 import java.time.Instant;
 import java.util.Map;
-import lombok.NonNull;
-import org.springframework.security.core.Authentication;
+import java.util.function.Function;
 import org.springframework.security.core.userdetails.UserDetails;
 
 public interface JwtTokenService {
 
-  String getSubject(@NonNull String token);
+  String getSubject(String token);
 
-  Instant getExpiresAt(@NonNull String token);
+  Instant getExpiresAt(String token);
 
-  String getUsername(@NonNull String token);
+  String getUsername(String token);
 
-  boolean isValid(@NonNull String token, @NonNull UserDetails userDetails);
+  <T> T getClaim(String token, Function<Map<String, Object>, T> claimResolver);
 
-  String generate(@NonNull Employee employee);
+  <T> T getClaim(String token, String claim);
 
-  String generate(@NonNull String subject, @NonNull Map<String, Object> claims);
+  boolean isValid(String token, UserDetails userDetails);
+
+  String generate(Employee employee);
+
+  String generate(String subject, Map<String, Object> claims);
 
 }

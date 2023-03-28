@@ -4,14 +4,14 @@ import hr.algebra.fruity.dto.response.FullUserResponseDto;
 import hr.algebra.fruity.dto.response.UserResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.exception.ForeignUserDataAccessException;
-import hr.algebra.fruity.exception.UniquenessViolatedException;
 import hr.algebra.fruity.mapper.UserMapper;
 import hr.algebra.fruity.repository.UserRepository;
 import hr.algebra.fruity.service.impl.UserServiceImpl;
 import hr.algebra.fruity.utils.mother.dto.FullUserResponseDtoMother;
-import hr.algebra.fruity.utils.mother.dto.ReplaceUserRequestDtoMother;
+import hr.algebra.fruity.utils.mother.dto.UpdateUserRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UserResponseDtoMother;
 import hr.algebra.fruity.utils.mother.model.UserMother;
+import hr.algebra.fruity.validator.UserWithUpdateUserRequestDtoValidator;
 import java.util.Optional;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
@@ -28,6 +28,7 @@ import static com.googlecode.catchexception.apis.BDDCatchException.when;
 import static org.assertj.core.api.BDDAssertions.and;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("UserService Unit Test")
@@ -35,16 +36,19 @@ import static org.mockito.BDDMockito.given;
 public class UserServiceUnitTest implements ServiceUnitTest {
 
   @InjectMocks
-  UserServiceImpl userService;
+  private UserServiceImpl userService;
 
   @Mock
   private ConversionService conversionService;
 
   @Mock
+  private UserWithUpdateUserRequestDtoValidator userWithUpdateUserRequestDtoValidator;
+
+  @Mock
   private UserMapper userMapper;
 
   @Mock
-  private CurrentUserService currentUserService;
+  private CurrentRequestUserService currentRequestUserService;
 
   @Mock
   private UserRepository userRepository;
@@ -85,7 +89,7 @@ public class UserServiceUnitTest implements ServiceUnitTest {
       given(userRepository.findById(same(id))).willReturn(Optional.of(user));
       // ... CurrentUserService's logged-in User is not equal to User
       val loggedInUser = UserMother.complete().id(user.getId() + 1).build();
-      given(currentUserService.getLoggedInUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
 
       // WHEN
       // ... getUserById is called
@@ -110,7 +114,7 @@ public class UserServiceUnitTest implements ServiceUnitTest {
       given(userRepository.findById(same(id))).willReturn(Optional.of(user));
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = user;
-      given(currentUserService.getLoggedInUser()).willReturn(user);
+      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
       // ... ConversionService successfully converts from User to FullUserResponseDto
       val expectedResponseDto = FullUserResponseDtoMother.complete().build();
       given(conversionService.convert(same(user), same(FullUserResponseDto.class))).willReturn(expectedResponseDto);
@@ -141,7 +145,7 @@ public class UserServiceUnitTest implements ServiceUnitTest {
       val id = 1L;
       given(userRepository.findById(same(id))).willReturn(Optional.empty());
       // ... ReplaceUserRequestDto
-      val requestDto = ReplaceUserRequestDtoMother.complete().build();
+      val requestDto = UpdateUserRequestDtoMother.complete().build();
 
       // WHEN
       // ... updateUserById is called
@@ -165,10 +169,10 @@ public class UserServiceUnitTest implements ServiceUnitTest {
       val user = UserMother.complete().build();
       given(userRepository.findById(same(id))).willReturn(Optional.of(user));
       // ... ReplaceUserRequestDto
-      val requestDto = ReplaceUserRequestDtoMother.complete().build();
+      val requestDto = UpdateUserRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is not equal to User
       val loggedInUser = UserMother.complete().id(user.getId() + 1).build();
-      given(currentUserService.getLoggedInUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
 
       // WHEN
       // ... updateUserById is called
@@ -183,36 +187,6 @@ public class UserServiceUnitTest implements ServiceUnitTest {
     }
 
     @Test
-    @DisplayName("GIVEN id, ReplaceUserRequestDto, and oib in other User " +
-      "... THEN UniquenessViolatedException is thrown")
-    public void GIVEN_idAndReplaceUserRequestDtoAndOibInOtherUser_THEN_UniquenessViolatedException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val user = UserMother.complete().build();
-      given(userRepository.findById(same(id))).willReturn(Optional.of(user));
-      // ... ReplaceUserRequestDto
-      val requestDto = ReplaceUserRequestDtoMother.complete().build();
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = user;
-      given(currentUserService.getLoggedInUser()).willReturn(loggedInUser);
-      // ... oib in other User
-      val otherUser = UserMother.complete().id(user.getId() + 1).build();
-      given(userRepository.findByOib(same(user.getOib()))).willReturn(Optional.of(otherUser));
-
-      // WHEN
-      // ... updateUserById is called
-      when(() -> userService.updateUserById(id, requestDto));
-
-      // THEN
-      // ... UniquenessViolatedException is thrown
-      and.then(caughtException())
-        .isInstanceOf(UniquenessViolatedException.class)
-        .hasMessage("OIB već postoji i nije jedinstven.")
-        .hasNoCause();
-    }
-
-    @Test
     @DisplayName("GIVEN id, ReplaceUserRequestDto, and unique oib " +
       "... THEN UserResponseDto is returned")
     public void GIVEN_idAndReplaceUserRequestDtoAndUniqueOib_THEN_UserResponseDto() {
@@ -222,12 +196,12 @@ public class UserServiceUnitTest implements ServiceUnitTest {
       val user = UserMother.complete().build();
       given(userRepository.findById(same(id))).willReturn(Optional.of(user));
       // ... ReplaceUserRequestDto
-      val requestDto = ReplaceUserRequestDtoMother.complete().build();
+      val requestDto = UpdateUserRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = user;
-      given(currentUserService.getLoggedInUser()).willReturn(loggedInUser);
-      // ... UserRepository fails to find User by oib
-      given(userRepository.findByOib(same(user.getOib()))).willReturn(Optional.empty());
+      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      // ... UserWithUpdateUserRequestDtoValidator successfully validates User with ReplaceUserRequestDto
+      willDoNothing().given(userWithUpdateUserRequestDtoValidator).validate(same(user), same(requestDto));
       // ... UserMapper successfully partially updates User with ReplaceUserRequestDto
       given(userMapper.partialUpdate(same(user), same(requestDto))).willReturn(user);
       // ... UserRepository successfully saves User
@@ -257,12 +231,12 @@ public class UserServiceUnitTest implements ServiceUnitTest {
       val user = UserMother.complete().build();
       given(userRepository.findById(same(id))).willReturn(Optional.of(user));
       // ... ReplaceUserRequestDto
-      val requestDto = ReplaceUserRequestDtoMother.complete().build();
+      val requestDto = UpdateUserRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = user;
-      given(currentUserService.getLoggedInUser()).willReturn(loggedInUser);
-      // ... UserRepository fails to find User by oib
-      given(userRepository.findByOib(same(user.getOib()))).willReturn(Optional.of(user));
+      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      // ... UserWithUpdateUserRequestDtoValidator successfully validates User with ReplaceUserRequestDto
+      willDoNothing().given(userWithUpdateUserRequestDtoValidator).validate(same(user), same(requestDto));
       // ... UserMapper successfully partially updates User with ReplaceUserRequestDto
       given(userMapper.partialUpdate(same(user), same(requestDto))).willReturn(user);
       // ... UserRepository successfully saves User

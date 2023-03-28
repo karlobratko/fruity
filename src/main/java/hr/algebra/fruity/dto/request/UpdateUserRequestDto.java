@@ -1,16 +1,14 @@
 package hr.algebra.fruity.dto.request;
 
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 @Builder
-public record ReplaceUserRequestDto(
+public record UpdateUserRequestDto(
   @Size(min = 5, max = 75, message = "Naziv mora biti duljine minimalno 5 i maksimalno 75 znakova.")
   String name,
-  @NotNull(message = "OIB je obavezno polje.")
   @Size(min = 11, max = 11, message = "OIB mora biti duljine 11 znakova.")
   String oib,
   @Size(max = 25, message = "Broj telefona mora biti duljine maksimalno 25 znakova.")

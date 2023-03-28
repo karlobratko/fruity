@@ -67,9 +67,7 @@ public class CountyServiceUnitTest implements ServiceUnitTest {
       // ... List<CountyResponseDto> is returned
       and.then(responseDtos).satisfies(it -> {
         and.then(responseDtos).hasSize(counties.size());
-        and.then(responseDtos).allSatisfy(child -> {
-          and.then(child).isNotNull();
-        });
+        and.then(responseDtos).allSatisfy(child -> and.then(child).isNotNull());
       });
     }
 

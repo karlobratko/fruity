@@ -1,16 +1,16 @@
 package hr.algebra.fruity.service.impl;
 
-import hr.algebra.fruity.dto.request.ReplaceUserRequestDto;
+import hr.algebra.fruity.dto.request.UpdateUserRequestDto;
 import hr.algebra.fruity.dto.response.FullUserResponseDto;
 import hr.algebra.fruity.dto.response.UserResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.exception.ForeignUserDataAccessException;
-import hr.algebra.fruity.exception.UniquenessViolatedException;
 import hr.algebra.fruity.mapper.UserMapper;
 import hr.algebra.fruity.model.User;
 import hr.algebra.fruity.repository.UserRepository;
-import hr.algebra.fruity.service.CurrentUserService;
+import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.UserService;
+import hr.algebra.fruity.validator.UserWithUpdateUserRequestDtoValidator;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -23,9 +23,11 @@ public class UserServiceImpl implements UserService {
 
   private final ConversionService conversionService;
 
+  private final UserWithUpdateUserRequestDtoValidator userWithUpdateUserRequestDtoValidator;
+
   private final UserMapper userMapper;
 
-  private final CurrentUserService currentUserService;
+  private final CurrentRequestUserService currentRequestUserService;
 
   private final UserRepository userRepository;
 
@@ -35,10 +37,10 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
-  public UserResponseDto updateUserById(Long id, ReplaceUserRequestDto requestDto) {
+  public UserResponseDto updateUserById(Long id, UpdateUserRequestDto requestDto) {
     val user = getUser(id);
 
-    validateUserOibUniqueness(user, requestDto.oib());
+    userWithUpdateUserRequestDtoValidator.validate(user, requestDto);
 
     return conversionService.convert(
       userRepository.save(
@@ -52,18 +54,10 @@ public class UserServiceImpl implements UserService {
     val user = userRepository.findById(id)
       .orElseThrow(EntityNotFoundException::new);
 
-    if (!Objects.equals(user, currentUserService.getLoggedInUser()))
+    if (!Objects.equals(user, currentRequestUserService.getUser()))
       throw new ForeignUserDataAccessException();
 
     return user;
-  }
-
-  private void validateUserOibUniqueness(User user, String oib) {
-    userRepository.findByOib(oib)
-      .ifPresent(it -> {
-        if (!Objects.equals(it, user))
-          throw new UniquenessViolatedException("OIB već postoji i nije jedinstven.");
-      });
   }
 
 }

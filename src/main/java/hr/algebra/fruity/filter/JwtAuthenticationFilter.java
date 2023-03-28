@@ -1,5 +1,6 @@
 package hr.algebra.fruity.filter;
 
+import hr.algebra.fruity.constants.JwtConstants;
 import hr.algebra.fruity.service.JwtTokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -14,9 +15,7 @@ import lombok.val;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -34,12 +33,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
     final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-    if (Objects.isNull(authHeader) || !authHeader.startsWith("Bearer")) {
+    if (Objects.isNull(authHeader) || !authHeader.startsWith(JwtConstants.headerAuthorizationBearerPrefix)) {
       filterChain.doFilter(request, response);
       return;
     }
 
-    val jwtToken = authHeader.substring(7);
+    val jwtToken = authHeader.substring(JwtConstants.headerAuthorizationBearerPrefix.length());
     val username = jwtTokenService.getUsername(jwtToken);
     if (Objects.nonNull(username) && Objects.isNull(SecurityContextHolder.getContext().getAuthentication())) {
       val user = userDetailsService.loadUserByUsername(username);

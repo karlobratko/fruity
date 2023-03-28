@@ -1,6 +1,6 @@
 package hr.algebra.fruity.mapper;
 
-import hr.algebra.fruity.dto.request.ReplaceUserRequestDto;
+import hr.algebra.fruity.dto.request.UpdateUserRequestDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.model.County;
 import hr.algebra.fruity.model.User;
@@ -30,8 +30,8 @@ public abstract class UserMapper {
   }
 
   @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, unmappedTargetPolicy = ReportingPolicy.IGNORE)
-  @Mapping(source = ReplaceUserRequestDto.Fields.countyFk, target = User.Fields.county, qualifiedByName = {MappingHelpers.mapIdToCounty})
-  public abstract User partialUpdate(@MappingTarget User user, ReplaceUserRequestDto requestDto);
+  @Mapping(source = UpdateUserRequestDto.Fields.countyFk, target = User.Fields.county, qualifiedByName = {MappingHelpers.mapIdToCounty})
+  public abstract User partialUpdate(@MappingTarget User user, UpdateUserRequestDto requestDto);
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class MappingHelpers {

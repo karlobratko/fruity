@@ -53,7 +53,7 @@ import static org.mockito.BDDMockito.willDoNothing;
 class AuthenticationServiceUnitTest implements ServiceUnitTest {
 
   @InjectMocks
-  JwtAuthenticationService authenticationService;
+  private JwtAuthenticationService authenticationService;
 
   @Mock
   private ConversionService conversionService;

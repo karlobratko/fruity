@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(CountyController.Constants.requestMapping)
+@RequestMapping(CountyController.Mappings.requestMapping)
 @RequiredArgsConstructor
 public class CountyController {
 
   private final CountyService countyService;
 
-  @GetMapping(Constants.getAllCountiesGetMapping)
+  @GetMapping(Mappings.getAllCountiesGetMapping)
   public ResponseEntity<ApiResponse<List<CountyResponseDto>>> getAllCounties() {
     return ResponseEntity.ok(
       ApiResponse.ok(
@@ -31,7 +31,7 @@ public class CountyController {
     );
   }
 
-  @GetMapping(Constants.getCountyByIdGetMapping)
+  @GetMapping(Mappings.getCountyByIdGetMapping)
   public ResponseEntity<ApiResponse<CountyResponseDto>> getCountyById(@PathVariable Integer id) {
     return ResponseEntity.ok(
       ApiResponse.ok(
@@ -42,7 +42,7 @@ public class CountyController {
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
-  public static class Constants {
+  public static class Mappings {
 
     public static final String requestMapping = ApplicationConstants.apiUserManagementRequestMapping + "/counties";
 
