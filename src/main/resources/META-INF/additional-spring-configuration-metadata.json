@@ -13,6 +13,16 @@
     {
       "name": "hr.algebra.fruity.security.jwt.validity-duration-in-ms",
       "type": "java.lang.String",
-      "description": "Validity of JWT token in ms."
+      "description": "Validity of JWT access token in ms."
+    },
+    {
+      "name": "hr.algebra.fruity.security.auth.registration.validity-duration-in-ms",
+      "type": "java.lang.String",
+      "description": "Validity of registration token in ms."
+    },
+    {
+      "name": "hr.algebra.fruity.security.jwt.refresh-validity-duration-in-ms",
+      "type": "java.lang.String",
+      "description": "Validity of JWT refresh token in ms."
     }
   ] }

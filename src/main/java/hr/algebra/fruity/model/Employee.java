@@ -1,5 +1,6 @@
 package hr.algebra.fruity.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -128,6 +129,14 @@ public class Employee implements UserDetails {
   )
   private RegistrationToken registrationToken;
 
+  @OneToOne(optional = true, orphanRemoval = true, fetch = FetchType.LAZY)
+  @JoinColumn(
+    name = RefreshToken.Constants.joinColumnName,
+    referencedColumnName = RefreshToken.Constants.idColumnName,
+    nullable = true
+  )
+  private RefreshToken refreshToken;
+
   @OneToMany(mappedBy = WorkEmployee.Fields.employee, fetch = FetchType.LAZY)
   @Singular
   private Set<WorkEmployee> works;
@@ -207,6 +216,8 @@ public class Employee implements UserDetails {
     public static final String role = "role";
 
     public static final String registrationToken = "registrationToken";
+
+    public static final String refreshToken = "refreshToken";
 
     public static final String works = "works";
 

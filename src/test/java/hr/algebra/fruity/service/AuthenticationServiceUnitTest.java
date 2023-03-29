@@ -1,29 +1,28 @@
 package hr.algebra.fruity.service;
 
+import hr.algebra.fruity.dto.response.AuthenticationResponseDto;
 import hr.algebra.fruity.dto.response.FullEmployeeResponseDto;
 import hr.algebra.fruity.dto.response.RegistrationTokenResponseDto;
-import hr.algebra.fruity.exception.InvalidRegistrationTokenException;
-import hr.algebra.fruity.exception.RegistrationTokenAlreadyConfirmedException;
-import hr.algebra.fruity.exception.RegistrationTokenExpiredException;
 import hr.algebra.fruity.model.Employee;
-import hr.algebra.fruity.model.RegistrationToken;
 import hr.algebra.fruity.model.User;
 import hr.algebra.fruity.repository.EmployeeRepository;
-import hr.algebra.fruity.repository.RegistrationTokenRepository;
 import hr.algebra.fruity.repository.UserRepository;
 import hr.algebra.fruity.service.impl.JwtAuthenticationService;
+import hr.algebra.fruity.utils.mother.dto.AuthenticationResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.ConfirmRegistrationRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullEmployeeResponseDtoMother;
 import hr.algebra.fruity.utils.mother.dto.LoginRequestDtoMother;
+import hr.algebra.fruity.utils.mother.dto.RefreshTokenRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.RegisterRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.RegistrationTokenResponseDtoMother;
 import hr.algebra.fruity.utils.mother.dto.ResendRegistrationRequestDtoMother;
 import hr.algebra.fruity.utils.mother.model.EmailMother;
 import hr.algebra.fruity.utils.mother.model.EmployeeMother;
+import hr.algebra.fruity.utils.mother.model.RefreshTokenMother;
 import hr.algebra.fruity.utils.mother.model.RegistrationTokenMother;
 import hr.algebra.fruity.utils.mother.model.UserMother;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.UUID;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -42,7 +41,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
 import static org.assertj.core.api.BDDAssertions.and;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
@@ -62,13 +60,7 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
   private AuthenticationManager authenticationManager;
 
   @Mock
-  private JwtTokenService jwtTokenService;
-
-  @Mock
   private UserRepository userRepository;
-
-  @Mock
-  private RegistrationTokenRepository registrationTokenRepository;
 
   @Mock
   private EmployeeRepository employeeRepository;
@@ -78,6 +70,12 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
 
   @Mock
   private EmailSenderService emailSenderService;
+
+  @Mock
+  private RegistrationTokenService registrationTokenService;
+
+  @Mock
+  private RefreshTokenService refreshTokenService;
 
   @Nested
   @DisplayName("... WHEN register is called")
@@ -97,7 +95,10 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       given(userRepository.save(same(user))).willReturn(user);
       // ... RegistrationTokenRepository successfully saves RegistrationToken
       val registrationToken = RegistrationTokenMother.complete().build();
-      given(registrationTokenRepository.save(any(RegistrationToken.class))).willReturn(registrationToken);
+      given(registrationTokenService.createRegistrationToken()).willReturn(registrationToken);
+      // ... RefreshTokenService successfully saves RefreshToken
+      val refreshToken = RefreshTokenMother.complete().build();
+      given(registrationTokenService.createRegistrationToken()).willReturn(registrationToken);
       // ... ConversionService successfully converts from RegisterRequestDto to Employee
       val employee = EmployeeMother.complete().user(null).registrationToken(null).build();
       given(conversionService.convert(same(requestDto), same(Employee.class))).willReturn(employee);
@@ -134,93 +135,18 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
   public class WHEN_confirmRegistration {
 
     @Test
-    @DisplayName("GIVEN invalid UUID " +
-      "... THEN InvalidRegistrationTokenException is thrown")
-    public void GIVEN_invalidUUID_THEN_InvalidRegistrationTokenException() {
-      // GIVEN
-      // ... UUID
-      val uuid = UUID.randomUUID();
-      // ... RegistrationTokenRepository fails to find RegistrationToken by UUID
-      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.empty());
-
-      // WHEN
-      // ... confirmRegistration is called
-      when(() -> authenticationService.confirmRegistration(uuid));
-
-      // THEN
-      // ... InvalidRegistrationTokenException is thrown
-      and.then(caughtException())
-        .isInstanceOf(InvalidRegistrationTokenException.class)
-        .hasMessage(InvalidRegistrationTokenException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN UUID and confirmed RegistrationToken " +
-      "... THEN RegistrationTokenAlreadyConfirmedException is thrown")
-    public void GIVEN_UUIDAndConfirmed_THEN_RegistrationTokenAlreadyConfirmedException() {
-      // GIVEN
-      // ... UUID
-      val uuid = UUID.randomUUID();
-      // ... RegistrationTokenRepository successfully finds RegistrationToken by UUID which is confirmed
-      val registrationToken = RegistrationTokenMother.complete().confirmDateTime(LocalDateTime.now()).build();
-      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.of(registrationToken));
-
-      // WHEN
-      // ... confirmRegistration is called
-      when(() -> authenticationService.confirmRegistration(uuid));
-
-      // THEN
-      // ... RegistrationTokenAlreadyConfirmedException is thrown
-      and.then(caughtException())
-        .isInstanceOf(RegistrationTokenAlreadyConfirmedException.class)
-        .hasMessage(RegistrationTokenAlreadyConfirmedException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN UUID and expired RegistrationToken " +
-      "... THEN RegistrationTokenExpiredException is thrown")
-    public void GIVEN_UUIDAndExpired_THEN_RegistrationTokenExpiredException() {
-      // GIVEN
-      // ... UUID
-      val uuid = UUID.randomUUID();
-      // ... RegistrationTokenRepository successfully finds RegistrationToken by UUID which is expired
-      val registrationToken = RegistrationTokenMother.complete()
-        .createDateTime(LocalDateTime.now().minusMinutes(30))
-        .expireDateTime(LocalDateTime.now().minusMinutes(15))
-        .build();
-      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.of(registrationToken));
-
-      // WHEN
-      // ... confirmRegistration is called
-      when(() -> authenticationService.confirmRegistration(uuid));
-
-      // THEN
-      // ... RegistrationTokenExpiredException is thrown
-      and.then(caughtException())
-        .isInstanceOf(RegistrationTokenExpiredException.class)
-        .hasMessage(RegistrationTokenExpiredException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN UUID " +
+    @DisplayName("GIVEN ConfirmRegistrationRequestDto " +
       "... THEN RegistrationTokenResponseDto is returned")
     public void GIVEN_UUID_THEN_RegistrationTokenResponseDto() {
       // GIVEN
       // ... UUID
-      val uuid = UUID.randomUUID();
-      // ... RegistrationTokenRepository successfully finds RegistrationToken by UUID
+      val requestDto = ConfirmRegistrationRequestDtoMother.complete().build();
+      // ... RegistrationTokenService successfully confirm RegistrationToken by UUID
       val employee = EmployeeMother.complete().enabled(false).locked(true).build();
       val registrationToken = RegistrationTokenMother.complete()
         .employee(employee)
         .build();
-      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.of(registrationToken));
-      // ... RegistrationTokenRepository successfully saves RegistrationToken
-      val confirmedRegistrationToken = RegistrationTokenMother.complete().build();
-      confirmedRegistrationToken.confirm();
-      given(registrationTokenRepository.save(same(registrationToken))).willReturn(confirmedRegistrationToken);
+      given(registrationTokenService.confirmRegistrationToken(requestDto.registrationToken())).willReturn(registrationToken);
       // ... EmployeeRepository successfully saves Employee
       given(employeeRepository.save(same(employee))).willReturn(employee);
       // ... ConversionService successfully converts from RegistrationToken to RegistrationTokenResponseDto
@@ -229,11 +155,10 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
 
       // WHEN
       // ... confirmRegistration is called
-      val responseDto = authenticationService.confirmRegistration(uuid);
+      val responseDto = authenticationService.confirmRegistration(requestDto);
 
       // THEN
       // ... RegistrationTokenResponseDto is returned
-      and.then(registrationToken.isConfirmed()).isTrue();
       and.then(employee).satisfies(it -> {
         and.then(it.isEnabled()).isTrue();
         and.then(it.isLocked()).isFalse();
@@ -250,50 +175,20 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
   public class WHEN_resendRegistrationToken {
 
     @Test
-    @DisplayName("GIVEN invalid UUID and ResendRegistrationRequestDto" +
-      "... THEN InvalidRegistrationTokenException is thrown")
-    public void GIVEN_invalidUUID_THEN_InvalidRegistrationTokenException() {
-      // GIVEN
-      // ... UUID
-      val uuid = UUID.randomUUID();
-      // ... ResendRegistrationRequestDto
-      val requestDto = ResendRegistrationRequestDtoMother.complete().build();
-      // ... RegistrationTokenRepository fails to find RegistrationToken by UUID
-      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.empty());
-
-      // WHEN
-      // ... resendRegistrationToken is called
-      when(() -> authenticationService.resendRegistrationToken(uuid, requestDto));
-
-      // THEN
-      // ... InvalidRegistrationTokenException is thrown
-      and.then(caughtException())
-        .isInstanceOf(InvalidRegistrationTokenException.class)
-        .hasMessage(InvalidRegistrationTokenException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN UUID and ResendRegistrationRequestDto" +
+    @DisplayName("GIVEN ResendRegistrationRequestDto" +
       "... THEN RegistrationTokenResponseDto is returned")
     public void GIVEN_UUID_THEN_RegistrationTokenResponseDto() {
       // GIVEN
-      // ... UUID
-      val uuid = UUID.randomUUID();
       // ... ResendRegistrationRequestDto
       val requestDto = ResendRegistrationRequestDtoMother.complete().build();
-      // ... RegistrationTokenRepository fails to find RegistrationToken by UUID
+      // ... RegistrationTokenService successfully refreshes RegistrationToken by UUID
       val employee = EmployeeMother.complete().build();
       val registrationToken = RegistrationTokenMother.complete()
         .employee(employee)
         .createDateTime(LocalDateTime.now().minusMinutes(30))
         .expireDateTime(LocalDateTime.now().minusMinutes(15))
         .build();
-      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.of(registrationToken));
-      // ... RegistrationTokenRepository successfully saves RegistrationToken
-      val resetRegistrationToken = RegistrationTokenMother.complete().build();
-      resetRegistrationToken.reset();
-      given(registrationTokenRepository.save(same(registrationToken))).willReturn(resetRegistrationToken);
+      given(registrationTokenService.refreshRegistrationToken(requestDto.registrationToken())).willReturn(registrationToken);
       // ... EmailComposerService successfully composes Email given Employee, String, and UUID
       val email = EmailMother.complete().build();
       given(emailComposerService.composeConfirmRegistrationEmail(same(employee), same(requestDto.confirmRegistrationUrl()), same(registrationToken.getUuid()))).willReturn(email);
@@ -305,14 +200,10 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
 
       // WHEN
       // ... resendRegistrationToken is called
-      val responseDto = authenticationService.resendRegistrationToken(uuid, requestDto);
+      val responseDto = authenticationService.resendRegistrationToken(requestDto);
 
       // THEN
       // ... RegistrationTokenResponseDto is returned
-      and.then(registrationToken).satisfies(it -> {
-        and.then(it.getCreateDateTime()).isAfter(LocalDateTime.now().minusSeconds(5));
-        and.then(it.getExpireDateTime()).isAfter(LocalDateTime.now().plusMinutes(15).minusSeconds(5));
-      });
       and.then(responseDto)
         .isNotNull()
         .isEqualTo(expectedResponseDto);
@@ -402,6 +293,68 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
         .isInstanceOf(LockedException.class)
         .hasMessage("Korisnički račun je zaključan.")
         .hasNoCause();
+    }
+
+    @Test
+    @DisplayName("GIVEN LoginRequestDto " +
+      "... THEN AuthenticationResponseDto is returned")
+    public void GIVEN_LoginRequestDto_THEN_AuthenticationResponseDto() {
+      // GIVEN
+      // ... LoginRequestDto
+      val requestDto = LoginRequestDtoMother.complete().build();
+      // ... AuthenticationManager successfully authenticates UsernamePasswordAuthenticationToken
+      val token = new UsernamePasswordAuthenticationToken(requestDto.username(), requestDto.password());
+      given(authenticationManager.authenticate(token)).willReturn(token);
+      // ... EmployeeRepository successfully finds Employee by username
+      val employee = EmployeeMother.complete().build();
+      given(employeeRepository.findByUsername(same(token.getName()))).willReturn(Optional.of(employee));
+      // ... RefreshTokenService successfully refreshes RefreshToken
+      val refreshToken = RefreshTokenMother.complete().build();
+      given(refreshTokenService.refreshRefreshToken(same(employee.getRefreshToken().getUuid()))).willReturn(refreshToken);
+      // ... ConversionService successfully converts from Employee to AuthenticationResponseDto
+      val expectedResponseDto = AuthenticationResponseDtoMother.complete().build();
+      given(conversionService.convert(same(employee), same(AuthenticationResponseDto.class))).willReturn(expectedResponseDto);
+
+      // WHEN
+      // ... login is called
+      val responseDto = authenticationService.login(requestDto);
+
+      // THEN
+      // ... AuthenticationResponseDto is returned
+      and.then(responseDto)
+        .isNotNull()
+        .isEqualTo(expectedResponseDto);
+    }
+
+  }
+
+  @Nested
+  @DisplayName("... WHEN refreshToken is called")
+  public class WHEN_refreshToken {
+
+    @Test
+    @DisplayName("GIVEN RefreshTokenRequestDto " +
+      "... THEN AuthenticationResponseDto")
+    public void GIVEN_RefreshTokenRequestDto_THEN_AuthenticationResponseDto() {
+      // GIVEN
+      // ... RefreshTokenRequestDto
+      val requestDto = RefreshTokenRequestDtoMother.complete().build();
+      // RefreshTokenService successfully verifies RefreshToken by UUID
+      val refreshToken = RefreshTokenMother.complete().build();
+      given(refreshTokenService.verifyRefreshToken(same(requestDto.refreshToken()))).willReturn(refreshToken);
+      // ConversionService successfully converts from Employee to AuthenticationResponseDto
+      val expectedResponseDto = AuthenticationResponseDtoMother.complete().build();
+      given(conversionService.convert(same(refreshToken.getEmployee()), same(AuthenticationResponseDto.class))).willReturn(expectedResponseDto);
+
+      // WHEN
+      // ... refreshToken is called
+      val responseDto = authenticationService.refreshToken(requestDto);
+
+      // THEN
+      // ... AuthenticationResponseDto
+      and.then(responseDto)
+        .isNotNull()
+        .isEqualTo(expectedResponseDto);
     }
 
   }

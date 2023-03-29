@@ -12,7 +12,7 @@ public class RegistrationTokenResponseDtoMother {
   public static RegistrationTokenResponseDto.RegistrationTokenResponseDtoBuilder complete() {
     return RegistrationTokenResponseDto.builder()
       .id(Constants.instanceId)
-      .uuid(Constants.instanceUuid)
+      .token(Constants.instanceToken)
       .createDateTime(Constants.instanceCreateDateTime)
       .confirmDateTime(Constants.instanceConfirmDateTime)
       .expireDateTime(Constants.instanceExpireDateTime);
@@ -23,7 +23,7 @@ public class RegistrationTokenResponseDtoMother {
 
     public static final Long instanceId = 1L;
 
-    public static final UUID instanceUuid = UUID.randomUUID();
+    public static final UUID instanceToken = UUID.randomUUID();
 
     public static final LocalDateTime instanceCreateDateTime = LocalDateTime.now();
 

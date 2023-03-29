@@ -15,7 +15,6 @@ import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -33,7 +32,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-@Table(name = RegistrationToken.Constants.tableName)
+@Table(name = RefreshToken.Constants.tableName)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -42,9 +41,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EqualsAndHashCode(doNotUseGetters = true, onlyExplicitlyIncluded = true)
 @ToString(doNotUseGetters = true, onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE RegistrationToken SET deleteDate = CURRENT_DATE WHERE id = ?", check = ResultCheckStyle.COUNT)
-@Where(clause = RegistrationToken.Constants.deleteDateColumnName + " IS NULL")
-public class RegistrationToken {
+@SQLDelete(sql = "UPDATE RefreshToken SET deleteDate = CURRENT_DATE WHERE id = ?", check = ResultCheckStyle.COUNT)
+@Where(clause = RefreshToken.Constants.deleteDateColumnName + " IS NULL")
+public class RefreshToken {
 
   @Id
   @Column(name = Constants.idColumnName)
@@ -71,19 +70,11 @@ public class RegistrationToken {
   @Temporal(TemporalType.DATE)
   private LocalDate deleteDate;
 
-  @Column(name = Constants.createDateTimeColumnName, nullable = false)
-  @Temporal(TemporalType.TIMESTAMP)
-  private LocalDateTime createDateTime;
-
   @Column(name = Constants.expireDateTimeColumnName, nullable = false)
   @Temporal(TemporalType.TIMESTAMP)
   private LocalDateTime expireDateTime;
 
-  @Column(name = Constants.confirmDateTimeColumnName)
-  @Temporal(TemporalType.TIMESTAMP)
-  private LocalDateTime confirmDateTime;
-
-  @OneToOne(mappedBy = Employee.Fields.registrationToken, fetch = FetchType.EAGER)
+  @OneToOne(mappedBy = Employee.Fields.refreshToken, fetch = FetchType.EAGER)
   private Employee employee;
 
   @PrePersist
@@ -96,16 +87,8 @@ public class RegistrationToken {
     this.deleteDate = LocalDate.now();
   }
 
-  public boolean isConfirmed() {
-    return Objects.nonNull(this.confirmDateTime);
-  }
-
-  public boolean isExpired() {
-    return this.expireDateTime.isBefore(LocalDateTime.now());
-  }
-
-  public void confirm() {
-    this.confirmDateTime = LocalDateTime.now();
+  public Boolean isExpired() {
+    return getExpireDateTime().isBefore(LocalDateTime.now());
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -121,11 +104,7 @@ public class RegistrationToken {
 
     public static final String deleteDate = "deleteDate";
 
-    public static final String createDateTime = "createDateTime";
-
     public static final String expireDateTime = "expireDateTime";
-
-    public static final String confirmDateTime = "confirmDateTime";
 
     public static final String employee = "employee";
 
@@ -134,11 +113,11 @@ public class RegistrationToken {
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Constants {
 
-    public static final String tableName = "registration_tokens";
+    public static final String tableName = "refresh_tokens";
 
-    public static final String joinColumnName = "registration_token_fk";
+    public static final String joinColumnName = "refresh_token_fk";
 
-    public static final String idColumnName = "registration_token_id";
+    public static final String idColumnName = "refresh_token_id";
 
     public static final String uuidColumnName = "uuid";
 
@@ -148,11 +127,7 @@ public class RegistrationToken {
 
     public static final String deleteDateColumnName = "delete_date";
 
-    public static final String createDateTimeColumnName = "create_date_time";
-
     public static final String expireDateTimeColumnName = "expire_date_time";
-
-    public static final String confirmDateTimeColumnName = "confirm_date_time";
 
   }
 

@@ -8,4 +8,6 @@ public class JwtConstants {
 
   public static final String headerAuthorizationBearerPrefix = "Bearer ";
 
+  public static final String tokenType = "Bearer";
+
 }

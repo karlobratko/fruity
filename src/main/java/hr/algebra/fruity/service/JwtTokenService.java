@@ -20,6 +20,8 @@ public interface JwtTokenService {
 
   boolean isValid(String token, UserDetails userDetails);
 
+  boolean isExpired(String token);
+
   String generate(Employee employee);
 
   String generate(String subject, Map<String, Object> claims);

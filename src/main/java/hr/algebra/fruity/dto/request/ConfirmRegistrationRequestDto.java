@@ -7,19 +7,15 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 @Builder
-public record ResendRegistrationRequestDto(
+public record ConfirmRegistrationRequestDto(
   @NotNull(message = "Registracijski token je obavezan.")
-  UUID registrationToken,
-  @NotNull(message = "Putanja do stranice za potvrdu registracije je nepoznata.")
-  String confirmRegistrationUrl
+  UUID registrationToken
 ) {
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Fields {
 
     public static final String registrationToken = "registrationToken";
-
-    public static final String confirmRegistrationUrl = "confirmRegistrationUrl";
 
   }
 

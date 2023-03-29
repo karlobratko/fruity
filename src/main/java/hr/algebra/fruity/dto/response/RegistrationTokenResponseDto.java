@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public record RegistrationTokenResponseDto(
   Long id,
-  UUID uuid,
+  UUID token,
   LocalDateTime createDateTime,
   LocalDateTime expireDateTime,
   LocalDateTime confirmDateTime
@@ -20,7 +20,7 @@ public record RegistrationTokenResponseDto(
 
     public static final String id = "id";
 
-    public static final String uuid = "uuid";
+    public static final String token = "token";
 
     public static final String createDateTime = "createDateTime";
 

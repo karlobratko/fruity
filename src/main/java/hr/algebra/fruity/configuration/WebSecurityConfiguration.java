@@ -4,8 +4,10 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import hr.algebra.fruity.controller.AuthenticationController;
+import hr.algebra.fruity.filter.CatchExceptionFilter;
 import hr.algebra.fruity.filter.JwtAuthenticationFilter;
 import hr.algebra.fruity.properties.JwtProperties;
+import hr.algebra.fruity.properties.RegistrationTokenProperties;
 import hr.algebra.fruity.properties.RsaKeyProperties;
 import hr.algebra.fruity.repository.EmployeeRepository;
 import java.util.List;
@@ -34,12 +36,13 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@EnableConfigurationProperties({RsaKeyProperties.class, JwtProperties.class})
+@EnableConfigurationProperties({RsaKeyProperties.class, JwtProperties.class, RegistrationTokenProperties.class})
 public class WebSecurityConfiguration {
 
   @Bean
@@ -91,7 +94,7 @@ public class WebSecurityConfiguration {
   }
 
   @Bean
-  public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfiguration corsConfiguration, AuthenticationManager authenticationManager, AuthenticationProvider authenticationProvider, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
+  public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfiguration corsConfiguration, AuthenticationManager authenticationManager, AuthenticationProvider authenticationProvider, JwtAuthenticationFilter jwtAuthenticationFilter, CatchExceptionFilter catchExceptionFilter) throws Exception {
     return http
       .csrf(AbstractHttpConfigurer::disable)
       .cors().configurationSource(request -> corsConfiguration).and()
@@ -102,6 +105,7 @@ public class WebSecurityConfiguration {
       )
       .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
       .authenticationProvider(authenticationProvider)
+      .addFilterBefore(catchExceptionFilter, LogoutFilter.class)
       .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
       .build();
   }

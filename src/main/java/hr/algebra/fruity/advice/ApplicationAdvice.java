@@ -3,6 +3,7 @@ package hr.algebra.fruity.advice;
 import hr.algebra.fruity.dto.response.ErrorApiResponse;
 import hr.algebra.fruity.exception.BadRequestException;
 import hr.algebra.fruity.exception.ConflictException;
+import hr.algebra.fruity.exception.ForbiddenException;
 import hr.algebra.fruity.exception.InternalServerErrorException;
 import hr.algebra.fruity.exception.NotFoundException;
 import hr.algebra.fruity.exception.UnauthorizedException;
@@ -20,11 +21,11 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-@ControllerAdvice
+@RestControllerAdvice
 @Slf4j
 public class ApplicationAdvice {
 
@@ -119,6 +120,20 @@ public class ApplicationAdvice {
       .body(
         ErrorApiResponse.of(
           HttpStatus.NOT_FOUND,
+          e.getMessage(),
+          request.getRequestURL().toString()
+        )
+      );
+  }
+
+  @ExceptionHandler(ForbiddenException.class)
+  public ResponseEntity<ErrorApiResponse> handleForbiddenException(HttpServletRequest request, ForbiddenException e) {
+    log.debug(e.getMessage());
+    return ResponseEntity
+      .status(HttpStatus.FORBIDDEN)
+      .body(
+        ErrorApiResponse.of(
+          HttpStatus.FORBIDDEN,
           e.getMessage(),
           request.getRequestURL().toString()
         )

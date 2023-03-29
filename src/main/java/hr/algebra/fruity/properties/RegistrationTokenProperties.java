@@ -7,11 +7,10 @@ import org.springframework.boot.convert.DurationUnit;
 import org.springframework.validation.annotation.Validated;
 
 @Validated
-@ConfigurationProperties(prefix = "hr.algebra.fruity.security.jwt")
-public record JwtProperties(
+@ConfigurationProperties(prefix = "hr.algebra.fruity.security.auth.registration")
+public record RegistrationTokenProperties(
   @DurationUnit(ChronoUnit.MILLIS)
-  Duration validityDurationInMs,
-  @DurationUnit(ChronoUnit.MILLIS)
-  Duration refreshValidityDurationInMs
+  Duration validityDurationInMs
 ) {
+
 }

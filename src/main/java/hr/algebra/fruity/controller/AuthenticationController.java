@@ -1,7 +1,9 @@
 package hr.algebra.fruity.controller;
 
 import hr.algebra.fruity.constants.ApplicationConstants;
+import hr.algebra.fruity.dto.request.ConfirmRegistrationRequestDto;
 import hr.algebra.fruity.dto.request.LoginRequestDto;
+import hr.algebra.fruity.dto.request.RefreshTokenRequestDto;
 import hr.algebra.fruity.dto.request.RegisterRequestDto;
 import hr.algebra.fruity.dto.request.ResendRegistrationRequestDto;
 import hr.algebra.fruity.dto.response.ApiResponse;
@@ -10,14 +12,11 @@ import hr.algebra.fruity.dto.response.FullEmployeeResponseDto;
 import hr.algebra.fruity.dto.response.RegistrationTokenResponseDto;
 import hr.algebra.fruity.service.AuthenticationService;
 import jakarta.validation.Valid;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,23 +41,23 @@ public class AuthenticationController {
       );
   }
 
-  @GetMapping(Mappings.confirmRegistrationGetMapping)
-  public ResponseEntity<ApiResponse<RegistrationTokenResponseDto>> confirmRegistration(@PathVariable UUID uuid) {
+  @PostMapping(Mappings.confirmRegistrationGetMapping)
+  public ResponseEntity<ApiResponse<RegistrationTokenResponseDto>> confirmRegistration(@Valid @RequestBody ConfirmRegistrationRequestDto requestDto) {
     return ResponseEntity
       .ok(
         ApiResponse.ok(
-          authenticationService.confirmRegistration(uuid),
+          authenticationService.confirmRegistration(requestDto),
           "Registracijski token uspješno potvrđen."
         )
       );
   }
 
-  @GetMapping(Mappings.resendRegistrationTokenGetMapping)
-  public ResponseEntity<ApiResponse<RegistrationTokenResponseDto>> resendRegistrationToken(@PathVariable UUID uuid, @Valid @RequestBody ResendRegistrationRequestDto requestDto) {
+  @PostMapping(Mappings.resendRegistrationTokenPostMapping)
+  public ResponseEntity<ApiResponse<RegistrationTokenResponseDto>> resendRegistrationToken(@Valid @RequestBody ResendRegistrationRequestDto requestDto) {
     return ResponseEntity
       .ok(
         ApiResponse.ok(
-          authenticationService.resendRegistrationToken(uuid, requestDto),
+          authenticationService.resendRegistrationToken(requestDto),
           "Registracijski token ponovno poslan."
         )
       );
@@ -74,6 +73,16 @@ public class AuthenticationController {
     );
   }
 
+  @PostMapping(Mappings.refreshTokenPostMapping)
+  public ResponseEntity<ApiResponse<AuthenticationResponseDto>> refreshToken(@Valid @RequestBody RefreshTokenRequestDto requestDto) {
+    return ResponseEntity.ok(
+      ApiResponse.ok(
+        authenticationService.refreshToken(requestDto),
+        "Obnova tokena uspješna."
+      )
+    );
+  }
+
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Mappings {
 
@@ -81,11 +90,13 @@ public class AuthenticationController {
 
     public static final String registerPostMapping = "/register";
 
-    public static final String confirmRegistrationGetMapping = "/confirm-registration/{uuid}";
+    public static final String confirmRegistrationGetMapping = "/confirm-registration";
 
-    public static final String resendRegistrationTokenGetMapping = "/resend-registration-token/{uuid}";
+    public static final String resendRegistrationTokenPostMapping = "/resend-registration-token";
 
     public static final String loginPostMapping = "/login";
+
+    public static final String refreshTokenPostMapping = "/refresh-token";
 
   }
 

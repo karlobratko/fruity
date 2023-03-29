@@ -20,6 +20,7 @@ import hr.algebra.fruity.model.RealisationAttachment;
 import hr.algebra.fruity.model.RealisationEquipment;
 import hr.algebra.fruity.model.RealisationHarvest;
 import hr.algebra.fruity.model.RealisationRow;
+import hr.algebra.fruity.model.RefreshToken;
 import hr.algebra.fruity.model.RegistrationToken;
 import hr.algebra.fruity.model.Row;
 import hr.algebra.fruity.model.RowCluster;
@@ -57,6 +58,7 @@ import hr.algebra.fruity.repository.RealisationEquipmentRepository;
 import hr.algebra.fruity.repository.RealisationHarvestRepository;
 import hr.algebra.fruity.repository.RealisationRepository;
 import hr.algebra.fruity.repository.RealisationRowRepository;
+import hr.algebra.fruity.repository.RefreshTokenRepository;
 import hr.algebra.fruity.repository.RegistrationTokenRepository;
 import hr.algebra.fruity.repository.RowClusterRepository;
 import hr.algebra.fruity.repository.RowRepository;
@@ -105,6 +107,8 @@ public class BootstrapDbRunner implements CommandLineRunner {
   private final RowRepository rowRepository;
 
   private final EmployeeRoleRepository employeeRoleRepository;
+
+  private final RefreshTokenRepository refreshTokenRepository;
 
   private final RegistrationTokenRepository registrationTokenRepository;
 
@@ -360,8 +364,18 @@ public class BootstrapDbRunner implements CommandLineRunner {
     );
     // END INSERT EMPLOYEE_ROLES
 
+    // BEGIN INSERT REFRESH_TOKENS
+    val refreshToken1 = RefreshToken.builder().expireDateTime(LocalDateTime.now().plusDays(1)).build();
+
+    refreshTokenRepository.saveAll(
+      List.of(
+        refreshToken1
+      )
+    );
+    // END INSERT REFRESH_TOKENS
+
     // BEGIN INSERT REGISTRATION_TOKENS
-    val registrationToken1 = RegistrationToken.builder().confirmDateTime(LocalDateTime.now().plusMinutes(10)).build();
+    val registrationToken1 = RegistrationToken.builder().createDateTime(LocalDateTime.now().minusMinutes(15)).expireDateTime(LocalDateTime.now()).confirmDateTime(LocalDateTime.now().minusMinutes(10)).build();
 
     registrationTokenRepository.saveAll(
       List.of(
@@ -382,6 +396,7 @@ public class BootstrapDbRunner implements CommandLineRunner {
       .password(passwordEncoder.encode("Pa$$w0rd"))
       .role(employeeRole1)
       .registrationToken(registrationToken1)
+      .refreshToken(refreshToken1)
       .enabled(true)
       .locked(false)
       .build();

@@ -2,6 +2,7 @@ package hr.algebra.fruity.utils.mother.model;
 
 import hr.algebra.fruity.model.Employee;
 import hr.algebra.fruity.model.EmployeeRole;
+import hr.algebra.fruity.model.RefreshToken;
 import hr.algebra.fruity.model.RegistrationToken;
 import hr.algebra.fruity.model.User;
 import java.math.BigDecimal;
@@ -31,7 +32,8 @@ public class EmployeeMother {
       .enabled(Constants.instanceEnabled)
       .locked(Constants.instanceLocked)
       .role(Constants.instanceEmployeeRole)
-      .registrationToken(Constants.instanceRegistrationToken);
+      .registrationToken(Constants.instanceRegistrationToken)
+      .refreshToken(Constants.instanceRefreshToken);
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -70,6 +72,8 @@ public class EmployeeMother {
     public static final EmployeeRole instanceEmployeeRole = EmployeeRoleMother.complete().build();
 
     public static final RegistrationToken instanceRegistrationToken = RegistrationTokenMother.complete().build();
+
+    public static final RefreshToken instanceRefreshToken = RefreshTokenMother.complete().build();
 
   }
 
