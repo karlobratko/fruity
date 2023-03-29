@@ -133,6 +133,35 @@ public class UserServiceUnitTest implements ServiceUnitTest {
   }
 
   @Nested
+  @DisplayName("WHEN getCurrentUser is called")
+  public class WHEN_getCurrentUser {
+
+    @Test
+    @DisplayName("GIVEN void " +
+      "... THEN FullUserResponseDto is returned")
+    public void GIVEN_void_THEN_FullUserResponseDto() {
+      // GIVEN
+      // ... CurrentUserService's logged-in User is equal to User
+      val user = UserMother.complete().build();
+      given(currentRequestUserService.getUser()).willReturn(user);
+      // ... ConversionService successfully converts from User to FullUserResponseDto
+      val expectedResponseDto = FullUserResponseDtoMother.complete().build();
+      given(conversionService.convert(same(user), same(FullUserResponseDto.class))).willReturn(expectedResponseDto);
+
+      // WHEN
+      // ... getUserById is called
+      val responseDto = userService.getCurrentUser();
+
+      // THEN
+      // ... FullUserResponseDto is returned
+      and.then(responseDto)
+        .isNotNull()
+        .isEqualTo(expectedResponseDto);
+    }
+
+  }
+
+  @Nested
   @DisplayName("WHEN updateUserById is called")
   public class WHEN_updateUserById {
 
@@ -187,9 +216,9 @@ public class UserServiceUnitTest implements ServiceUnitTest {
     }
 
     @Test
-    @DisplayName("GIVEN id, ReplaceUserRequestDto, and unique oib " +
+    @DisplayName("GIVEN id and ReplaceUserRequestDto " +
       "... THEN UserResponseDto is returned")
-    public void GIVEN_idAndReplaceUserRequestDtoAndUniqueOib_THEN_UserResponseDto() {
+    public void GIVEN_idAndReplaceUserRequestDto_THEN_UserResponseDto() {
       // GIVEN
       // ... id
       val id = 1L;
@@ -221,20 +250,22 @@ public class UserServiceUnitTest implements ServiceUnitTest {
         .isEqualTo(expectedResponseDto);
     }
 
+  }
+
+  @Nested
+  @DisplayName("WHEN updateCurrentUser is called")
+  public class WHEN_updateCurrentUser {
+
     @Test
-    @DisplayName("GIVEN id, ReplaceUserRequestDto, and oib in same User " +
+    @DisplayName("GIVEN ReplaceUserRequestDto and unique oib " +
       "... THEN UserResponseDto is returned")
-    public void GIVEN_idAndReplaceUserRequestDtoAndOibInSameUser_THEN_UserResponseDto() {
+    public void GIVEN_ReplaceUserRequestDtoAndUniqueOib_THEN_UserResponseDto() {
       // GIVEN
-      // ... id
-      val id = 1L;
-      val user = UserMother.complete().build();
-      given(userRepository.findById(same(id))).willReturn(Optional.of(user));
       // ... ReplaceUserRequestDto
       val requestDto = UpdateUserRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = user;
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      val user = UserMother.complete().build();
+      given(currentRequestUserService.getUser()).willReturn(user);
       // ... UserWithUpdateUserRequestDtoValidator successfully validates User with ReplaceUserRequestDto
       willDoNothing().given(userWithUpdateUserRequestDtoValidator).validate(same(user), same(requestDto));
       // ... UserMapper successfully partially updates User with ReplaceUserRequestDto
@@ -246,8 +277,8 @@ public class UserServiceUnitTest implements ServiceUnitTest {
       given(conversionService.convert(same(user), same(UserResponseDto.class))).willReturn(expectedResponseDto);
 
       // WHEN
-      // ... updateUserById is called
-      val responseDto = userService.updateUserById(id, requestDto);
+      // ... updateCurrentUser is called
+      val responseDto = userService.updateCurrentUser(requestDto);
 
       // THEN
       // ... UserResponseDto is returned

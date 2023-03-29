@@ -35,12 +35,32 @@ public class UserController {
     );
   }
 
+  @GetMapping(Mappings.getCurrentUserGetMapping)
+  public ResponseEntity<ApiResponse<FullUserResponseDto>> getCurrentUser() {
+    return ResponseEntity.ok(
+      ApiResponse.ok(
+        userService.getCurrentUser(),
+        "Prijavljeni korisnik uspješno dohvaćen."
+      )
+    );
+  }
+
   @PutMapping(Mappings.updateUserByIdPutMapping)
   public ResponseEntity<ApiResponse<UserResponseDto>> updateUserById(@PathVariable Long id, @Valid @RequestBody UpdateUserRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
         userService.updateUserById(id, requestDto),
         "Korisnik uspješno promijenjen."
+      )
+    );
+  }
+
+  @PutMapping(Mappings.updateCurrentUserPutMapping)
+  public ResponseEntity<ApiResponse<UserResponseDto>> updateCurrentUser(@Valid @RequestBody UpdateUserRequestDto requestDto) {
+    return ResponseEntity.ok(
+      ApiResponse.ok(
+        userService.updateCurrentUser(requestDto),
+        "Prijavljeni korisnik uspješno promijenjen."
       )
     );
   }
@@ -52,7 +72,11 @@ public class UserController {
 
     public static final String getUserByIdGetMapping = "/{id}";
 
+    public static final String getCurrentUserGetMapping = "/current";
+
     public static final String updateUserByIdPutMapping = "/{id}";
+
+    public static final String updateCurrentUserPutMapping = "/current";
 
   }
 

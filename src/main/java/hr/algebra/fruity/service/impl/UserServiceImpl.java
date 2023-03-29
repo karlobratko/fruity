@@ -37,8 +37,27 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  public FullUserResponseDto getCurrentUser() {
+    return conversionService.convert(currentRequestUserService.getUser(), FullUserResponseDto.class);
+  }
+
+  @Override
   public UserResponseDto updateUserById(Long id, UpdateUserRequestDto requestDto) {
     val user = getUser(id);
+
+    userWithUpdateUserRequestDtoValidator.validate(user, requestDto);
+
+    return conversionService.convert(
+      userRepository.save(
+        userMapper.partialUpdate(user, requestDto)
+      ),
+      UserResponseDto.class
+    );
+  }
+
+  @Override
+  public UserResponseDto updateCurrentUser(UpdateUserRequestDto requestDto) {
+    val user = currentRequestUserService.getUser();
 
     userWithUpdateUserRequestDtoValidator.validate(user, requestDto);
 
