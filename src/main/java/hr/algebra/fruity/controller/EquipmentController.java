@@ -7,6 +7,7 @@ import hr.algebra.fruity.dto.response.ApiResponse;
 import hr.algebra.fruity.dto.response.EquipmentResponseDto;
 import hr.algebra.fruity.service.EquipmentService;
 import jakarta.validation.Valid;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +28,17 @@ public class EquipmentController {
 
   private final EquipmentService equipmentService;
 
-  @GetMapping(Mappings.getCurrentUserEquipmentByIdGetMapping)
+  @GetMapping(Mappings.getAllEquipmentGetMapping)
+  public ResponseEntity<ApiResponse<List<EquipmentResponseDto>>> getAllEquipment() {
+    return ResponseEntity.ok(
+      ApiResponse.ok(
+        equipmentService.getAllEquipment(),
+        "Oprema uspješno dohvaćena."
+      )
+    );
+  }
+
+  @GetMapping(Mappings.getEquipmentByIdGetMapping)
   public ResponseEntity<ApiResponse<EquipmentResponseDto>> getEquipmentById(@PathVariable Long id) {
     return ResponseEntity.ok(
       ApiResponse.ok(
@@ -37,7 +48,7 @@ public class EquipmentController {
     );
   }
 
-  @PostMapping(Mappings.createCurrentUserEquipmentPostMapping)
+  @PostMapping(Mappings.createEquipmentPostMapping)
   public ResponseEntity<ApiResponse<EquipmentResponseDto>> createEquipment(@Valid @RequestBody CreateEquipmentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
@@ -47,7 +58,7 @@ public class EquipmentController {
     );
   }
 
-  @PutMapping(Mappings.updateCurrentUserEquipmentByIdPutMapping)
+  @PutMapping(Mappings.updateEquipmentByIdPutMapping)
   public ResponseEntity<ApiResponse<EquipmentResponseDto>> updateEquipmentById(@PathVariable Long id, @Valid @RequestBody UpdateEquipmentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
@@ -57,7 +68,7 @@ public class EquipmentController {
     );
   }
 
-  @DeleteMapping(Mappings.deleteCurrentUserEquipmentByIdDeleteMapping)
+  @DeleteMapping(Mappings.deleteEquipmentByIdDeleteMapping)
   public ResponseEntity<ApiResponse<?>> deleteEquipmentById(@PathVariable Long id) {
     equipmentService.deleteEquipmentById(id);
     return ResponseEntity
@@ -73,15 +84,15 @@ public class EquipmentController {
 
     public static final String requestMapping = ApplicationConstants.apiResourceManagementRequestMapping + "/equipment";
 
-    public static final String getAllCurrentUserEquipmentGetMapping = "";
+    public static final String getAllEquipmentGetMapping = "";
 
-    public static final String getCurrentUserEquipmentByIdGetMapping = "/{id}";
+    public static final String getEquipmentByIdGetMapping = "/{id}";
 
-    public static final String createCurrentUserEquipmentPostMapping = "";
+    public static final String createEquipmentPostMapping = "";
 
-    public static final String updateCurrentUserEquipmentByIdPutMapping = "/{id}";
+    public static final String updateEquipmentByIdPutMapping = "/{id}";
 
-    public static final String deleteCurrentUserEquipmentByIdDeleteMapping = "/{id}";
+    public static final String deleteEquipmentByIdDeleteMapping = "/{id}";
 
   }
 

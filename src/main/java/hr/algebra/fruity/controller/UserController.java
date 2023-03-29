@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +29,7 @@ public class UserController {
     return ResponseEntity.ok(
       ApiResponse.ok(
         userService.getCurrentUser(),
-        "Prijavljeni korisnik uspješno dohvaćen."
+        "Korisnik uspješno dohvaćen."
       )
     );
   }
@@ -40,7 +39,7 @@ public class UserController {
     return ResponseEntity.ok(
       ApiResponse.ok(
         userService.updateCurrentUser(requestDto),
-        "Prijavljeni korisnik uspješno promijenjen."
+        "Korisnik uspješno promijenjen."
       )
     );
   }

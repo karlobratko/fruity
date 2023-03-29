@@ -11,6 +11,7 @@ import hr.algebra.fruity.repository.EquipmentRepository;
 import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.EquipmentService;
 import hr.algebra.fruity.validator.EquipmentWithUpdateEquipmentRequestDtoValidator;
+import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class EquipmentServiceImpl implements EquipmentService {
+public class CurrentUserEquipmentService implements EquipmentService {
 
   private final ConversionService conversionService;
 
@@ -30,6 +31,13 @@ public class EquipmentServiceImpl implements EquipmentService {
   private final CurrentRequestUserService currentRequestUserService;
 
   private final EquipmentRepository equipmentRepository;
+
+  @Override
+  public List<EquipmentResponseDto> getAllEquipment() {
+    return equipmentRepository.findAllByUser(currentRequestUserService.getUser()).stream()
+      .map(equipment -> conversionService.convert(equipment, EquipmentResponseDto.class))
+      .toList();
+  }
 
   @Override
   public EquipmentResponseDto getEquipmentById(Long id) {

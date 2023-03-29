@@ -6,7 +6,7 @@ import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.EquipmentMapper;
 import hr.algebra.fruity.model.Equipment;
 import hr.algebra.fruity.repository.EquipmentRepository;
-import hr.algebra.fruity.service.impl.EquipmentServiceImpl;
+import hr.algebra.fruity.service.impl.CurrentUserEquipmentService;
 import hr.algebra.fruity.utils.mother.dto.CreateEquipmentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.EquipmentResponseDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateEquipmentRequestDtoMother;
@@ -39,7 +39,7 @@ import static org.mockito.Mockito.times;
 public class EquipmentServiceUnitTest implements ServiceUnitTest {
 
   @InjectMocks
-  private EquipmentServiceImpl equipmentService;
+  private CurrentUserEquipmentService equipmentService;
 
   @Mock
   private ConversionService conversionService;

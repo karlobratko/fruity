@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class CurrentRequestUserServiceImpl implements CurrentRequestUserService {
+public class JwtCurrentRequestUserService implements CurrentRequestUserService {
 
   private final JwtTokenRequestExtractorService jwtTokenRequestExtractorService;
 
