@@ -46,8 +46,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EqualsAndHashCode(doNotUseGetters = true, onlyExplicitlyIncluded = true)
 @ToString(doNotUseGetters = true, onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE Work SET deleteDate = CURRENT_DATE WHERE id = ?", check = ResultCheckStyle.COUNT)
-@Where(clause = Work.Constants.deleteDateColumnName + " IS NULL")
+@SQLDelete(sql = "UPDATE works SET delete_date = CURRENT_DATE WHERE work_id = ?", check = ResultCheckStyle.COUNT)
+@Where(clause = "delete_date IS NULL")
 public class Work {
 
   @Id

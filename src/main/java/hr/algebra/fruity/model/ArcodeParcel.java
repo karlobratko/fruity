@@ -58,8 +58,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EqualsAndHashCode(doNotUseGetters = true, onlyExplicitlyIncluded = true)
 @ToString(doNotUseGetters = true, onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE ArcodeParcel SET deleteDate = CURRENT_DATE WHERE id = ?", check = ResultCheckStyle.COUNT)
-@Where(clause = ArcodeParcel.Constants.deleteDateColumnName + " IS NULL")
+@SQLDelete(sql = "UPDATE arcode_parcels SET delete_date = CURRENT_DATE WHERE arcode_parcel_id = ?", check = ResultCheckStyle.COUNT)
+@Where(clause = "delete_date IS NULL")
 public class ArcodeParcel {
 
   @Id

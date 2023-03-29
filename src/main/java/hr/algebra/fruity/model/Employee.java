@@ -52,8 +52,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 @EqualsAndHashCode(doNotUseGetters = true, onlyExplicitlyIncluded = true)
 @ToString(doNotUseGetters = true, onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
-@SQLDelete(sql = "UPDATE Employee SET deleteDate = CURRENT_DATE WHERE id = ?", check = ResultCheckStyle.COUNT)
-@Where(clause = Employee.Constants.deleteDateColumnName + " IS NULL")
+@SQLDelete(sql = "UPDATE employees SET delete_date = CURRENT_DATE WHERE employee_id = ?", check = ResultCheckStyle.COUNT)
+@Where(clause = "delete_date IS NULL")
 public class Employee implements UserDetails {
 
   @Id

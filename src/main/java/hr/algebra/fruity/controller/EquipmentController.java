@@ -27,7 +27,7 @@ public class EquipmentController {
 
   private final EquipmentService equipmentService;
 
-  @GetMapping(Mappings.getEquipmentByIdGetMapping)
+  @GetMapping(Mappings.getCurrentUserEquipmentByIdGetMapping)
   public ResponseEntity<ApiResponse<EquipmentResponseDto>> getEquipmentById(@PathVariable Long id) {
     return ResponseEntity.ok(
       ApiResponse.ok(
@@ -37,7 +37,7 @@ public class EquipmentController {
     );
   }
 
-  @PostMapping(Mappings.createEquipmentPostMapping)
+  @PostMapping(Mappings.createCurrentUserEquipmentPostMapping)
   public ResponseEntity<ApiResponse<EquipmentResponseDto>> createEquipment(@Valid @RequestBody CreateEquipmentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
@@ -47,7 +47,7 @@ public class EquipmentController {
     );
   }
 
-  @PutMapping(Mappings.updateEquipmentByIdPutMapping)
+  @PutMapping(Mappings.updateCurrentUserEquipmentByIdPutMapping)
   public ResponseEntity<ApiResponse<EquipmentResponseDto>> updateEquipmentById(@PathVariable Long id, @Valid @RequestBody UpdateEquipmentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
@@ -57,7 +57,7 @@ public class EquipmentController {
     );
   }
 
-  @DeleteMapping(Mappings.deleteEquipmentByIdDeleteMapping)
+  @DeleteMapping(Mappings.deleteCurrentUserEquipmentByIdDeleteMapping)
   public ResponseEntity<ApiResponse<?>> deleteEquipmentById(@PathVariable Long id) {
     equipmentService.deleteEquipmentById(id);
     return ResponseEntity
@@ -73,13 +73,15 @@ public class EquipmentController {
 
     public static final String requestMapping = ApplicationConstants.apiResourceManagementRequestMapping + "/equipment";
 
-    public static final String getEquipmentByIdGetMapping = "/{id}";
+    public static final String getAllCurrentUserEquipmentGetMapping = "";
 
-    public static final String createEquipmentPostMapping = "";
+    public static final String getCurrentUserEquipmentByIdGetMapping = "/{id}";
 
-    public static final String updateEquipmentByIdPutMapping = "/{id}";
+    public static final String createCurrentUserEquipmentPostMapping = "";
 
-    public static final String deleteEquipmentByIdDeleteMapping = "/{id}";
+    public static final String updateCurrentUserEquipmentByIdPutMapping = "/{id}";
+
+    public static final String deleteCurrentUserEquipmentByIdDeleteMapping = "/{id}";
 
   }
 
