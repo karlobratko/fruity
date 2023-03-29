@@ -25,32 +25,12 @@ public class UserController {
 
   private final UserService userService;
 
-  @GetMapping(Mappings.getUserByIdGetMapping)
-  public ResponseEntity<ApiResponse<FullUserResponseDto>> getUserById(@PathVariable Long id) {
-    return ResponseEntity.ok(
-      ApiResponse.ok(
-        userService.getUserById(id),
-        "Korisnik uspješno dohvaćen."
-      )
-    );
-  }
-
   @GetMapping(Mappings.getCurrentUserGetMapping)
   public ResponseEntity<ApiResponse<FullUserResponseDto>> getCurrentUser() {
     return ResponseEntity.ok(
       ApiResponse.ok(
         userService.getCurrentUser(),
         "Prijavljeni korisnik uspješno dohvaćen."
-      )
-    );
-  }
-
-  @PutMapping(Mappings.updateUserByIdPutMapping)
-  public ResponseEntity<ApiResponse<UserResponseDto>> updateUserById(@PathVariable Long id, @Valid @RequestBody UpdateUserRequestDto requestDto) {
-    return ResponseEntity.ok(
-      ApiResponse.ok(
-        userService.updateUserById(id, requestDto),
-        "Korisnik uspješno promijenjen."
       )
     );
   }
@@ -70,13 +50,9 @@ public class UserController {
 
     public static final String requestMapping = ApplicationConstants.apiUserManagementRequestMapping + "/users";
 
-    public static final String getUserByIdGetMapping = "/{id}";
+    public static final String getCurrentUserGetMapping = "";
 
-    public static final String getCurrentUserGetMapping = "/current";
-
-    public static final String updateUserByIdPutMapping = "/{id}";
-
-    public static final String updateCurrentUserPutMapping = "/current";
+    public static final String updateCurrentUserPutMapping = "";
 
   }
 

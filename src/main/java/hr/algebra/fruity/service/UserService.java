@@ -6,11 +6,7 @@ import hr.algebra.fruity.dto.response.UserResponseDto;
 
 public interface UserService {
 
-  FullUserResponseDto getUserById(Long id);
-
   FullUserResponseDto getCurrentUser();
-
-  UserResponseDto updateUserById(Long id, UpdateUserRequestDto requestDto);
 
   UserResponseDto updateCurrentUser(UpdateUserRequestDto requestDto);
 
