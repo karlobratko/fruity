@@ -7,7 +7,7 @@ import hr.algebra.fruity.mapper.UserMapper;
 import hr.algebra.fruity.repository.UserRepository;
 import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.UserService;
-import hr.algebra.fruity.validator.UserWithUpdateUserRequestDtoValidator;
+import hr.algebra.fruity.validator.UserWithUpdateUserRequestDtoWithValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.springframework.core.convert.ConversionService;
@@ -19,7 +19,7 @@ public class UserServiceImpl implements UserService {
 
   private final ConversionService conversionService;
 
-  private final UserWithUpdateUserRequestDtoValidator userWithUpdateUserRequestDtoValidator;
+  private final UserWithUpdateUserRequestDtoWithValidator userWithUpdateUserRequestDtoValidator;
 
   private final UserMapper userMapper;
 

@@ -5,6 +5,7 @@ import hr.algebra.fruity.dto.request.CreateEquipmentRequestDto;
 import hr.algebra.fruity.dto.request.UpdateEquipmentRequestDto;
 import hr.algebra.fruity.dto.response.ApiResponse;
 import hr.algebra.fruity.dto.response.EquipmentResponseDto;
+import hr.algebra.fruity.dto.response.FullEquipmentResponseDto;
 import hr.algebra.fruity.service.EquipmentService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -39,7 +40,7 @@ public class EquipmentController {
   }
 
   @GetMapping(Mappings.getEquipmentByIdGetMapping)
-  public ResponseEntity<ApiResponse<EquipmentResponseDto>> getEquipmentById(@PathVariable Long id) {
+  public ResponseEntity<ApiResponse<FullEquipmentResponseDto>> getEquipmentById(@PathVariable Long id) {
     return ResponseEntity.ok(
       ApiResponse.ok(
         equipmentService.getEquipmentById(id),
@@ -49,7 +50,7 @@ public class EquipmentController {
   }
 
   @PostMapping(Mappings.createEquipmentPostMapping)
-  public ResponseEntity<ApiResponse<EquipmentResponseDto>> createEquipment(@Valid @RequestBody CreateEquipmentRequestDto requestDto) {
+  public ResponseEntity<ApiResponse<FullEquipmentResponseDto>> createEquipment(@Valid @RequestBody CreateEquipmentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
         equipmentService.createEquipment(requestDto),
@@ -59,7 +60,7 @@ public class EquipmentController {
   }
 
   @PutMapping(Mappings.updateEquipmentByIdPutMapping)
-  public ResponseEntity<ApiResponse<EquipmentResponseDto>> updateEquipmentById(@PathVariable Long id, @Valid @RequestBody UpdateEquipmentRequestDto requestDto) {
+  public ResponseEntity<ApiResponse<FullEquipmentResponseDto>> updateEquipmentById(@PathVariable Long id, @Valid @RequestBody UpdateEquipmentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
         equipmentService.updateEquipmentById(id, requestDto),

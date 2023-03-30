@@ -1,6 +1,6 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.EquipmentResponseDto;
+import hr.algebra.fruity.dto.response.FullEquipmentResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.EquipmentMapper;
@@ -8,10 +8,11 @@ import hr.algebra.fruity.model.Equipment;
 import hr.algebra.fruity.repository.EquipmentRepository;
 import hr.algebra.fruity.service.impl.CurrentUserEquipmentService;
 import hr.algebra.fruity.utils.mother.dto.CreateEquipmentRequestDtoMother;
-import hr.algebra.fruity.utils.mother.dto.EquipmentResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.FullEquipmentResponseDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateEquipmentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.model.EquipmentMother;
 import hr.algebra.fruity.utils.mother.model.UserMother;
+import hr.algebra.fruity.validator.CreateEquipmentRequestDtoValidator;
 import hr.algebra.fruity.validator.EquipmentWithUpdateEquipmentRequestDtoValidator;
 import java.util.Optional;
 import lombok.val;
@@ -43,6 +44,9 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
 
   @Mock
   private ConversionService conversionService;
+
+  @Mock
+  private CreateEquipmentRequestDtoValidator createEquipmentRequestDtoValidator;
 
   @Mock
   private EquipmentWithUpdateEquipmentRequestDtoValidator equipmentWithUpdateEquipmentRequestDtoValidator;
@@ -119,8 +123,8 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       val loggedInUser = equipment.getUser();
       given(currentRequestUserService.getUser()).willReturn(loggedInUser);
       // ... ConversionService successfully converts from User to FullEquipmentResponseDto
-      val expectedResponseDto = EquipmentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(equipment), same(EquipmentResponseDto.class))).willReturn(expectedResponseDto);
+      val expectedResponseDto = FullEquipmentResponseDtoMother.complete().build();
+      given(conversionService.convert(same(equipment), same(FullEquipmentResponseDto.class))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getEquipmentById is called
@@ -146,14 +150,16 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... CreateEquipmentRequestDto
       val requestDto = CreateEquipmentRequestDtoMother.complete().build();
+      // CreateEquipmentRequestDtoValidator successfully validates CreateEquipmentRequestDto
+      willDoNothing().given(createEquipmentRequestDtoValidator).validate(same(requestDto));
       // ... ConversionService successfully converts from CreateEquipmentRequestDto to Equipment
       val equipment = EquipmentMother.complete().build();
       given(conversionService.convert(same(requestDto), same(Equipment.class))).willReturn(equipment);
       // ... EquipmentRepository will successfully save Equipment
       given(equipmentRepository.save(same(equipment))).willReturn(equipment);
-      // ... ConversionService successfully converts from Equipment to EquipmentResponseDto
-      val expectedResponseDto = EquipmentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(equipment), same(EquipmentResponseDto.class))).willReturn(expectedResponseDto);
+      // ... ConversionService successfully converts from Equipment to FullEquipmentResponseDto
+      val expectedResponseDto = FullEquipmentResponseDtoMother.complete().build();
+      given(conversionService.convert(same(equipment), same(FullEquipmentResponseDto.class))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... createEquipment is called
@@ -224,41 +230,6 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
     }
 
     @Test
-    @DisplayName("GIVEN id, UpdateEquipmentRequestDto, and unique name " +
-      "... THEN EquipmentResponseDto is returned")
-    public void GIVEN_idAndUpdateEquipmentRequestDtoAndUniqueOib_THEN_EquipmentResponseDto() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val equipment = EquipmentMother.complete().build();
-      given(equipmentRepository.findById(same(id))).willReturn(Optional.of(equipment));
-      // ... UpdateEquipmentRequestDto
-      val requestDto = UpdateEquipmentRequestDtoMother.complete().build();
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = equipment.getUser();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
-      // ... EquipmentWithUpdateEquipmentRequestDtoValidator successfully validates Equipment with UpdateEquipmentRequestDto
-      willDoNothing().given(equipmentWithUpdateEquipmentRequestDtoValidator).validate(same(equipment), same(requestDto));
-      // ... EquipmentMapper successfully partially updates Equipment with UpdateEquipmentRequestDto
-      given(equipmentMapper.partialUpdate(same(equipment), same(requestDto))).willReturn(equipment);
-      // ... EquipmentRepository successfully saves Equipment
-      given(equipmentRepository.save(same(equipment))).willReturn(equipment);
-      // ... ConversionService successfully converts from Equipment to EquipmentResponseDto
-      val expectedResponseDto = EquipmentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(equipment), same(EquipmentResponseDto.class))).willReturn(expectedResponseDto);
-
-      // WHEN
-      // ... updateEquipmentById is called
-      val responseDto = equipmentService.updateEquipmentById(id, requestDto);
-
-      // THEN
-      // ... EquipmentResponseDto is returned
-      and.then(responseDto)
-        .isNotNull()
-        .isEqualTo(expectedResponseDto);
-    }
-
-    @Test
     @DisplayName("GIVEN id and UpdateEquipmentRequestDto " +
       "... THEN EquipmentResponseDto is returned")
     public void GIVEN_idAndUpdateEquipmentRequestDto_THEN_EquipmentResponseDto() {
@@ -278,9 +249,9 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       given(equipmentMapper.partialUpdate(same(equipment), same(requestDto))).willReturn(equipment);
       // ... EquipmentRepository successfully saves Equipment
       given(equipmentRepository.save(same(equipment))).willReturn(equipment);
-      // ... ConversionService successfully converts from Equipment to EquipmentResponseDto
-      val expectedResponseDto = EquipmentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(equipment), same(EquipmentResponseDto.class))).willReturn(expectedResponseDto);
+      // ... ConversionService successfully converts from Equipment to FullEquipmentResponseDto
+      val expectedResponseDto = FullEquipmentResponseDtoMother.complete().build();
+      given(conversionService.convert(same(equipment), same(FullEquipmentResponseDto.class))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... updateEquipmentById is called

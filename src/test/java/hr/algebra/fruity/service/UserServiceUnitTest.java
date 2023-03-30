@@ -9,7 +9,7 @@ import hr.algebra.fruity.utils.mother.dto.FullUserResponseDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateUserRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UserResponseDtoMother;
 import hr.algebra.fruity.utils.mother.model.UserMother;
-import hr.algebra.fruity.validator.UserWithUpdateUserRequestDtoValidator;
+import hr.algebra.fruity.validator.UserWithUpdateUserRequestDtoWithValidator;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -37,7 +37,7 @@ public class UserServiceUnitTest implements ServiceUnitTest {
   private ConversionService conversionService;
 
   @Mock
-  private UserWithUpdateUserRequestDtoValidator userWithUpdateUserRequestDtoValidator;
+  private UserWithUpdateUserRequestDtoWithValidator userWithUpdateUserRequestDtoValidator;
 
   @Mock
   private UserMapper userMapper;

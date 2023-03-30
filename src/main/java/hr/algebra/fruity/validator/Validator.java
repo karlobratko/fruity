@@ -1,8 +1,7 @@
 package hr.algebra.fruity.validator;
 
-@FunctionalInterface
-public interface Validator<T, W> {
+public interface Validator<T> {
 
-  void validate(T target, W with);
+  void validate(T target);
 
 }

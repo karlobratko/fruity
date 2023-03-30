@@ -3,6 +3,8 @@ package hr.algebra.fruity.utils.mother.dto;
 import hr.algebra.fruity.dto.request.CreateEquipmentRequestDto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -14,7 +16,8 @@ public class CreateEquipmentRequestDtoMother {
       .name(Constants.instanceName)
       .productionYear(Constants.instanceProductionYear)
       .costPerHour(Constants.instanceCostPerHour)
-      .purchasePrice(Constants.instancePurchasePrice);
+      .purchasePrice(Constants.instancePurchasePrice)
+      .compatibleAttachmentFks(Constants.instanceCompatibleAttachmentFks);
   }
 
   public static class Constants {
@@ -26,6 +29,8 @@ public class CreateEquipmentRequestDtoMother {
     public static final BigDecimal instanceCostPerHour = BigDecimal.ZERO;
 
     public static final BigDecimal instancePurchasePrice = BigDecimal.ZERO;
+
+    public static final List<Long> instanceCompatibleAttachmentFks = new ArrayList<>();
 
   }
 

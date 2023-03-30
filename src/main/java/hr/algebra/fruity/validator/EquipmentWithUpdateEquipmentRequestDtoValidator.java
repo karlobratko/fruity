@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class EquipmentWithUpdateEquipmentRequestDtoValidator implements Validator<Equipment, UpdateEquipmentRequestDto> {
+public class EquipmentWithUpdateEquipmentRequestDtoValidator implements WithValidator<Equipment, UpdateEquipmentRequestDto> {
 
   private final EquipmentRepository equipmentRepository;
 

@@ -3,6 +3,7 @@ package hr.algebra.fruity.service.impl;
 import hr.algebra.fruity.dto.request.CreateEquipmentRequestDto;
 import hr.algebra.fruity.dto.request.UpdateEquipmentRequestDto;
 import hr.algebra.fruity.dto.response.EquipmentResponseDto;
+import hr.algebra.fruity.dto.response.FullEquipmentResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.EquipmentMapper;
@@ -10,6 +11,7 @@ import hr.algebra.fruity.model.Equipment;
 import hr.algebra.fruity.repository.EquipmentRepository;
 import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.EquipmentService;
+import hr.algebra.fruity.validator.CreateEquipmentRequestDtoValidator;
 import hr.algebra.fruity.validator.EquipmentWithUpdateEquipmentRequestDtoValidator;
 import java.util.List;
 import java.util.Objects;
@@ -23,6 +25,8 @@ import org.springframework.stereotype.Service;
 public class CurrentUserEquipmentService implements EquipmentService {
 
   private final ConversionService conversionService;
+
+  private final CreateEquipmentRequestDtoValidator createEquipmentRequestDtoValidator;
 
   private final EquipmentWithUpdateEquipmentRequestDtoValidator equipmentWithUpdateEquipmentRequestDtoValidator;
 
@@ -40,19 +44,21 @@ public class CurrentUserEquipmentService implements EquipmentService {
   }
 
   @Override
-  public EquipmentResponseDto getEquipmentById(Long id) {
-    return conversionService.convert(getEquipment(id), EquipmentResponseDto.class);
+  public FullEquipmentResponseDto getEquipmentById(Long id) {
+    return conversionService.convert(getEquipment(id), FullEquipmentResponseDto.class);
   }
 
   @Override
-  public EquipmentResponseDto createEquipment(CreateEquipmentRequestDto requestDto) {
+  public FullEquipmentResponseDto createEquipment(CreateEquipmentRequestDto requestDto) {
+    createEquipmentRequestDtoValidator.validate(requestDto);
+
     val equipment = equipmentRepository.save(Objects.requireNonNull(conversionService.convert(requestDto, Equipment.class)));
 
-    return conversionService.convert(equipment, EquipmentResponseDto.class);
+    return conversionService.convert(equipment, FullEquipmentResponseDto.class);
   }
 
   @Override
-  public EquipmentResponseDto updateEquipmentById(Long id, UpdateEquipmentRequestDto requestDto) {
+  public FullEquipmentResponseDto updateEquipmentById(Long id, UpdateEquipmentRequestDto requestDto) {
     val equipment = getEquipment(id);
 
     equipmentWithUpdateEquipmentRequestDtoValidator.validate(equipment, requestDto);
@@ -61,7 +67,7 @@ public class CurrentUserEquipmentService implements EquipmentService {
       equipmentRepository.save(
         equipmentMapper.partialUpdate(equipment, requestDto)
       ),
-      EquipmentResponseDto.class
+      FullEquipmentResponseDto.class
     );
   }
 

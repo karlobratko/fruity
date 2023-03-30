@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class UserWithUpdateUserRequestDtoValidator implements Validator<User, UpdateUserRequestDto> {
+public class UserWithUpdateUserRequestDtoWithValidator implements WithValidator<User, UpdateUserRequestDto> {
 
   private final UserRepository userRepository;
 
