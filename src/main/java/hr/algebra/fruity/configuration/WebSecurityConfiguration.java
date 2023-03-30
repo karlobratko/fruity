@@ -53,7 +53,7 @@ public class WebSecurityConfiguration {
   @Bean
   public UserDetailsService userDetailsService(EmployeeRepository employeeRepository) {
     return username -> employeeRepository.findByUsername(username)
-      .orElseThrow(() -> new UsernameNotFoundException("Korisničko ime %s ne postoji.".formatted(username)));
+      .orElseThrow(() -> new UsernameNotFoundException("Korisničko ime %s nije registrirano.".formatted(username)));
   }
 
   @Bean

@@ -122,9 +122,11 @@ public class JwtAuthenticationService implements AuthenticationService {
 
             if (employee.isLocked())
               throw new LockedException("Korisnički račun je zaključan.");
+
+            throw new BadCredentialsException("Nevažeća lozinka.");
           },
           () -> {
-            throw new BadCredentialsException("Nevažeće korisničko ime i lozinka.");
+            throw new BadCredentialsException("Korisničko ime %s nije registrirano.".formatted(requestDto.username()));
           }
         );
 
