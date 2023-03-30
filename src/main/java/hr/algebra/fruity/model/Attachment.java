@@ -88,7 +88,7 @@ public class Attachment {
   @Temporal(TemporalType.DATE)
   private LocalDate deleteDate;
 
-  @ManyToOne(optional = false, fetch = FetchType.LAZY)
+  @ManyToOne(optional = false, fetch = FetchType.EAGER)
   @JoinColumn(name = User.Constants.joinColumnName, nullable = false)
   private @NonNull User user;
 
