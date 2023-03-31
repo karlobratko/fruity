@@ -15,11 +15,10 @@ import lombok.val;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,6 +37,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -84,20 +85,26 @@ public class WebSecurityConfiguration {
   @Bean
   public CorsConfiguration corsConfiguration() {
     val corsConfiguration = new CorsConfiguration();
-    corsConfiguration.setAllowedHeaders(List.of(HttpHeaders.AUTHORIZATION, HttpHeaders.CACHE_CONTROL, HttpHeaders.CONTENT_TYPE));
     corsConfiguration.setAllowedOriginPatterns(List.of("*"));
-    corsConfiguration.setAllowedMethods(List.of(HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.DELETE.name()));
+    corsConfiguration.setAllowedHeaders(List.of("*"));
+    corsConfiguration.setAllowedMethods(List.of("*"));
     corsConfiguration.setAllowCredentials(true);
-    corsConfiguration.setExposedHeaders(List.of(HttpHeaders.AUTHORIZATION));
 
     return corsConfiguration;
+  }
+
+  @Bean
+  public CorsConfigurationSource corsConfigurationSource(CorsConfiguration corsConfiguration) {
+    val corsConfigurationSource = new UrlBasedCorsConfigurationSource();
+    corsConfigurationSource.registerCorsConfiguration("/**", corsConfiguration);
+    return corsConfigurationSource;
   }
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http, CorsConfiguration corsConfiguration, AuthenticationManager authenticationManager, AuthenticationProvider authenticationProvider, JwtAuthenticationFilter jwtAuthenticationFilter, CatchExceptionFilter catchExceptionFilter) throws Exception {
     return http
       .csrf(AbstractHttpConfigurer::disable)
-      .cors().configurationSource(request -> corsConfiguration).and()
+      .cors(Customizer.withDefaults())
       .authorizeHttpRequests(requests ->
         requests
           .requestMatchers(AuthenticationController.Mappings.requestMapping + "/**").permitAll()
