@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public record FullEquipmentResponseDto(
   Long id,
-  UUID uuid,
   String name,
   Integer productionYear,
   BigDecimal costPerHour,
@@ -22,8 +21,6 @@ public record FullEquipmentResponseDto(
   public static class Fields {
 
     public static final String id = "id";
-
-    public static final String uuid = "uuid";
 
     public static final String name = "name";
 

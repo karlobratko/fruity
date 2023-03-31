@@ -6,6 +6,7 @@ import hr.algebra.fruity.model.RefreshToken;
 import hr.algebra.fruity.properties.JwtProperties;
 import hr.algebra.fruity.repository.RefreshTokenRepository;
 import hr.algebra.fruity.service.RefreshTokenService;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   private final RefreshTokenRepository refreshTokenRepository;
 
   @Override
+  @Transactional
   public RefreshToken createRefreshToken() {
     val refreshToken = RefreshToken.builder().build();
     initializeRefreshToken(refreshToken);
@@ -29,6 +31,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   }
 
   @Override
+  @Transactional
   public RefreshToken refreshRefreshToken(UUID uuid) {
     val refreshToken = getRegistrationToken(uuid);
     initializeRefreshToken(refreshToken);

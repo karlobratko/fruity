@@ -14,6 +14,7 @@ import hr.algebra.fruity.model.Equipment;
 import hr.algebra.fruity.model.FruitCultivar;
 import hr.algebra.fruity.model.FruitSpecies;
 import hr.algebra.fruity.model.HarvestedFruitClass;
+import hr.algebra.fruity.model.MobileToken;
 import hr.algebra.fruity.model.Realisation;
 import hr.algebra.fruity.model.RealisationAgent;
 import hr.algebra.fruity.model.RealisationAttachment;
@@ -52,6 +53,7 @@ import hr.algebra.fruity.repository.EquipmentRepository;
 import hr.algebra.fruity.repository.FruitCultivarRepository;
 import hr.algebra.fruity.repository.FruitSpeciesRepository;
 import hr.algebra.fruity.repository.HarvestedFruitClassRepository;
+import hr.algebra.fruity.repository.MobileTokenRepository;
 import hr.algebra.fruity.repository.RealisationAgentRepository;
 import hr.algebra.fruity.repository.RealisationAttachmentRepository;
 import hr.algebra.fruity.repository.RealisationEquipmentRepository;
@@ -111,6 +113,8 @@ public class BootstrapDbRunner implements CommandLineRunner {
   private final RefreshTokenRepository refreshTokenRepository;
 
   private final RegistrationTokenRepository registrationTokenRepository;
+
+  private final MobileTokenRepository mobileTokenRepository;
 
   private final EmployeeRepository employeeRepository;
 
@@ -366,10 +370,14 @@ public class BootstrapDbRunner implements CommandLineRunner {
 
     // BEGIN INSERT REFRESH_TOKENS
     val refreshToken1 = RefreshToken.builder().expireDateTime(LocalDateTime.now().plusDays(1)).build();
+    val refreshToken2 = RefreshToken.builder().expireDateTime(LocalDateTime.now().plusDays(1)).build();
+    val refreshToken3 = RefreshToken.builder().expireDateTime(LocalDateTime.now().plusDays(1)).build();
+    val refreshToken4 = RefreshToken.builder().expireDateTime(LocalDateTime.now().plusDays(1)).build();
+    val refreshToken5 = RefreshToken.builder().expireDateTime(LocalDateTime.now().plusDays(1)).build();
 
     refreshTokenRepository.saveAll(
       List.of(
-        refreshToken1
+        refreshToken1, refreshToken2, refreshToken3, refreshToken4, refreshToken5
       )
     );
     // END INSERT REFRESH_TOKENS
@@ -384,6 +392,20 @@ public class BootstrapDbRunner implements CommandLineRunner {
     );
     // END INSERT REGISTRATION_TOKENS
 
+    // BEGIN INSERT MOBILE_TOKENS
+    val mobileToken1 = MobileToken.builder().build();
+    val mobileToken2 = MobileToken.builder().build();
+    val mobileToken3 = MobileToken.builder().build();
+    val mobileToken4 = MobileToken.builder().build();
+    val mobileToken5 = MobileToken.builder().build();
+
+    mobileTokenRepository.saveAll(
+      List.of(
+        mobileToken1, mobileToken2, mobileToken3, mobileToken4, mobileToken5
+      )
+    );
+    // END INSERT MOBILE_TOKENS
+
     // BEGIN INSERT EMPLOYEES
     val employee1 = Employee.builder()
       .user(user1)
@@ -395,15 +417,16 @@ public class BootstrapDbRunner implements CommandLineRunner {
       .costPerHour(BigDecimal.valueOf(6.50))
       .password(passwordEncoder.encode("Pa$$w0rd"))
       .role(employeeRole1)
-      .registrationToken(registrationToken1)
       .refreshToken(refreshToken1)
+      .registrationToken(registrationToken1)
+      .mobileToken(mobileToken1)
       .enabled(true)
       .locked(false)
       .build();
-    val employee2 = Employee.builder().user(user1).firstName("Drago").lastName("Bratko").costPerHour(BigDecimal.valueOf(6.50)).role(employeeRole2).enabled(true).locked(false).build();
-    val employee3 = Employee.builder().user(user1).firstName("Marija").lastName("Hajdinjak").costPerHour(BigDecimal.valueOf(4.25)).role(employeeRole2).enabled(true).locked(false).build();
-    val employee4 = Employee.builder().user(user1).firstName("Dora").lastName("Bratko").costPerHour(BigDecimal.valueOf(4.00)).role(employeeRole2).enabled(true).locked(false).build();
-    val employee5 = Employee.builder().user(user1).firstName("Karlo").lastName("Bratko").costPerHour(BigDecimal.valueOf(4.00)).role(employeeRole2).enabled(true).locked(false).build();
+    val employee2 = Employee.builder().user(user1).firstName("Drago").lastName("Bratko").costPerHour(BigDecimal.valueOf(6.50)).role(employeeRole2).refreshToken(refreshToken2).mobileToken(mobileToken2).enabled(true).locked(false).build();
+    val employee3 = Employee.builder().user(user1).firstName("Marija").lastName("Hajdinjak").costPerHour(BigDecimal.valueOf(4.25)).role(employeeRole2).refreshToken(refreshToken3).mobileToken(mobileToken3).enabled(true).locked(false).build();
+    val employee4 = Employee.builder().user(user1).firstName("Dora").lastName("Bratko").costPerHour(BigDecimal.valueOf(4.00)).role(employeeRole2).refreshToken(refreshToken4).mobileToken(mobileToken4).enabled(true).locked(false).build();
+    val employee5 = Employee.builder().user(user1).firstName("Karlo").lastName("Bratko").costPerHour(BigDecimal.valueOf(4.00)).role(employeeRole2).refreshToken(refreshToken5).mobileToken(mobileToken5).enabled(true).locked(false).build();
 
     employeeRepository.saveAll(
       List.of(

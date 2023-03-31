@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ApplicationConstants {
 
+  public static final String applicationName = "fruity";
+
   public static final String apiRequestMapping = "/api/v1";
 
   public static final String apiUserManagementRequestMapping = apiRequestMapping + "/user-management";

@@ -13,7 +13,6 @@ public class EquipmentToEquipmentResponseDtoConverter implements Converter<Equip
   public EquipmentResponseDto convert(@NonNull Equipment source) {
     return new EquipmentResponseDto(
       source.getId(),
-      source.getUuid(),
       source.getName(),
       source.getProductionYear(),
       source.getCostPerHour(),

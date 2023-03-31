@@ -1,7 +1,5 @@
 package hr.algebra.fruity.dto.request;
 
-import hr.algebra.fruity.constraints.UniqueEmail;
-import hr.algebra.fruity.constraints.UniqueOib;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -24,11 +22,9 @@ public record RegisterRequestDto(
   @NotNull(message = "Email je obavezno polje.")
   @Size(max = 254, message = "Email mora biti duljine maksimalno 254 znakova.")
   @Email(message = "Email mora biti važeći email.")
-  @UniqueEmail
   String email,
   @NotNull(message = "OIB je obavezno polje.")
   @Size(min = 11, max = 11, message = "OIB mora biti duljine 11 znakova.")
-  @UniqueOib
   String oib,
   @NotNull(message = "Lozinka je obavezno polje.")
   @Size(min = 8, message = "Lozinka mora biti duljine minimalno 8 i maksimalno 250 znakova.")

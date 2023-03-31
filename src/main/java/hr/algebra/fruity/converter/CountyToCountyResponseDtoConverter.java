@@ -13,7 +13,6 @@ public class CountyToCountyResponseDtoConverter implements Converter<County, Cou
   public CountyResponseDto convert(@NonNull County source) {
     return new CountyResponseDto(
       source.getId(),
-      source.getUuid(),
       source.getAbbreviation(),
       source.getName()
     );

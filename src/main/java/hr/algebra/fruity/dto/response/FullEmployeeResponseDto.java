@@ -9,26 +9,20 @@ import lombok.NoArgsConstructor;
 @Builder
 public record FullEmployeeResponseDto(
   Long id,
-  UUID uuid,
-  UserResponseDto user,
   String firstName,
   String lastName,
   String username,
   String email,
   String phoneNumber,
   BigDecimal costPerHour,
-  EmployeeRoleResponseDto employeeRole,
-  RegistrationTokenResponseDto registrationToken
+  String role,
+  UUID mobileToken
 ) {
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Fields {
 
     public static final String id = "id";
-
-    public static final String uuid = "uuid";
-
-    public static final String user = "user";
 
     public static final String firstName = "firstName";
 
@@ -42,9 +36,9 @@ public record FullEmployeeResponseDto(
 
     public static final String costPerHour = "costPerHour";
 
-    public static final String employeeRole = "employeeRole";
+    public static final String role = "role";
 
-    public static final String registrationToken = "registrationToken";
+    public static final String mobileToken = "mobileToken";
 
   }
 

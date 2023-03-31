@@ -14,7 +14,6 @@ public class UserToUserResponseDtoConverter implements Converter<User, UserRespo
   public UserResponseDto convert(@NonNull User source) {
     return new UserResponseDto(
       source.getId(),
-      source.getUuid(),
       source.getName(),
       source.getOib(),
       source.getPhoneNumber(),

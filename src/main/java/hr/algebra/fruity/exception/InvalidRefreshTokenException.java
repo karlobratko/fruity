@@ -3,7 +3,7 @@ package hr.algebra.fruity.exception;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
-public class InvalidRefreshTokenException  extends NotFoundException {
+public class InvalidRefreshTokenException extends NotFoundException {
 
   public InvalidRefreshTokenException() {
     super(Constants.exceptionMessageFormat);

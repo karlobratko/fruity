@@ -8,6 +8,7 @@ import hr.algebra.fruity.repository.UserRepository;
 import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.UserService;
 import hr.algebra.fruity.validator.UserWithUpdateUserRequestDtoWithValidator;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import org.springframework.core.convert.ConversionService;
@@ -33,6 +34,7 @@ public class UserServiceImpl implements UserService {
   }
 
   @Override
+  @Transactional
   public UserResponseDto updateCurrentUser(UpdateUserRequestDto requestDto) {
     val user = currentRequestUserService.getUser();
 

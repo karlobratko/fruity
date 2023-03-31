@@ -7,6 +7,7 @@ import hr.algebra.fruity.model.RegistrationToken;
 import hr.algebra.fruity.properties.RegistrationTokenProperties;
 import hr.algebra.fruity.repository.RegistrationTokenRepository;
 import hr.algebra.fruity.service.RegistrationTokenService;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class RegistrationTokenServiceImpl implements RegistrationTokenService {
   private final RegistrationTokenRepository registrationTokenRepository;
 
   @Override
+  @Transactional
   public RegistrationToken createRegistrationToken() {
     val token = RegistrationToken.builder().build();
     initializeRegistrationToken(token);
@@ -30,6 +32,7 @@ public class RegistrationTokenServiceImpl implements RegistrationTokenService {
   }
 
   @Override
+  @Transactional
   public RegistrationToken confirmRegistrationToken(UUID uuid) {
     val registrationToken = getRegistrationTokenAndValidateIfConfirmed(uuid);
 
@@ -42,6 +45,7 @@ public class RegistrationTokenServiceImpl implements RegistrationTokenService {
   }
 
   @Override
+  @Transactional
   public RegistrationToken refreshRegistrationToken(UUID uuid) {
     val registrationToken = getRegistrationTokenAndValidateIfConfirmed(uuid);
 

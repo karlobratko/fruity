@@ -13,8 +13,6 @@ public class EmployeeRoleToEmployeeRoleResponseDtoConverter implements Converter
   public EmployeeRoleResponseDto convert(@NonNull EmployeeRole source) {
     return new EmployeeRoleResponseDto(
       source.getId(),
-      source.getUuid(),
-      source.getName(),
       source.getDisplayName()
     );
   }

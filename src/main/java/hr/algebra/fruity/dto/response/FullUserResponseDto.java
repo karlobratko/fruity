@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public record FullUserResponseDto(
   Long id,
-  UUID uuid,
   String name,
   String oib,
   String phoneNumber,
@@ -20,8 +19,6 @@ public record FullUserResponseDto(
   public static class Fields {
 
     public static final String id = "id";
-
-    public static final String uuid = "uuid";
 
     public static final String name = "name";
 

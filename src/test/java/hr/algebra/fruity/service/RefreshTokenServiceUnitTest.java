@@ -32,7 +32,7 @@ import static org.mockito.Mockito.times;
 @ExtendWith(MockitoExtension.class)
 @DisplayName("RefreshToken Unit Test")
 @SuppressWarnings("static-access")
-public class RefreshTokenServiceUnitTest {
+public class RefreshTokenServiceUnitTest implements ServiceUnitTest {
 
   @InjectMocks
   private RefreshTokenServiceImpl refreshTokenService;
@@ -61,12 +61,12 @@ public class RefreshTokenServiceUnitTest {
 
       // WHEN
       // ... createRefreshToken is called
-      val registrationToken = refreshTokenService.createRefreshToken();
+      val refreshToken = refreshTokenService.createRefreshToken();
 
       // THEN
       // ... RefreshToken
       then(jwtProperties).should(times(1)).refreshValidityDurationInMs();
-      and.then(registrationToken)
+      and.then(refreshToken)
         .isNotNull()
         .isEqualTo(expectedRefreshToken);
     }

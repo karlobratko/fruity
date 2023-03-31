@@ -1,5 +1,6 @@
 package hr.algebra.fruity.service.impl;
 
+import hr.algebra.fruity.constants.ApplicationConstants;
 import hr.algebra.fruity.converter.EmployeeToJwtDtoConverter;
 import hr.algebra.fruity.exception.AccessTokenExpiredException;
 import hr.algebra.fruity.exception.InvalidAccessTokenException;
@@ -14,7 +15,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -62,14 +62,13 @@ public class JwtTokenServiceImpl implements JwtTokenService {
   }
 
   @Override
-  public boolean isValid(String token, UserDetails userDetails) {
-    return getSubject(token).equals(userDetails.getUsername()) && !isExpired(token);
+  public boolean isValid(String token, Employee employee) {
+    return !isExpired(token);
   }
 
   @Override
   public String generate(Employee employee) {
     return generate(
-      employee.getUsername(),
       ReflectionUtils.objectToMap(
         Objects.requireNonNull(employeeToJwtDtoConverter.convert(employee))
       )
@@ -77,13 +76,13 @@ public class JwtTokenServiceImpl implements JwtTokenService {
   }
 
   @Override
-  public String generate(String subject, Map<String, Object> claims) {
+  public String generate(Map<String, Object> claims) {
     val now = Instant.now();
     val jwtClaimsSet = JwtClaimsSet.builder()
       .issuer("self")
       .issuedAt(now)
       .expiresAt(now.plus(jwtProperties.validityDurationInMs().toMillis(), ChronoUnit.MILLIS))
-      .subject(subject)
+      .subject(ApplicationConstants.applicationName)
       .claims(stringObjectMap -> stringObjectMap.putAll(claims))
       .build();
     return jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();

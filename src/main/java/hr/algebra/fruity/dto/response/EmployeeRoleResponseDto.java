@@ -1,6 +1,5 @@
 package hr.algebra.fruity.dto.response;
 
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -8,9 +7,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public record EmployeeRoleResponseDto(
   Integer id,
-  UUID uuid,
-  String name,
-  String displayName
+  String name
 ) {
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -18,11 +15,7 @@ public record EmployeeRoleResponseDto(
 
     public static final String id = "id";
 
-    public static final String uuid = "uuid";
-
     public static final String name = "name";
-
-    public static final String displayName = "displayName";
 
   }
 

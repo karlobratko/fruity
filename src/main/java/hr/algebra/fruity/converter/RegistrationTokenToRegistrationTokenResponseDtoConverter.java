@@ -12,11 +12,8 @@ public class RegistrationTokenToRegistrationTokenResponseDtoConverter implements
   @Override
   public RegistrationTokenResponseDto convert(@NonNull RegistrationToken source) {
     return new RegistrationTokenResponseDto(
-      source.getId(),
       source.getUuid(),
-      source.getCreateDateTime(),
-      source.getExpireDateTime(),
-      source.getConfirmDateTime()
+      source.getExpireDateTime()
     );
   }
 

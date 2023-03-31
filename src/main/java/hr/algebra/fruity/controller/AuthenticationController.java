@@ -2,13 +2,13 @@ package hr.algebra.fruity.controller;
 
 import hr.algebra.fruity.constants.ApplicationConstants;
 import hr.algebra.fruity.dto.request.ConfirmRegistrationRequestDto;
+import hr.algebra.fruity.dto.request.LoginMobileRequestDto;
 import hr.algebra.fruity.dto.request.LoginRequestDto;
 import hr.algebra.fruity.dto.request.RefreshTokenRequestDto;
 import hr.algebra.fruity.dto.request.RegisterRequestDto;
 import hr.algebra.fruity.dto.request.ResendRegistrationRequestDto;
 import hr.algebra.fruity.dto.response.ApiResponse;
 import hr.algebra.fruity.dto.response.AuthenticationResponseDto;
-import hr.algebra.fruity.dto.response.FullEmployeeResponseDto;
 import hr.algebra.fruity.dto.response.RegistrationTokenResponseDto;
 import hr.algebra.fruity.service.AuthenticationService;
 import jakarta.validation.Valid;
@@ -30,12 +30,12 @@ public class AuthenticationController {
   private final AuthenticationService authenticationService;
 
   @PostMapping(Mappings.registerPostMapping)
-  public ResponseEntity<ApiResponse<FullEmployeeResponseDto>> register(@Valid @RequestBody RegisterRequestDto requestDto) {
+  public ResponseEntity<ApiResponse<?>> register(@Valid @RequestBody RegisterRequestDto requestDto) {
+    authenticationService.register(requestDto);
     return ResponseEntity
       .status(HttpStatus.CREATED)
       .body(
         ApiResponse.created(
-          authenticationService.register(requestDto),
           "Registracija uspješna."
         )
       );
@@ -73,6 +73,17 @@ public class AuthenticationController {
     );
   }
 
+  @PostMapping(Mappings.loginMobilePostMapping)
+  public ResponseEntity<ApiResponse<AuthenticationResponseDto>> loginMobile(@Valid @RequestBody LoginMobileRequestDto requestDto) {
+    return ResponseEntity.ok(
+      ApiResponse.ok(
+        authenticationService.loginMobile(requestDto),
+        "Prijava uspješna."
+      )
+    );
+  }
+
+
   @PostMapping(Mappings.refreshTokenPostMapping)
   public ResponseEntity<ApiResponse<AuthenticationResponseDto>> refreshToken(@Valid @RequestBody RefreshTokenRequestDto requestDto) {
     return ResponseEntity.ok(
@@ -95,6 +106,8 @@ public class AuthenticationController {
     public static final String resendRegistrationTokenPostMapping = "/resend-registration-token";
 
     public static final String loginPostMapping = "/login";
+
+    public static final String loginMobilePostMapping = "/login-mobile";
 
     public static final String refreshTokenPostMapping = "/refresh-token";
 

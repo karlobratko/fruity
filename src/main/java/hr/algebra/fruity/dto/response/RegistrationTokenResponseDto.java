@@ -8,25 +8,16 @@ import lombok.NoArgsConstructor;
 
 @Builder
 public record RegistrationTokenResponseDto(
-  Long id,
-  UUID token,
-  LocalDateTime createDateTime,
-  LocalDateTime expireDateTime,
-  LocalDateTime confirmDateTime
+  UUID registrationToken,
+  LocalDateTime expireDateTime
 ) {
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Fields {
 
-    public static final String id = "id";
-
-    public static final String token = "token";
-
-    public static final String createDateTime = "createDateTime";
+    public static final String registrationToken = "registrationToken";
 
     public static final String expireDateTime = "expireDateTime";
-
-    public static final String confirmDateTime = "confirmDateTime";
 
   }
 

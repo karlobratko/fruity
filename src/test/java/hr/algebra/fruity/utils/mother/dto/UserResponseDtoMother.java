@@ -1,7 +1,6 @@
 package hr.algebra.fruity.utils.mother.dto;
 
 import hr.algebra.fruity.dto.response.UserResponseDto;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -11,7 +10,6 @@ public class UserResponseDtoMother {
   public static UserResponseDto.UserResponseDtoBuilder complete() {
     return UserResponseDto.builder()
       .id(Constants.instanceId)
-      .uuid(Constants.instanceUuid)
       .name(Constants.instanceName)
       .oib(Constants.instanceOib)
       .phoneNumber(Constants.instancePhoneNumber)
@@ -23,8 +21,6 @@ public class UserResponseDtoMother {
   public static class Constants {
 
     public static final Long instanceId = 1L;
-
-    public static final UUID instanceUuid = UUID.randomUUID();
 
     public static final String instanceName = "name";
 

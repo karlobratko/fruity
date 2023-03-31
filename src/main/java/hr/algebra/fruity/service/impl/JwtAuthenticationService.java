@@ -1,12 +1,12 @@
 package hr.algebra.fruity.service.impl;
 
 import hr.algebra.fruity.dto.request.ConfirmRegistrationRequestDto;
+import hr.algebra.fruity.dto.request.LoginMobileRequestDto;
 import hr.algebra.fruity.dto.request.LoginRequestDto;
 import hr.algebra.fruity.dto.request.RefreshTokenRequestDto;
 import hr.algebra.fruity.dto.request.RegisterRequestDto;
 import hr.algebra.fruity.dto.request.ResendRegistrationRequestDto;
 import hr.algebra.fruity.dto.response.AuthenticationResponseDto;
-import hr.algebra.fruity.dto.response.FullEmployeeResponseDto;
 import hr.algebra.fruity.dto.response.RegistrationTokenResponseDto;
 import hr.algebra.fruity.exception.UsernameNotFoundException;
 import hr.algebra.fruity.model.Employee;
@@ -17,8 +17,10 @@ import hr.algebra.fruity.repository.UserRepository;
 import hr.algebra.fruity.service.AuthenticationService;
 import hr.algebra.fruity.service.EmailComposerService;
 import hr.algebra.fruity.service.EmailSenderService;
+import hr.algebra.fruity.service.MobileTokenService;
 import hr.algebra.fruity.service.RefreshTokenService;
 import hr.algebra.fruity.service.RegistrationTokenService;
+import hr.algebra.fruity.validator.RegisterRequestDtoValidator;
 import jakarta.transaction.Transactional;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,8 @@ public class JwtAuthenticationService implements AuthenticationService {
 
   private final ConversionService conversionService;
 
+  private final RegisterRequestDtoValidator registerRequestDtoValidator;
+
   private final AuthenticationManager authenticationManager;
 
   private final UserRepository userRepository;
@@ -52,26 +56,27 @@ public class JwtAuthenticationService implements AuthenticationService {
 
   private final RefreshTokenService refreshTokenService;
 
+  private final MobileTokenService mobileTokenService;
+
   @Override
   @Transactional
-  public FullEmployeeResponseDto register(RegisterRequestDto requestDto) {
+  public void register(RegisterRequestDto requestDto) {
+    registerRequestDtoValidator.validate(requestDto);
+
     val user = userRepository.save(
       Objects.requireNonNull(conversionService.convert(requestDto, User.class))
     );
 
     val registrationToken = registrationTokenService.createRegistrationToken();
 
-    val refreshToken = refreshTokenService.createRefreshToken();
-
     val employee = Objects.requireNonNull(conversionService.convert(requestDto, Employee.class));
     employee.setUser(user);
     employee.setRegistrationToken(registrationToken);
-    employee.setRefreshToken(refreshToken);
+    employee.setRefreshToken(refreshTokenService.createRefreshToken());
+    employee.setMobileToken(mobileTokenService.createMobileToken());
     employeeRepository.save(employee);
 
     composeAndSendConfirmRegistrationEmail(employee, registrationToken, requestDto.confirmRegistrationUrl());
-
-    return conversionService.convert(employee, FullEmployeeResponseDto.class);
   }
 
   @Override
@@ -135,6 +140,14 @@ public class JwtAuthenticationService implements AuthenticationService {
   }
 
   @Override
+  public AuthenticationResponseDto loginMobile(LoginMobileRequestDto requestDto) {
+    val mobileToken = mobileTokenService.verifyMobileToken(requestDto.mobileToken());
+
+    return conversionService.convert(mobileToken.getEmployee(), AuthenticationResponseDto.class);
+  }
+
+  @Override
+  @Transactional
   public AuthenticationResponseDto refreshToken(RefreshTokenRequestDto requestDto) {
     val refreshToken = refreshTokenService.verifyRefreshToken(requestDto.refreshToken());
 

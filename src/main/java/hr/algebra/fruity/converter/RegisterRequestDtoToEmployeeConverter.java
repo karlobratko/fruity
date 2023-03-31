@@ -1,10 +1,9 @@
 package hr.algebra.fruity.converter;
 
 import hr.algebra.fruity.dto.request.RegisterRequestDto;
-import hr.algebra.fruity.exception.EmployeeRoleExpectationException;
 import hr.algebra.fruity.model.Employee;
 import hr.algebra.fruity.model.codebook.EmployeeRoles;
-import hr.algebra.fruity.repository.EmployeeRoleRepository;
+import hr.algebra.fruity.service.EmployeeRoleService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
@@ -17,7 +16,7 @@ public class RegisterRequestDtoToEmployeeConverter implements Converter<Register
 
   private final PasswordEncoder passwordEncoder;
 
-  private final EmployeeRoleRepository employeeRoleRepository;
+  private final EmployeeRoleService employeeRoleService;
 
   @Override
   public Employee convert(@NonNull RegisterRequestDto source) {
@@ -27,7 +26,7 @@ public class RegisterRequestDtoToEmployeeConverter implements Converter<Register
       .username(source.username())
       .email(source.email())
       .password(passwordEncoder.encode(source.password()))
-      .role(employeeRoleRepository.findByName(EmployeeRoles.ROLE_MANAGER.name()).orElseThrow(() -> new EmployeeRoleExpectationException(EmployeeRoles.ROLE_PERFORMER)))
+      .role(employeeRoleService.getEmployeeRole(EmployeeRoles.ROLE_MANAGER))
       .build();
   }
 

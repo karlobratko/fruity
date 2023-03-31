@@ -18,7 +18,6 @@ public class UserToFullUserResponseDtoConverter implements Converter<User, FullU
   public FullUserResponseDto convert(@NonNull User source) {
     return new FullUserResponseDto(
       source.getId(),
-      source.getUuid(),
       source.getName(),
       source.getOib(),
       source.getPhoneNumber(),

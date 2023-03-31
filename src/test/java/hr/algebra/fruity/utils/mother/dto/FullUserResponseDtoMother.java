@@ -2,7 +2,6 @@ package hr.algebra.fruity.utils.mother.dto;
 
 import hr.algebra.fruity.dto.response.CountyResponseDto;
 import hr.algebra.fruity.dto.response.FullUserResponseDto;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -12,7 +11,6 @@ public class FullUserResponseDtoMother {
   public static FullUserResponseDto.FullUserResponseDtoBuilder complete() {
     return FullUserResponseDto.builder()
       .id(Constants.instanceId)
-      .uuid(Constants.instanceUuid)
       .name(Constants.instanceName)
       .oib(Constants.instanceOib)
       .phoneNumber(Constants.instancePhoneNumber)
@@ -24,8 +22,6 @@ public class FullUserResponseDtoMother {
   public static class Constants {
 
     public static final Long instanceId = 1L;
-
-    public static final UUID instanceUuid = UUID.randomUUID();
 
     public static final String instanceName = "name";
 

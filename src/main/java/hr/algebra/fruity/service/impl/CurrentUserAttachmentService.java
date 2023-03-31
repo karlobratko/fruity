@@ -12,6 +12,7 @@ import hr.algebra.fruity.service.AttachmentService;
 import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.validator.AttachmentWithUpdateAttachmentRequestDtoValidator;
 import hr.algebra.fruity.validator.CreateAttachmentRequestDtoValidator;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,7 @@ public class CurrentUserAttachmentService implements AttachmentService {
   }
 
   @Override
+  @Transactional
   public AttachmentResponseDto createAttachment(CreateAttachmentRequestDto requestDto) {
     createAttachmentRequestDtoValidator.validate(requestDto);
 
@@ -57,6 +59,7 @@ public class CurrentUserAttachmentService implements AttachmentService {
   }
 
   @Override
+  @Transactional
   public AttachmentResponseDto updateAttachmentById(Long id, UpdateAttachmentRequestDto requestDto) {
     val attachment = getAttachment(id);
 
@@ -71,6 +74,7 @@ public class CurrentUserAttachmentService implements AttachmentService {
   }
 
   @Override
+  @Transactional
   public void deleteAttachmentById(Long id) {
     attachmentRepository.delete(getAttachment(id));
   }

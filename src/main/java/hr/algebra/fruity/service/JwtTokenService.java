@@ -4,7 +4,6 @@ import hr.algebra.fruity.model.Employee;
 import java.time.Instant;
 import java.util.Map;
 import java.util.function.Function;
-import org.springframework.security.core.userdetails.UserDetails;
 
 public interface JwtTokenService {
 
@@ -18,12 +17,12 @@ public interface JwtTokenService {
 
   <T> T getClaim(String token, String claim);
 
-  boolean isValid(String token, UserDetails userDetails);
+  boolean isValid(String token, Employee employee);
 
   boolean isExpired(String token);
 
   String generate(Employee employee);
 
-  String generate(String subject, Map<String, Object> claims);
+  String generate(Map<String, Object> claims);
 
 }

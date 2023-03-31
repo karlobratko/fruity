@@ -1,8 +1,8 @@
 package hr.algebra.fruity.service;
 
 import hr.algebra.fruity.dto.response.AuthenticationResponseDto;
-import hr.algebra.fruity.dto.response.FullEmployeeResponseDto;
 import hr.algebra.fruity.dto.response.RegistrationTokenResponseDto;
+import hr.algebra.fruity.model.Email;
 import hr.algebra.fruity.model.Employee;
 import hr.algebra.fruity.model.User;
 import hr.algebra.fruity.repository.EmployeeRepository;
@@ -10,7 +10,7 @@ import hr.algebra.fruity.repository.UserRepository;
 import hr.algebra.fruity.service.impl.JwtAuthenticationService;
 import hr.algebra.fruity.utils.mother.dto.AuthenticationResponseDtoMother;
 import hr.algebra.fruity.utils.mother.dto.ConfirmRegistrationRequestDtoMother;
-import hr.algebra.fruity.utils.mother.dto.FullEmployeeResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.LoginMobileRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.LoginRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.RefreshTokenRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.RegisterRequestDtoMother;
@@ -18,11 +18,14 @@ import hr.algebra.fruity.utils.mother.dto.RegistrationTokenResponseDtoMother;
 import hr.algebra.fruity.utils.mother.dto.ResendRegistrationRequestDtoMother;
 import hr.algebra.fruity.utils.mother.model.EmailMother;
 import hr.algebra.fruity.utils.mother.model.EmployeeMother;
+import hr.algebra.fruity.utils.mother.model.MobileTokenMother;
 import hr.algebra.fruity.utils.mother.model.RefreshTokenMother;
 import hr.algebra.fruity.utils.mother.model.RegistrationTokenMother;
 import hr.algebra.fruity.utils.mother.model.UserMother;
+import hr.algebra.fruity.validator.RegisterRequestDtoValidator;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -41,9 +44,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
 import static org.assertj.core.api.BDDAssertions.and;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthenticationService Unit Test")
@@ -55,6 +62,9 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
 
   @Mock
   private ConversionService conversionService;
+
+  @Mock
+  private RegisterRequestDtoValidator registerRequestDtoValidator;
 
   @Mock
   private AuthenticationManager authenticationManager;
@@ -77,36 +87,41 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
   @Mock
   private RefreshTokenService refreshTokenService;
 
+  @Mock
+  private MobileTokenService mobileTokenService;
+
   @Nested
   @DisplayName("... WHEN register is called")
   public class WHEN_register {
 
     @Test
     @DisplayName("GIVEN RegisterRequestDto " +
-      "... THEN FullEmployeeResponseDto is returned")
+      "... THEN email sent")
     public void GIVEN_RegisterRequestDto_THEN_FullEmployeeResponseDto() {
       // GIVEN
       // ... RegisterRequestDto
       val requestDto = RegisterRequestDtoMother.complete().build();
+      // ... RegisterRequestDtoValidator successfully validates RegisterRequestDto
+      willDoNothing().given(registerRequestDtoValidator).validate(requestDto);
       // ... ConversionService successfully converts from RegisterRequestDto to User
       val user = UserMother.complete().build();
       given(conversionService.convert(same(requestDto), same(User.class))).willReturn(user);
       // ... UserRepository successfully saves User
       given(userRepository.save(same(user))).willReturn(user);
+      // ... ConversionService successfully converts from RegisterRequestDto to Employee
+      val employee = EmployeeMother.complete().user(null).registrationToken(null).build();
+      given(conversionService.convert(same(requestDto), same(Employee.class))).willReturn(employee);
       // ... RegistrationTokenRepository successfully saves RegistrationToken
       val registrationToken = RegistrationTokenMother.complete().build();
       given(registrationTokenService.createRegistrationToken()).willReturn(registrationToken);
       // ... RefreshTokenService successfully saves RefreshToken
       val refreshToken = RefreshTokenMother.complete().build();
-      given(registrationTokenService.createRegistrationToken()).willReturn(registrationToken);
-      // ... ConversionService successfully converts from RegisterRequestDto to Employee
-      val employee = EmployeeMother.complete().user(null).registrationToken(null).build();
-      given(conversionService.convert(same(requestDto), same(Employee.class))).willReturn(employee);
+      given(refreshTokenService.createRefreshToken()).willReturn(refreshToken);
+      // ... MobileTokenService successfully saves RefreshToken
+      val mobileToken = MobileTokenMother.complete().build();
+      given(mobileTokenService.createMobileToken()).willReturn(mobileToken);
       // ... EmployeeRepository successfully saves Employee
       given(employeeRepository.save(same(employee))).willReturn(employee);
-      // ... ConversionService successfully converts from Employee to FullEmployeeResponseDto
-      val expectedResponseDto = FullEmployeeResponseDtoMother.complete().build();
-      given(conversionService.convert(same(employee), same(FullEmployeeResponseDto.class))).willReturn(expectedResponseDto);
       // ... EmailComposerService successfully composes Email given Employee, String, and UUID
       val email = EmailMother.complete().build();
       given(emailComposerService.composeConfirmRegistrationEmail(same(employee), same(requestDto.confirmRegistrationUrl()), same(registrationToken.getUuid()))).willReturn(email);
@@ -115,17 +130,16 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
 
       // WHEN
       // ... register is called
-      val responseDto = authenticationService.register(requestDto);
+      authenticationService.register(requestDto);
 
       // THEN
       // ... FullEmployeeResponseDto is returned
+      then(emailComposerService).should(times(1)).composeConfirmRegistrationEmail(any(Employee.class), anyString(), any(UUID.class));
+      then(emailSenderService).should(times(1)).send(any(Email.class));
       and.then(employee).satisfies(it -> {
         and.then(it.getUser()).isNotNull();
         and.then(it.getRegistrationToken()).isNotNull();
       });
-      and.then(responseDto)
-        .isNotNull()
-        .isEqualTo(expectedResponseDto);
     }
 
   }
@@ -237,7 +251,7 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       // ... BadCredentialsException is thrown
       and.then(caughtException())
         .isInstanceOf(BadCredentialsException.class)
-        .hasMessage("Nevažeće korisničko ime i lozinka.")
+        .hasMessage("Korisničko ime %s nije registrirano.".formatted(requestDto.username()))
         .hasNoCause();
     }
 
@@ -318,6 +332,37 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       // WHEN
       // ... login is called
       val responseDto = authenticationService.login(requestDto);
+
+      // THEN
+      // ... AuthenticationResponseDto is returned
+      and.then(responseDto)
+        .isNotNull()
+        .isEqualTo(expectedResponseDto);
+    }
+
+  }
+
+  @Nested
+  @DisplayName("... WHEN loginMobile is called")
+  public class WHEN_loginMobile {
+
+    @Test
+    @DisplayName("GIVEN LoginMobileRequestDto " +
+      "... THEN AuthenticationResponseDto is returned")
+    public void GIVEN_LoginMobileRequestDto_THEN_AuthenticationResponseDto() {
+      // GIVEN
+      // ... LoginMobileRequestDto
+      val requestDto = LoginMobileRequestDtoMother.complete().build();
+      // ... MobileTokenService successfully verifies mobile
+      val mobileToken = MobileTokenMother.complete().build();
+      given(mobileTokenService.verifyMobileToken(same(requestDto.mobileToken()))).willReturn(mobileToken);
+      // ... ConversionService successfully converts from Employee to AuthenticationResponseDto
+      val expectedResponseDto = AuthenticationResponseDtoMother.complete().build();
+      given(conversionService.convert(same(mobileToken.getEmployee()), same(AuthenticationResponseDto.class))).willReturn(expectedResponseDto);
+
+      // WHEN
+      // ... loginMobile is called
+      val responseDto = authenticationService.loginMobile(requestDto);
 
       // THEN
       // ... AuthenticationResponseDto is returned

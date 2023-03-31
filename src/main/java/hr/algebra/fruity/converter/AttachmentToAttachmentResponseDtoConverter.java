@@ -13,7 +13,6 @@ public class AttachmentToAttachmentResponseDtoConverter implements Converter<Att
   public AttachmentResponseDto convert(@NonNull Attachment source) {
     return new AttachmentResponseDto(
       source.getId(),
-      source.getUuid(),
       source.getName(),
       source.getProductionYear(),
       source.getCostPerHour(),

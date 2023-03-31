@@ -3,7 +3,6 @@ package hr.algebra.fruity.utils.mother.dto;
 import hr.algebra.fruity.dto.response.EquipmentResponseDto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
@@ -13,7 +12,6 @@ public class EquipmentResponseDtoMother {
   public static EquipmentResponseDto.EquipmentResponseDtoBuilder complete() {
     return EquipmentResponseDto.builder()
       .id(Constants.instanceId)
-      .uuid(Constants.instanceUuid)
       .name(Constants.instanceName)
       .productionYear(Constants.instanceProductionYear)
       .costPerHour(Constants.instanceCostPerHour)
@@ -23,8 +21,6 @@ public class EquipmentResponseDtoMother {
   public static class Constants {
 
     public static final Long instanceId = 1L;
-
-    public static final UUID instanceUuid = UUID.randomUUID();
 
     public static final String instanceName = "name";
 

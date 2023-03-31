@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @Builder
 public record CountyResponseDto(
   Integer id,
-  UUID uuid,
   String abbreviation,
   String name
 ) {
@@ -17,8 +16,6 @@ public record CountyResponseDto(
   public static class Fields {
 
     public static final String id = "id";
-
-    public static final String uuid = "uuid";
 
     public static final String abbreviation = "abbreviation";
 

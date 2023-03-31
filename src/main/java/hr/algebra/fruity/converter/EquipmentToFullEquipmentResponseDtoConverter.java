@@ -17,7 +17,6 @@ public class EquipmentToFullEquipmentResponseDtoConverter implements Converter<E
   public FullEquipmentResponseDto convert(@NonNull Equipment source) {
     return new FullEquipmentResponseDto(
       source.getId(),
-      source.getUuid(),
       source.getName(),
       source.getProductionYear(),
       source.getCostPerHour(),

@@ -1,6 +1,5 @@
 package hr.algebra.fruity.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -121,7 +120,7 @@ public class Employee implements UserDetails {
   @JoinColumn(name = EmployeeRole.Constants.joinColumnName, nullable = false)
   private @NonNull EmployeeRole role;
 
-  @OneToOne(optional = true, orphanRemoval = true, fetch = FetchType.LAZY)
+  @OneToOne(optional = true, orphanRemoval = true, fetch = FetchType.EAGER)
   @JoinColumn(
     name = RegistrationToken.Constants.joinColumnName,
     referencedColumnName = RegistrationToken.Constants.idColumnName,
@@ -129,13 +128,21 @@ public class Employee implements UserDetails {
   )
   private RegistrationToken registrationToken;
 
-  @OneToOne(optional = true, orphanRemoval = true, fetch = FetchType.LAZY)
+  @OneToOne(optional = false, orphanRemoval = true, fetch = FetchType.LAZY)
   @JoinColumn(
     name = RefreshToken.Constants.joinColumnName,
     referencedColumnName = RefreshToken.Constants.idColumnName,
-    nullable = true
+    nullable = false
   )
   private RefreshToken refreshToken;
+
+  @OneToOne(optional = false, orphanRemoval = true, fetch = FetchType.EAGER)
+  @JoinColumn(
+    name = MobileToken.Constants.joinColumnName,
+    referencedColumnName = MobileToken.Constants.idColumnName,
+    nullable = false
+  )
+  private MobileToken mobileToken;
 
   @OneToMany(mappedBy = WorkEmployee.Fields.employee, fetch = FetchType.LAZY)
   @Singular
@@ -218,6 +225,8 @@ public class Employee implements UserDetails {
     public static final String registrationToken = "registrationToken";
 
     public static final String refreshToken = "refreshToken";
+
+    public static final String mobileToken = "mobileToken";
 
     public static final String works = "works";
 

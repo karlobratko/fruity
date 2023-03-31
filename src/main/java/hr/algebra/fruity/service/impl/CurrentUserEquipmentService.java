@@ -13,6 +13,7 @@ import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.EquipmentService;
 import hr.algebra.fruity.validator.CreateEquipmentRequestDtoValidator;
 import hr.algebra.fruity.validator.EquipmentWithUpdateEquipmentRequestDtoValidator;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,7 @@ public class CurrentUserEquipmentService implements EquipmentService {
   }
 
   @Override
+  @Transactional
   public FullEquipmentResponseDto createEquipment(CreateEquipmentRequestDto requestDto) {
     createEquipmentRequestDtoValidator.validate(requestDto);
 
@@ -58,6 +60,7 @@ public class CurrentUserEquipmentService implements EquipmentService {
   }
 
   @Override
+  @Transactional
   public FullEquipmentResponseDto updateEquipmentById(Long id, UpdateEquipmentRequestDto requestDto) {
     val equipment = getEquipment(id);
 
@@ -72,6 +75,7 @@ public class CurrentUserEquipmentService implements EquipmentService {
   }
 
   @Override
+  @Transactional
   public void deleteEquipmentById(Long id) {
     equipmentRepository.delete(getEquipment(id));
   }

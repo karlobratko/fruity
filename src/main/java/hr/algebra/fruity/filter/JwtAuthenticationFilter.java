@@ -1,6 +1,9 @@
 package hr.algebra.fruity.filter;
 
 import hr.algebra.fruity.constants.JwtConstants;
+import hr.algebra.fruity.dto.JwtDto;
+import hr.algebra.fruity.exception.EntityNotFoundException;
+import hr.algebra.fruity.repository.EmployeeRepository;
 import hr.algebra.fruity.service.JwtTokenService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,7 +18,6 @@ import lombok.val;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,7 +27,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Slf4j
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-  private final UserDetailsService userDetailsService;
+  private final EmployeeRepository employeeRepository;
 
   private final JwtTokenService jwtTokenService;
 
@@ -39,16 +41,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     val jwtToken = authHeader.substring(JwtConstants.headerAuthorizationBearerPrefix.length());
-    val username = jwtTokenService.getUsername(jwtToken);
-    if (Objects.nonNull(username) && Objects.isNull(SecurityContextHolder.getContext().getAuthentication())) {
-      val user = userDetailsService.loadUserByUsername(username);
+    val employeeId = jwtTokenService.getClaim(jwtToken, JwtDto.ClaimResolvers.employeeIdResolver);
+    if (Objects.nonNull(employeeId) && Objects.isNull(SecurityContextHolder.getContext().getAuthentication())) {
+      val employee = employeeRepository.findById(employeeId).orElseThrow(EntityNotFoundException::new);
 
-      if (jwtTokenService.isValid(jwtToken, user)) {
-        val authToken = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword(), user.getAuthorities());
-        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+      val authToken = new UsernamePasswordAuthenticationToken(employee.getUsername(), employee.getPassword(), employee.getAuthorities());
+      authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-      }
+      SecurityContextHolder.getContext().setAuthentication(authToken);
     }
 
     filterChain.doFilter(request, response);
