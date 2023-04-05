@@ -15,8 +15,8 @@ public class EmployeeToEmployeeResponseDtoConverter implements Converter<Employe
       source.getId(),
       source.getFirstName(),
       source.getLastName(),
-      source.getUsername(),
       source.getEmail(),
+      source.getPhoneNumber(),
       source.getCostPerHour(),
       source.getRole().getDisplayName()
     );
