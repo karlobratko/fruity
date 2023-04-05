@@ -12,7 +12,7 @@ public record UpdateUserRequestDto(
   String name,
   @Size(min = 11, max = 11, message = "OIB mora biti duljine 11 znakova.")
   String oib,
-  @Pattern(regexp = "^(\\+385)([ -]?)([1-9]\\d)([ -]?)(\\d{3})([ -]?)(\\d{4})$|^(\\+385)([ -]?)([1-9]\\d)([ -]?)(\\d{4})([ -]?)(\\d{3})$|^(\\+385)([ -]?)([1-9]\\d)([ -]?)(\\d{3})([ -]?)(\\d{3})$", message = "Broj telefona nije važeći.")
+  @Size(max = 25, message = "Broj telefona mora biti duljine maksimalno 25 znakova.")
   String phoneNumber,
   @Size(max = 100, message = "Adresa mora biti duljine maksimalno 100 znakova.")
   String address,

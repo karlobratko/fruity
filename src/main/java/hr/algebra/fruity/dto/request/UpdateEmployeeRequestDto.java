@@ -2,7 +2,6 @@ package hr.algebra.fruity.dto.request;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import lombok.AccessLevel;
@@ -18,7 +17,7 @@ public record UpdateEmployeeRequestDto(
   @Size(max = 254, message = "Email mora biti duljine maksimalno 254 znakova.")
   @Email(message = "Email mora biti važeći email.")
   String email,
-  @Pattern(regexp = "^(\\+385)([ -]?)([1-9]\\d)([ -]?)(\\d{3})([ -]?)(\\d{4})$|^(\\+385)([ -]?)([1-9]\\d)([ -]?)(\\d{4})([ -]?)(\\d{3})$|^(\\+385)([ -]?)([1-9]\\d)([ -]?)(\\d{3})([ -]?)(\\d{3})$", message = "Broj telefona nije važeći.")
+  @Size(max = 25, message = "Broj telefona mora biti duljine maksimalno 25 znakova.")
   String phoneNumber,
   @DecimalMin(value = "0.00", message = "Cijena po satu mora biti pozitivan broj ili nula.")
   BigDecimal costPerHour
