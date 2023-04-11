@@ -26,7 +26,7 @@ import lombok.ToString;
 
 @Entity
 @Table(name = Agent.Constants.tableName)
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 @Builder
 @Getter

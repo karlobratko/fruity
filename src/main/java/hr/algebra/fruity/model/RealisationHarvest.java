@@ -24,7 +24,7 @@ import lombok.ToString;
 
 @Entity
 @Table(name = RealisationHarvest.Constants.tableName)
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @Builder
 @Getter
 @Setter

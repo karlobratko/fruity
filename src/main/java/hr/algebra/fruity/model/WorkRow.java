@@ -23,7 +23,7 @@ import lombok.ToString;
 
 @Entity
 @Table(name = WorkRow.Constants.tableName)
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @Builder
 @Getter
 @Setter

@@ -38,7 +38,7 @@ import lombok.ToString;
     )
   }
 )
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 @Builder
 @Getter

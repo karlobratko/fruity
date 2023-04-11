@@ -49,7 +49,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
     )
   }
 )
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 @Builder
 @Getter

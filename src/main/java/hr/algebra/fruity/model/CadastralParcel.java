@@ -98,7 +98,7 @@ public class CadastralParcel {
   @ToString.Include
   private @NonNull String name;
 
-  @ManyToOne(optional = false, fetch = FetchType.LAZY)
+  @ManyToOne(optional = false, fetch = FetchType.EAGER)
   @JoinColumn(name = User.Constants.joinColumnName, nullable = false)
   private @NonNull User user;
 

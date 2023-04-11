@@ -24,7 +24,7 @@ import lombok.ToString;
 
 @Entity
 @Table(name = RealisationEquipment.Constants.tableName)
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @Getter
 @Setter
 @EqualsAndHashCode(doNotUseGetters = true, onlyExplicitlyIncluded = true)

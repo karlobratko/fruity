@@ -9,7 +9,7 @@ import lombok.NonNull;
 import lombok.Singular;
 
 @Data
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 @Builder
 public class Email {

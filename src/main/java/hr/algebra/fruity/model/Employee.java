@@ -43,7 +43,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Table(name = Employee.Constants.tableName)
-@NoArgsConstructor
+@NoArgsConstructor(force = true)
 @AllArgsConstructor
 @Builder
 @Getter
