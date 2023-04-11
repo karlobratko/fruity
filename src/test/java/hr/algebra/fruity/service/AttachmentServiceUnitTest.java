@@ -96,7 +96,7 @@ public class AttachmentServiceUnitTest implements ServiceUnitTest {
       given(attachmentRepository.findById(same(id))).willReturn(Optional.of(attachment));
       // ... CurrentUserService's logged-in User is not equal to Attachment User
       val loggedInUser = UserMother.complete().id(attachment.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
       // ... getAttachmentById is called
@@ -121,7 +121,7 @@ public class AttachmentServiceUnitTest implements ServiceUnitTest {
       given(attachmentRepository.findById(same(id))).willReturn(Optional.of(attachment));
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = attachment.getUser();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
       // ... ConversionService successfully converts from User to AttachmentResponseDto
       val expectedResponseDto = AttachmentResponseDtoMother.complete().build();
       given(conversionService.convert(same(attachment), same(AttachmentResponseDto.class))).willReturn(expectedResponseDto);
@@ -215,7 +215,7 @@ public class AttachmentServiceUnitTest implements ServiceUnitTest {
       val requestDto = UpdateAttachmentRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is not equal to User
       val loggedInUser = UserMother.complete().id(attachment.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
       // ... updateAttachmentById is called
@@ -242,7 +242,7 @@ public class AttachmentServiceUnitTest implements ServiceUnitTest {
       val requestDto = UpdateAttachmentRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = attachment.getUser();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
       // ... AttachmentWithUpdateAttachmentRequestDtoValidator successfully validates Attachment with UpdateAttachmentRequestDto
       willDoNothing().given(attachmentWithUpdateAttachmentRequestDtoValidator).validate(same(attachment), same(requestDto));
       // ... AttachmentMapper successfully partially updates Attachment with UpdateAttachmentRequestDto
@@ -302,7 +302,7 @@ public class AttachmentServiceUnitTest implements ServiceUnitTest {
       given(attachmentRepository.findById(same(id))).willReturn(Optional.of(attachment));
       // ... CurrentUserService's logged-in User is not equal to Attachment User
       val loggedInUser = UserMother.complete().id(attachment.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
       // ... getAttachmentById is called
@@ -327,7 +327,7 @@ public class AttachmentServiceUnitTest implements ServiceUnitTest {
       given(attachmentRepository.findById(same(id))).willReturn(Optional.of(attachment));
       // ... CurrentUserService's logged-in User is not equal to Attachment User
       val loggedInUser = attachment.getUser();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
       // ... AttachmentRepository successfully deletes Attachment
       willDoNothing().given(attachmentRepository).delete(attachment);
 

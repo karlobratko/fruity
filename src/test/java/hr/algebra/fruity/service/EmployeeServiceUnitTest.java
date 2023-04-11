@@ -110,7 +110,7 @@ public class EmployeeServiceUnitTest implements ServiceUnitTest {
       given(employeeRepository.findById(same(id))).willReturn(Optional.of(employee));
       // ... CurrentUserService's logged-in User is not equal to Employee User
       val loggedInUser = UserMother.complete().id(employee.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
       // ... getEmployeeById is called
@@ -135,7 +135,7 @@ public class EmployeeServiceUnitTest implements ServiceUnitTest {
       given(employeeRepository.findById(same(id))).willReturn(Optional.of(employee));
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = employee.getUser();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
       // ... ConversionService successfully converts from Employee to FullEmployeeResponseDto
       val expectedResponseDto = FullEmployeeResponseDtoMother.complete().build();
       given(conversionService.convert(same(employee), same(FullEmployeeResponseDto.class))).willReturn(expectedResponseDto);
@@ -235,7 +235,7 @@ public class EmployeeServiceUnitTest implements ServiceUnitTest {
       val requestDto = UpdateEmployeeRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is not equal to User
       val loggedInUser = UserMother.complete().id(employee.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
       // ... updateEmployeeById is called
@@ -262,7 +262,7 @@ public class EmployeeServiceUnitTest implements ServiceUnitTest {
       val requestDto = UpdateEmployeeRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = employee.getUser();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
       // ... EmployeeWithUpdateEmployeeRequestDtoValidator successfully validates Employee with UpdateEmployeeRequestDto
       willDoNothing().given(employeeWithUpdateEmployeeRequestDtoValidator).validate(same(employee), same(requestDto));
       // ... EmployeeMapper successfully partially updates Employee with UpdateEmployeeRequestDto
@@ -322,7 +322,7 @@ public class EmployeeServiceUnitTest implements ServiceUnitTest {
       given(employeeRepository.findById(same(id))).willReturn(Optional.of(employee));
       // ... CurrentUserService's logged-in User is not equal to Employee User
       val loggedInUser = UserMother.complete().id(employee.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
       // ... getEmployeeById is called
@@ -347,7 +347,7 @@ public class EmployeeServiceUnitTest implements ServiceUnitTest {
       given(employeeRepository.findById(same(id))).willReturn(Optional.of(employee));
       // ... CurrentUserService's logged-in User is equal to Employee User
       val loggedInUser = employee.getUser();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
       // ... EmployeeRoleService will successfully return EmployeeRole
       val employeeRole = EmployeeRoleMother.complete().id(employee.getRole().getId()).build();
       given(employeeRoleService.getEmployeeRole(same(EmployeeRoles.ROLE_MANAGER))).willReturn(employeeRole);
@@ -375,7 +375,7 @@ public class EmployeeServiceUnitTest implements ServiceUnitTest {
       given(employeeRepository.findById(same(id))).willReturn(Optional.of(employee));
       // ... CurrentUserService's logged-in User is not equal to Employee User
       val loggedInUser = employee.getUser();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
       // ... EmployeeRoleService will successfully return EmployeeRole
       val employeeRole = EmployeeRoleMother.complete().id(employee.getRole().getId() + 1).build();
       given(employeeRoleService.getEmployeeRole(same(EmployeeRoles.ROLE_MANAGER))).willReturn(employeeRole);

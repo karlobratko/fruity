@@ -96,7 +96,7 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       given(equipmentRepository.findById(same(id))).willReturn(Optional.of(equipment));
       // ... CurrentUserService's logged-in User is not equal to Equipment User
       val loggedInUser = UserMother.complete().id(equipment.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
       // ... getEquipmentById is called
@@ -121,7 +121,7 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       given(equipmentRepository.findById(same(id))).willReturn(Optional.of(equipment));
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = equipment.getUser();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
       // ... ConversionService successfully converts from User to FullEquipmentResponseDto
       val expectedResponseDto = FullEquipmentResponseDtoMother.complete().build();
       given(conversionService.convert(same(equipment), same(FullEquipmentResponseDto.class))).willReturn(expectedResponseDto);
@@ -215,7 +215,7 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       val requestDto = UpdateEquipmentRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is not equal to User
       val loggedInUser = UserMother.complete().id(equipment.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
       // ... updateEquipmentById is called
@@ -242,7 +242,7 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       val requestDto = UpdateEquipmentRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = equipment.getUser();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
       // ... EquipmentWithUpdateEquipmentRequestDtoValidator successfully validates Equipment with UpdateEquipmentRequestDto
       willDoNothing().given(equipmentWithUpdateEquipmentRequestDtoValidator).validate(same(equipment), same(requestDto));
       // ... EquipmentMapper successfully partially updates Equipment with UpdateEquipmentRequestDto
@@ -302,7 +302,7 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       given(equipmentRepository.findById(same(id))).willReturn(Optional.of(equipment));
       // ... CurrentUserService's logged-in User is not equal to Equipment User
       val loggedInUser = UserMother.complete().id(equipment.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
       // ... getEquipmentById is called
@@ -327,7 +327,7 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       given(equipmentRepository.findById(same(id))).willReturn(Optional.of(equipment));
       // ... CurrentUserService's logged-in User is not equal to Equipment User
       val loggedInUser = equipment.getUser();
-      given(currentRequestUserService.getUser()).willReturn(loggedInUser);
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
       // ... EquipmentRepository successfully deletes Equipment
       willDoNothing().given(equipmentRepository).delete(equipment);
 

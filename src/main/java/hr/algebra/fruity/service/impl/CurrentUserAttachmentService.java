@@ -38,7 +38,7 @@ public class CurrentUserAttachmentService implements AttachmentService {
 
   @Override
   public List<AttachmentResponseDto> getAllAttachments() {
-    return attachmentRepository.findAllByUser(currentRequestUserService.getUser()).stream()
+    return attachmentRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
       .map(equipment -> conversionService.convert(equipment, AttachmentResponseDto.class))
       .toList();
   }
@@ -83,7 +83,7 @@ public class CurrentUserAttachmentService implements AttachmentService {
     val attachment = attachmentRepository.findById(id)
       .orElseThrow(EntityNotFoundException::new);
 
-    if (!Objects.equals(attachment.getUser(), currentRequestUserService.getUser()))
+    if (!Objects.equals(attachment.getUser().getId(), currentRequestUserService.getUserId()))
       throw new ForeignUserDataAccessException();
 
     return attachment;

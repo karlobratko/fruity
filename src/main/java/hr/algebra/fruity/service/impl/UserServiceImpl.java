@@ -2,7 +2,6 @@ package hr.algebra.fruity.service.impl;
 
 import hr.algebra.fruity.dto.request.UpdateUserRequestDto;
 import hr.algebra.fruity.dto.response.FullUserResponseDto;
-import hr.algebra.fruity.dto.response.UserResponseDto;
 import hr.algebra.fruity.mapper.UserMapper;
 import hr.algebra.fruity.repository.UserRepository;
 import hr.algebra.fruity.service.CurrentRequestUserService;
@@ -35,7 +34,7 @@ public class UserServiceImpl implements UserService {
 
   @Override
   @Transactional
-  public UserResponseDto updateCurrentUser(UpdateUserRequestDto requestDto) {
+  public FullUserResponseDto updateCurrentUser(UpdateUserRequestDto requestDto) {
     val user = currentRequestUserService.getUser();
 
     userWithUpdateUserRequestDtoValidator.validate(user, requestDto);
@@ -44,7 +43,7 @@ public class UserServiceImpl implements UserService {
       userRepository.save(
         userMapper.partialUpdate(user, requestDto)
       ),
-      UserResponseDto.class
+      FullUserResponseDto.class
     );
   }
 

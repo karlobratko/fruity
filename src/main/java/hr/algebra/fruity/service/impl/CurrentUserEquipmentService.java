@@ -39,7 +39,7 @@ public class CurrentUserEquipmentService implements EquipmentService {
 
   @Override
   public List<EquipmentResponseDto> getAllEquipment() {
-    return equipmentRepository.findAllByUser(currentRequestUserService.getUser()).stream()
+    return equipmentRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
       .map(equipment -> conversionService.convert(equipment, EquipmentResponseDto.class))
       .toList();
   }
@@ -84,7 +84,7 @@ public class CurrentUserEquipmentService implements EquipmentService {
     val equipment = equipmentRepository.findById(id)
       .orElseThrow(EntityNotFoundException::new);
 
-    if (!Objects.equals(equipment.getUser(), currentRequestUserService.getUser()))
+    if (!Objects.equals(equipment.getUser().getId(), currentRequestUserService.getUserId()))
       throw new ForeignUserDataAccessException();
 
     return equipment;

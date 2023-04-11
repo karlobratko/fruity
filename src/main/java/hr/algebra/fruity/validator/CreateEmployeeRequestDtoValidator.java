@@ -18,7 +18,7 @@ public class CreateEmployeeRequestDtoValidator implements Validator<CreateEmploy
 
   @Override
   public void validate(CreateEmployeeRequestDto target) {
-    if (Objects.nonNull(target.email()) && employeeRepository.existsByEmailAndUser(target.email(), currentRequestUserService.getUser()))
+    if (Objects.nonNull(target.email()) && employeeRepository.existsByEmailAndUserId(target.email(), currentRequestUserService.getUserId()))
       throw new UniquenessViolatedException("Email već postoji i nije jedinstven.");
   }
 

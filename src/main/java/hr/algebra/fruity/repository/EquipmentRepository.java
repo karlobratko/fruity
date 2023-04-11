@@ -13,6 +13,10 @@ public interface EquipmentRepository extends PagingAndSortingRepository<Equipmen
 
   Set<Equipment> findAllByUser(User user);
 
+  Set<Equipment> findAllByUserId(Long userFk);
+
   Optional<Equipment> findByNameAndUser(String name, User user);
+
+  Optional<Equipment> findByNameAndUserId(String name, Long userFk);
 
 }

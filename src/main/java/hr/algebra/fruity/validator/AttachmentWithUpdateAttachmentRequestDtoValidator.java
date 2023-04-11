@@ -16,11 +16,12 @@ public class AttachmentWithUpdateAttachmentRequestDtoValidator implements WithVa
 
   @Override
   public void validate(Attachment target, UpdateAttachmentRequestDto with) {
-    attachmentRepository.findByNameAndUser(with.name(), target.getUser())
-      .ifPresent(it -> {
-        if (!Objects.equals(it, target))
-          throw new UniquenessViolatedException("Naziv već postoji i nije jedinstven.");
-      });
+    if (Objects.nonNull(with.name()))
+      attachmentRepository.findByNameAndUser(with.name(), target.getUser())
+        .ifPresent(it -> {
+          if (!Objects.equals(it, target))
+            throw new UniquenessViolatedException("Naziv već postoji i nije jedinstven.");
+        });
   }
 
 }

@@ -17,7 +17,7 @@ public class CreateAttachmentRequestDtoValidator implements Validator<CreateAtta
 
   @Override
   public void validate(CreateAttachmentRequestDto target) {
-    attachmentRepository.findByNameAndUser(target.name(), currentRequestUserService.getUser())
+    attachmentRepository.findByNameAndUserId(target.name(), currentRequestUserService.getUserId())
       .ifPresent(ignored -> {
         throw new UniquenessViolatedException("Naziv već postoji i nije jedinstven.");
       });

@@ -17,7 +17,7 @@ public class CreateEquipmentRequestDtoValidator implements Validator<CreateEquip
 
   @Override
   public void validate(CreateEquipmentRequestDto target) {
-    equipmentRepository.findByNameAndUser(target.name(), currentRequestUserService.getUser())
+    equipmentRepository.findByNameAndUserId(target.name(), currentRequestUserService.getUserId())
       .ifPresent(ignored -> {
         throw new UniquenessViolatedException("Naziv već postoji i nije jedinstven.");
       });

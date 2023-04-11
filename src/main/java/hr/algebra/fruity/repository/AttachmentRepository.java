@@ -13,6 +13,10 @@ public interface AttachmentRepository extends PagingAndSortingRepository<Attachm
 
   Set<Attachment> findAllByUser(User user);
 
+  Set<Attachment> findAllByUserId(Long userFk);
+
   Optional<Attachment> findByNameAndUser(String name, User user);
+
+  Optional<Attachment> findByNameAndUserId(String name, Long userFk);
 
 }

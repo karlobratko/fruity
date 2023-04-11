@@ -26,4 +26,9 @@ public class JwtCurrentRequestUserService implements CurrentRequestUserService {
       .orElseThrow(EntityNotFoundException::new);
   }
 
+  @Override
+  public Long getUserId() {
+    return jwtTokenService.getClaim(jwtTokenRequestExtractorService.getToken(), JwtDto.ClaimResolvers.userIdResolver);
+  }
+
 }

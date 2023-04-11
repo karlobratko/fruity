@@ -1,13 +1,11 @@
 package hr.algebra.fruity.service;
 
 import hr.algebra.fruity.dto.response.FullUserResponseDto;
-import hr.algebra.fruity.dto.response.UserResponseDto;
 import hr.algebra.fruity.mapper.UserMapper;
 import hr.algebra.fruity.repository.UserRepository;
 import hr.algebra.fruity.service.impl.UserServiceImpl;
 import hr.algebra.fruity.utils.mother.dto.FullUserResponseDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateUserRequestDtoMother;
-import hr.algebra.fruity.utils.mother.dto.UserResponseDtoMother;
 import hr.algebra.fruity.utils.mother.model.UserMother;
 import hr.algebra.fruity.validator.UserWithUpdateUserRequestDtoWithValidator;
 import lombok.val;
@@ -83,8 +81,8 @@ public class UserServiceUnitTest implements ServiceUnitTest {
 
     @Test
     @DisplayName("GIVEN ReplaceUserRequestDto and unique oib " +
-      "... THEN UserResponseDto is returned")
-    public void GIVEN_ReplaceUserRequestDtoAndUniqueOib_THEN_UserResponseDto() {
+      "... THEN FullUserResponseDto is returned")
+    public void GIVEN_ReplaceUserRequestDtoAndUniqueOib_THEN_FullUserResponseDto() {
       // GIVEN
       // ... ReplaceUserRequestDto
       val requestDto = UpdateUserRequestDtoMother.complete().build();
@@ -97,16 +95,16 @@ public class UserServiceUnitTest implements ServiceUnitTest {
       given(userMapper.partialUpdate(same(user), same(requestDto))).willReturn(user);
       // ... UserRepository successfully saves User
       given(userRepository.save(same(user))).willReturn(user);
-      // ... ConversionService successfully converts from User to UserResponseDto
-      val expectedResponseDto = UserResponseDtoMother.complete().build();
-      given(conversionService.convert(same(user), same(UserResponseDto.class))).willReturn(expectedResponseDto);
+      // ... ConversionService successfully converts from User to FullUserResponseDto
+      val expectedResponseDto = FullUserResponseDtoMother.complete().build();
+      given(conversionService.convert(same(user), same(FullUserResponseDto.class))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... updateCurrentUser is called
       val responseDto = userService.updateCurrentUser(requestDto);
 
       // THEN
-      // ... UserResponseDto is returned
+      // ... FullUserResponseDto is returned
       and.then(responseDto)
         .isNotNull()
         .isEqualTo(expectedResponseDto);

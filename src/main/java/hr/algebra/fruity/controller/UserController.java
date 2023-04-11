@@ -4,7 +4,6 @@ import hr.algebra.fruity.constants.ApplicationConstants;
 import hr.algebra.fruity.dto.request.UpdateUserRequestDto;
 import hr.algebra.fruity.dto.response.ApiResponse;
 import hr.algebra.fruity.dto.response.FullUserResponseDto;
-import hr.algebra.fruity.dto.response.UserResponseDto;
 import hr.algebra.fruity.service.UserService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
@@ -35,7 +34,7 @@ public class UserController {
   }
 
   @PutMapping(Mappings.updateCurrentUserPutMapping)
-  public ResponseEntity<ApiResponse<UserResponseDto>> updateCurrentUser(@Valid @RequestBody UpdateUserRequestDto requestDto) {
+  public ResponseEntity<ApiResponse<FullUserResponseDto>> updateCurrentUser(@Valid @RequestBody UpdateUserRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
         userService.updateCurrentUser(requestDto),

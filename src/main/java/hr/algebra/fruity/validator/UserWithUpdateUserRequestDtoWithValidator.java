@@ -16,11 +16,12 @@ public class UserWithUpdateUserRequestDtoWithValidator implements WithValidator<
 
   @Override
   public void validate(User target, UpdateUserRequestDto with) {
-    userRepository.findByOib(with.oib())
-      .ifPresent(it -> {
-        if (!Objects.equals(it, target))
-          throw new UniquenessViolatedException("OIB već postoji i nije jedinstven.");
-      });
+    if (Objects.nonNull(with.oib()))
+      userRepository.findByOib(with.oib())
+        .ifPresent(it -> {
+          if (!Objects.equals(it, target))
+            throw new UniquenessViolatedException("OIB već postoji i nije jedinstven.");
+        });
   }
 
 }

@@ -18,10 +18,16 @@ public interface EmployeeRepository extends PagingAndSortingRepository<Employee,
 
   Boolean existsByEmailAndUser(String email, User user);
 
+  Boolean existsByEmailAndUserId(String email, Long userFk);
+
   Boolean existsByUsername(String username);
 
   Set<Employee> findAllByUser(User user);
 
+  Set<Employee> findAllByUserId(Long userFk);
+
   Optional<Employee> findByEmailAndUser(String email, User user);
+
+  Optional<Employee> findByEmailAndUserId(String email, Long userFk);
 
 }

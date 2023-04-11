@@ -16,11 +16,12 @@ public class EquipmentWithUpdateEquipmentRequestDtoValidator implements WithVali
 
   @Override
   public void validate(Equipment target, UpdateEquipmentRequestDto with) {
-    equipmentRepository.findByNameAndUser(with.name(), target.getUser())
-      .ifPresent(it -> {
-        if (!Objects.equals(it, target))
-          throw new UniquenessViolatedException("Naziv već postoji i nije jedinstven.");
-      });
+    if (Objects.nonNull(with.name()))
+      equipmentRepository.findByNameAndUser(with.name(), target.getUser())
+        .ifPresent(it -> {
+          if (!Objects.equals(it, target))
+            throw new UniquenessViolatedException("Naziv već postoji i nije jedinstven.");
+        });
   }
 
 }

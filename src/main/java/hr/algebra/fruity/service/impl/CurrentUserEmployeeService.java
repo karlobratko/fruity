@@ -50,7 +50,7 @@ public class CurrentUserEmployeeService implements EmployeeService {
 
   @Override
   public List<EmployeeResponseDto> getAllEmployees() {
-    return employeeRepository.findAllByUser(currentRequestUserService.getUser()).stream()
+    return employeeRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
       .map(employee -> conversionService.convert(employee, EmployeeResponseDto.class))
       .toList();
   }
@@ -106,7 +106,7 @@ public class CurrentUserEmployeeService implements EmployeeService {
     val employee = employeeRepository.findById(id)
       .orElseThrow(EntityNotFoundException::new);
 
-    if (!Objects.equals(employee.getUser(), currentRequestUserService.getUser()))
+    if (!Objects.equals(employee.getUser().getId(), currentRequestUserService.getUserId()))
       throw new ForeignUserDataAccessException();
 
     return employee;
