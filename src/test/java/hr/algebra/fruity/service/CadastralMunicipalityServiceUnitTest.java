@@ -52,12 +52,12 @@ public class CadastralMunicipalityServiceUnitTest implements ServiceUnitTest {
     public void GIVEN_nonEmptyRepository_THEN_ListOfCadastralMunicipalityResponseDto() {
       // GIVEN
       // ... non-empty CadastralMunicipalityRepository
-      val counties = List.of(
+      val cadastralMunicipalities = List.of(
         CadastralMunicipalityMother.complete().id(1).build(),
         CadastralMunicipalityMother.complete().id(2).build(),
         CadastralMunicipalityMother.complete().id(3).build()
       );
-      given(cadastralMunicipalityRepository.findAll()).willReturn(counties);
+      given(cadastralMunicipalityRepository.findAll()).willReturn(cadastralMunicipalities);
       // ... ConversionService successfully converts from CadastralMunicipality to CadastralMunicipalityResponseDto
       given(conversionService.convert(any(CadastralMunicipality.class), same(CadastralMunicipalityResponseDto.class))).willAnswer(invocation -> CadastralMunicipalityResponseDtoMother.complete().id(invocation.<CadastralMunicipality>getArgument(0).getId()).build());
 
@@ -68,7 +68,7 @@ public class CadastralMunicipalityServiceUnitTest implements ServiceUnitTest {
       // THEN
       // ... List<CadastralMunicipalityResponseDto> is returned
       and.then(responseDtos).satisfies(it -> {
-        and.then(responseDtos).hasSize(counties.size());
+        and.then(responseDtos).hasSize(cadastralMunicipalities.size());
         and.then(responseDtos).allSatisfy(child -> and.then(child).isNotNull());
       });
     }
