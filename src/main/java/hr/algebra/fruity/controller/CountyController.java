@@ -26,7 +26,7 @@ public class CountyController {
     return ResponseEntity.ok(
       ApiResponse.ok(
         countyService.getAllCounties(),
-        "Sve županije uspješno dohvaćene."
+        "Županije uspješno dohvaćene."
       )
     );
   }

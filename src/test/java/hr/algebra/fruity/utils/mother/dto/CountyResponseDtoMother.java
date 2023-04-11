@@ -12,16 +12,17 @@ public class CountyResponseDtoMother {
     return CountyResponseDto.builder()
       .id(Constants.instanceId)
       .name(Constants.instanceName)
-      .name(Constants.instanceDisplayName);
+      .abbreviation(Constants.instanceAbbreviation);
   }
 
+  @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Constants {
 
     public static final Integer instanceId = 1;
 
     public static final String instanceName = "name";
 
-    public static final String instanceDisplayName = "displayName";
+    public static final String instanceAbbreviation = "abbreviation";
 
   }
 
