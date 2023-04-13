@@ -110,4 +110,52 @@ public class MobileTokenServiceUnitTest implements ServiceUnitTest {
 
   }
 
+  @Nested
+  @DisplayName("WHEN getById is called")
+  public class WHEN_getById {
+
+    @Test
+    @DisplayName("GIVEN invalid id " +
+      "... THEN InvalidMobileTokenException is thrown")
+    public void GIVEN_invalidId_THEN_InvalidMobileTokenException() {
+      // GIVEN
+      // ... invalid id
+      val uuid = UUID.randomUUID();
+      given(mobileTokenRepository.findByUuid(same(uuid))).willReturn(Optional.empty());
+
+      // WHEN
+      // ... getById is called
+      when(() -> mobileTokenService.getMobileTokenByUUID(uuid));
+
+      // THEN
+      // ... EntityNotFoundException is thrown
+      and.then(caughtException())
+        .isInstanceOf(InvalidMobileTokenException.class)
+        .hasMessage(InvalidMobileTokenException.Constants.exceptionMessageFormat)
+        .hasNoCause();
+    }
+
+    @Test
+    @DisplayName("GIVEN id " +
+      "... THEN MobileToken is returned")
+    public void GIVEN_id_THEN_MobileToken() {
+      // GIVEN
+      // ... id
+      val uuid = UUID.randomUUID();
+      val expectedMobileToken = MobileTokenMother.complete().build();
+      given(mobileTokenRepository.findByUuid(same(uuid))).willReturn(Optional.of(expectedMobileToken));
+
+      // WHEN
+      // ... getById is called
+      val returnedMobileToken = mobileTokenService.getMobileTokenByUUID(uuid);
+
+      // THEN
+      // ... MobileTokenResponseDto is returned
+      and.then(returnedMobileToken)
+        .isNotNull()
+        .isEqualTo(expectedMobileToken);
+    }
+
+  }
+
 }

@@ -11,4 +11,6 @@ public interface RegistrationTokenService {
 
   RegistrationToken refreshRegistrationToken(UUID uuid);
 
+  RegistrationToken getRegistrationTokenByUUID(UUID uuid);
+
 }

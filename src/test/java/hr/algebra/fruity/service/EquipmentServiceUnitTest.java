@@ -65,52 +65,6 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_getEquipmentById {
 
     @Test
-    @DisplayName("GIVEN invalid id " +
-      "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
-      // GIVEN
-      // ... invalid id
-      val id = 1L;
-      given(equipmentRepository.findById(same(id))).willReturn(Optional.empty());
-
-      // WHEN
-      // ... getEquipmentById is called
-      when(() -> equipmentService.getEquipmentById(id));
-
-      // THEN
-      // ... EntityNotFoundException is thrown
-      and.then(caughtException())
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val equipment = EquipmentMother.complete().build();
-      given(equipmentRepository.findById(same(id))).willReturn(Optional.of(equipment));
-      // ... CurrentUserService's logged-in User is not equal to Equipment User
-      val loggedInUser = UserMother.complete().id(equipment.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getEquipmentById is called
-      when(() -> equipmentService.getEquipmentById(id));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
     @DisplayName("GIVEN id " +
       "... THEN EquipmentResponseDto is returned")
     public void GIVEN_id_THEN_EquipmentResponseDto() {
@@ -180,56 +134,6 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_updateEquipmentById {
 
     @Test
-    @DisplayName("GIVEN invalid id and UpdateEquipmentRequestDto " +
-      "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidIdAndUpdateEquipmentRequestDto_THEN_EntityNotFoundException() {
-      // GIVEN
-      // ... invalid id
-      val id = 1L;
-      given(equipmentRepository.findById(same(id))).willReturn(Optional.empty());
-      // ... UpdateEquipmentRequestDto
-      val requestDto = UpdateEquipmentRequestDtoMother.complete().build();
-
-      // WHEN
-      // ... updateEquipmentById is called
-      when(() -> equipmentService.updateEquipmentById(id, requestDto));
-
-      // THEN
-      // ... EntityNotFoundException is thrown
-      and.then(caughtException())
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id, UpdateEquipmentRequestDto, and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndUpdateEquipmentRequestDtoAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val equipment = EquipmentMother.complete().build();
-      given(equipmentRepository.findById(same(id))).willReturn(Optional.of(equipment));
-      // ... UpdateEquipmentRequestDto
-      val requestDto = UpdateEquipmentRequestDtoMother.complete().build();
-      // ... CurrentUserService's logged-in User is not equal to User
-      val loggedInUser = UserMother.complete().id(equipment.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... updateEquipmentById is called
-      when(() -> equipmentService.updateEquipmentById(id, requestDto));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
     @DisplayName("GIVEN id and UpdateEquipmentRequestDto " +
       "... THEN EquipmentResponseDto is returned")
     public void GIVEN_idAndUpdateEquipmentRequestDto_THEN_EquipmentResponseDto() {
@@ -271,6 +175,34 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_deleteEquipmentById {
 
     @Test
+    @DisplayName("GIVEN id " +
+      "... THEN void")
+    public void GIVEN_id_THEN_void() {
+      // GIVEN
+      // ... id
+      val id = 1L;
+      val equipment = EquipmentMother.complete().build();
+      given(equipmentRepository.findById(same(id))).willReturn(Optional.of(equipment));
+      // ... CurrentUserService's logged-in User is not equal to Equipment User
+      val loggedInUser = equipment.getUser();
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      // ... EquipmentRepository successfully deletes Equipment
+      willDoNothing().given(equipmentRepository).delete(equipment);
+
+      // WHEN
+      equipmentService.deleteEquipmentById(id);
+
+      // THEN
+      // ... void
+    }
+
+  }
+
+  @Nested
+  @DisplayName("WHEN getById is called")
+  public class WHEN_getById {
+
+    @Test
     @DisplayName("GIVEN invalid id " +
       "... THEN EntityNotFoundException is thrown")
     public void GIVEN_invalidId_THEN_EntityNotFoundException() {
@@ -280,8 +212,8 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       given(equipmentRepository.findById(same(id))).willReturn(Optional.empty());
 
       // WHEN
-      // ... getEquipmentById is called
-      when(() -> equipmentService.deleteEquipmentById(id));
+      // ... getById is called
+      when(() -> equipmentService.getById(id));
 
       // THEN
       // ... EntityNotFoundException is thrown
@@ -305,8 +237,8 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
-      // ... getEquipmentById is called
-      when(() -> equipmentService.deleteEquipmentById(id));
+      // ... getById is called
+      when(() -> equipmentService.getById(id));
 
       // THEN
       // ... ForeignUserDataAccessException is thrown
@@ -318,24 +250,26 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
 
     @Test
     @DisplayName("GIVEN id " +
-      "... THEN void")
-    public void GIVEN_id_THEN_void() {
+      "... THEN Equipment is returned")
+    public void GIVEN_id_THEN_Equipment() {
       // GIVEN
       // ... id
       val id = 1L;
-      val equipment = EquipmentMother.complete().build();
-      given(equipmentRepository.findById(same(id))).willReturn(Optional.of(equipment));
-      // ... CurrentUserService's logged-in User is not equal to Equipment User
-      val loggedInUser = equipment.getUser();
+      val expectedEquipment = EquipmentMother.complete().build();
+      given(equipmentRepository.findById(same(id))).willReturn(Optional.of(expectedEquipment));
+      // ... CurrentUserService's logged-in User is equal to User
+      val loggedInUser = expectedEquipment.getUser();
       given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... EquipmentRepository successfully deletes Equipment
-      willDoNothing().given(equipmentRepository).delete(equipment);
 
       // WHEN
-      equipmentService.deleteEquipmentById(id);
+      // ... getById is called
+      val returnedEquipment = equipmentService.getById(id);
 
       // THEN
-      // ... void
+      // ... EquipmentResponseDto is returned
+      and.then(returnedEquipment)
+        .isNotNull()
+        .isEqualTo(expectedEquipment);
     }
 
   }

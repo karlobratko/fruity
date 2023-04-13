@@ -46,7 +46,7 @@ public class CurrentUserEquipmentService implements EquipmentService {
 
   @Override
   public FullEquipmentResponseDto getEquipmentById(Long id) {
-    return conversionService.convert(getEquipment(id), FullEquipmentResponseDto.class);
+    return conversionService.convert(getById(id), FullEquipmentResponseDto.class);
   }
 
   @Override
@@ -62,7 +62,7 @@ public class CurrentUserEquipmentService implements EquipmentService {
   @Override
   @Transactional
   public FullEquipmentResponseDto updateEquipmentById(Long id, UpdateEquipmentRequestDto requestDto) {
-    val equipment = getEquipment(id);
+    val equipment = getById(id);
 
     equipmentWithUpdateEquipmentRequestDtoValidator.validate(equipment, requestDto);
 
@@ -77,10 +77,11 @@ public class CurrentUserEquipmentService implements EquipmentService {
   @Override
   @Transactional
   public void deleteEquipmentById(Long id) {
-    equipmentRepository.delete(getEquipment(id));
+    equipmentRepository.delete(getById(id));
   }
 
-  private Equipment getEquipment(Long id) {
+  @Override
+  public Equipment getById(Long id) {
     val equipment = equipmentRepository.findById(id)
       .orElseThrow(EntityNotFoundException::new);
 

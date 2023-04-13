@@ -55,6 +55,12 @@ public class RegistrationTokenServiceImpl implements RegistrationTokenService {
     return registrationTokenRepository.save(registrationToken);
   }
 
+  @Override
+  public RegistrationToken getRegistrationTokenByUUID(UUID uuid) {
+    return registrationTokenRepository.findByUuid(uuid)
+      .orElseThrow(InvalidRegistrationTokenException::new);
+  }
+
   private void initializeRegistrationToken(RegistrationToken registrationToken) {
     val now = LocalDateTime.now();
     registrationToken.setCreateDateTime(now);
@@ -62,8 +68,7 @@ public class RegistrationTokenServiceImpl implements RegistrationTokenService {
   }
 
   private RegistrationToken getRegistrationTokenAndValidateIfConfirmed(UUID uuid) {
-    val registrationToken = registrationTokenRepository.findByUuid(uuid)
-      .orElseThrow(InvalidRegistrationTokenException::new);
+    val registrationToken = getRegistrationTokenByUUID(uuid);
 
     if (registrationToken.isConfirmed())
       throw new RegistrationTokenAlreadyConfirmedException();

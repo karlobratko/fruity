@@ -79,52 +79,6 @@ public class EmployeeServiceUnitTest implements ServiceUnitTest {
   public class WHEN_getEmployeeById {
 
     @Test
-    @DisplayName("GIVEN invalid id " +
-      "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
-      // GIVEN
-      // ... invalid id
-      val id = 1L;
-      given(employeeRepository.findById(same(id))).willReturn(Optional.empty());
-
-      // WHEN
-      // ... getEmployeeById is called
-      when(() -> employeeService.getEmployeeById(id));
-
-      // THEN
-      // ... EntityNotFoundException is thrown
-      and.then(caughtException())
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val employee = EmployeeMother.complete().build();
-      given(employeeRepository.findById(same(id))).willReturn(Optional.of(employee));
-      // ... CurrentUserService's logged-in User is not equal to Employee User
-      val loggedInUser = UserMother.complete().id(employee.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getEmployeeById is called
-      when(() -> employeeService.getEmployeeById(id));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
     @DisplayName("GIVEN id " +
       "... THEN EmployeeResponseDto is returned")
     public void GIVEN_id_THEN_EmployeeResponseDto() {
@@ -200,56 +154,6 @@ public class EmployeeServiceUnitTest implements ServiceUnitTest {
   public class WHEN_updateEmployeeById {
 
     @Test
-    @DisplayName("GIVEN invalid id and UpdateEmployeeRequestDto " +
-      "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidIdAndUpdateEmployeeRequestDto_THEN_EntityNotFoundException() {
-      // GIVEN
-      // ... invalid id
-      val id = 1L;
-      given(employeeRepository.findById(same(id))).willReturn(Optional.empty());
-      // ... UpdateEmployeeRequestDto
-      val requestDto = UpdateEmployeeRequestDtoMother.complete().build();
-
-      // WHEN
-      // ... updateEmployeeById is called
-      when(() -> employeeService.updateEmployeeById(id, requestDto));
-
-      // THEN
-      // ... EntityNotFoundException is thrown
-      and.then(caughtException())
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id, UpdateEmployeeRequestDto, and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndUpdateEmployeeRequestDtoAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val employee = EmployeeMother.complete().build();
-      given(employeeRepository.findById(same(id))).willReturn(Optional.of(employee));
-      // ... UpdateEmployeeRequestDto
-      val requestDto = UpdateEmployeeRequestDtoMother.complete().build();
-      // ... CurrentUserService's logged-in User is not equal to User
-      val loggedInUser = UserMother.complete().id(employee.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... updateEmployeeById is called
-      when(() -> employeeService.updateEmployeeById(id, requestDto));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
     @DisplayName("GIVEN id and UpdateEmployeeRequestDto " +
       "... THEN EmployeeResponseDto is returned")
     public void GIVEN_idAndUpdateEmployeeRequestDto_THEN_EmployeeResponseDto() {
@@ -289,52 +193,6 @@ public class EmployeeServiceUnitTest implements ServiceUnitTest {
   @Nested
   @DisplayName("WHEN deleteEmployeeById is called")
   public class WHEN_deleteEmployeeById {
-
-    @Test
-    @DisplayName("GIVEN invalid id " +
-      "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
-      // GIVEN
-      // ... invalid id
-      val id = 1L;
-      given(employeeRepository.findById(same(id))).willReturn(Optional.empty());
-
-      // WHEN
-      // ... getEmployeeById is called
-      when(() -> employeeService.deleteEmployeeById(id));
-
-      // THEN
-      // ... EntityNotFoundException is thrown
-      and.then(caughtException())
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val employee = EmployeeMother.complete().build();
-      given(employeeRepository.findById(same(id))).willReturn(Optional.of(employee));
-      // ... CurrentUserService's logged-in User is not equal to Employee User
-      val loggedInUser = UserMother.complete().id(employee.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getEmployeeById is called
-      when(() -> employeeService.deleteEmployeeById(id));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
 
     @Test
     @DisplayName("GIVEN id and manager employee " +
@@ -387,6 +245,82 @@ public class EmployeeServiceUnitTest implements ServiceUnitTest {
 
       // THEN
       // ... void
+    }
+
+  }
+
+  @Nested
+  @DisplayName("WHEN getById is called")
+  public class WHEN_getById {
+
+    @Test
+    @DisplayName("GIVEN invalid id " +
+      "... THEN EntityNotFoundException is thrown")
+    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
+      // GIVEN
+      // ... invalid id
+      val id = 1L;
+      given(employeeRepository.findById(same(id))).willReturn(Optional.empty());
+
+      // WHEN
+      // ... getById is called
+      when(() -> employeeService.getById(id));
+
+      // THEN
+      // ... EntityNotFoundException is thrown
+      and.then(caughtException())
+        .isInstanceOf(EntityNotFoundException.class)
+        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
+        .hasNoCause();
+    }
+
+    @Test
+    @DisplayName("GIVEN id and foreign logged-in User " +
+      "... THEN ForeignUserDataAccessException is thrown")
+    public void GIVEN_idAndForeignUser_THEN_ForeignUserDataAccessException() {
+      // GIVEN
+      // ... id
+      val id = 1L;
+      val employee = EmployeeMother.complete().build();
+      given(employeeRepository.findById(same(id))).willReturn(Optional.of(employee));
+      // ... CurrentUserService's logged-in User is not equal to Employee User
+      val loggedInUser = UserMother.complete().id(employee.getUser().getId() + 1).build();
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+
+      // WHEN
+      // ... getById is called
+      when(() -> employeeService.getById(id));
+
+      // THEN
+      // ... ForeignUserDataAccessException is thrown
+      and.then(caughtException())
+        .isInstanceOf(ForeignUserDataAccessException.class)
+        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
+        .hasNoCause();
+    }
+
+    @Test
+    @DisplayName("GIVEN id " +
+      "... THEN Employee is returned")
+    public void GIVEN_id_THEN_Employee() {
+      // GIVEN
+      // ... id
+      val id = 1L;
+      val expectedEmployee = EmployeeMother.complete().build();
+      given(employeeRepository.findById(same(id))).willReturn(Optional.of(expectedEmployee));
+      // ... CurrentUserService's logged-in User is equal to User
+      val loggedInUser = expectedEmployee.getUser();
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+
+      // WHEN
+      // ... getById is called
+      val returnedEmployee = employeeService.getById(id);
+
+      // THEN
+      // ... EmployeeResponseDto is returned
+      and.then(returnedEmployee)
+        .isNotNull()
+        .isEqualTo(expectedEmployee);
     }
 
   }

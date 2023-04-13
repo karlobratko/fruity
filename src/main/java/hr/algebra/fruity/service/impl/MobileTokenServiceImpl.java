@@ -26,10 +26,11 @@ public class MobileTokenServiceImpl implements MobileTokenService {
 
   @Override
   public MobileToken verifyMobileToken(UUID uuid) {
-    return getMobileToken(uuid);
+    return getMobileTokenByUUID(uuid);
   }
 
-  private MobileToken getMobileToken(UUID uuid) {
+  @Override
+  public MobileToken getMobileTokenByUUID(UUID uuid) {
     return mobileTokenRepository.findByUuid(uuid)
       .orElseThrow(InvalidMobileTokenException::new);
   }

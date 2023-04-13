@@ -33,7 +33,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   @Override
   @Transactional
   public RefreshToken refreshRefreshToken(UUID uuid) {
-    val refreshToken = getRegistrationToken(uuid);
+    val refreshToken = getRefreshTokenByUUID(uuid);
     initializeRefreshToken(refreshToken);
 
     return refreshTokenRepository.save(refreshToken);
@@ -41,7 +41,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
   @Override
   public RefreshToken verifyRefreshToken(UUID uuid) {
-    val refreshToken = getRegistrationToken(uuid);
+    val refreshToken = getRefreshTokenByUUID(uuid);
 
     if (refreshToken.isExpired())
       throw new RefreshTokenExpiredException();
@@ -54,7 +54,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     refreshToken.setExpireDateTime(now.plusSeconds(jwtProperties.refreshValidityDurationInMs().getSeconds()));
   }
 
-  private RefreshToken getRegistrationToken(UUID uuid) {
+  @Override
+  public RefreshToken getRefreshTokenByUUID(UUID uuid) {
     return refreshTokenRepository.findByUuid(uuid)
       .orElseThrow(InvalidRefreshTokenException::new);
   }

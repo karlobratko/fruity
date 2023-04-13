@@ -78,27 +78,6 @@ public class CountyServiceUnitTest implements ServiceUnitTest {
   public class WHEN_getCountyById {
 
     @Test
-    @DisplayName("GIVEN invalid id " +
-      "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
-      // GIVEN
-      // ... invalid id
-      val id = 1;
-      given(countyRepository.findById(same(id))).willReturn(Optional.empty());
-
-      // WHEN
-      // ... getCountyById is called
-      when(() -> countyService.getCountyById(id));
-
-      // THEN
-      // ... EntityNotFoundException is thrown
-      and.then(caughtException())
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
     @DisplayName("GIVEN id " +
       "... THEN CountyResponseDto is returned")
     public void GIVEN_id_THEN_CountyResponseDto() {
@@ -120,6 +99,55 @@ public class CountyServiceUnitTest implements ServiceUnitTest {
       and.then(responseDto)
         .isNotNull()
         .isEqualTo(expectedResponseDto);
+    }
+
+  }
+
+
+  @Nested
+  @DisplayName("WHEN getById is called")
+  public class WHEN_getById {
+
+    @Test
+    @DisplayName("GIVEN invalid id " +
+      "... THEN EntityNotFoundException is thrown")
+    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
+      // GIVEN
+      // ... invalid id
+      val id = 1;
+      given(countyRepository.findById(same(id))).willReturn(Optional.empty());
+
+      // WHEN
+      // ... getById is called
+      when(() -> countyService.getById(id));
+
+      // THEN
+      // ... EntityNotFoundException is thrown
+      and.then(caughtException())
+        .isInstanceOf(EntityNotFoundException.class)
+        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
+        .hasNoCause();
+    }
+
+    @Test
+    @DisplayName("GIVEN id " +
+      "... THEN County is returned")
+    public void GIVEN_id_THEN_County() {
+      // GIVEN
+      // ... id
+      val id = 1;
+      val expectedCounty = CountyMother.complete().build();
+      given(countyRepository.findById(same(id))).willReturn(Optional.of(expectedCounty));
+
+      // WHEN
+      // ... getById is called
+      val returnedCounty = countyService.getById(id);
+
+      // THEN
+      // ... CountyResponseDto is returned
+      and.then(returnedCounty)
+        .isNotNull()
+        .isEqualTo(expectedCounty);
     }
 
   }

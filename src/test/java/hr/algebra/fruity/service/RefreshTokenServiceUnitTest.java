@@ -78,28 +78,6 @@ public class RefreshTokenServiceUnitTest implements ServiceUnitTest {
   public class WHEN_refreshRefreshToken {
 
     @Test
-    @DisplayName("GIVEN invalid UUID " +
-      "... THEN InvalidRefreshTokenException is thrown")
-    public void GIVEN_invalidUUID_THEN_InvalidRefreshTokenException() {
-      // GIVEN
-      // ... UUID
-      val uuid = UUID.randomUUID();
-      // ... RefreshTokenRepository fails to find RefreshToken by UUID
-      given(refreshTokenRepository.findByUuid(same(uuid))).willReturn(Optional.empty());
-
-      // WHEN
-      // ... confirmRefreshToken is called
-      when(() -> refreshTokenService.refreshRefreshToken(uuid));
-
-      // THEN
-      // ... InvalidRefreshTokenException is thrown
-      and.then(caughtException())
-        .isInstanceOf(InvalidRefreshTokenException.class)
-        .hasMessage(InvalidRefreshTokenException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
     @DisplayName("GIVEN UUID " +
       "... THEN RefreshToken is returned")
     public void GIVEN_UUID_THEN_RefreshToken() {
@@ -193,6 +171,54 @@ public class RefreshTokenServiceUnitTest implements ServiceUnitTest {
       // THEN
       // ... RefreshToken is returned
       and.then(refreshToken)
+        .isNotNull()
+        .isEqualTo(expectedRefreshToken);
+    }
+
+  }
+
+  @Nested
+  @DisplayName("WHEN getById is called")
+  public class WHEN_getById {
+
+    @Test
+    @DisplayName("GIVEN invalid id " +
+      "... THEN InvalidRefreshTokenException is thrown")
+    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
+      // GIVEN
+      // ... invalid id
+      val uuid = UUID.randomUUID();
+      given(refreshTokenRepository.findByUuid(same(uuid))).willReturn(Optional.empty());
+
+      // WHEN
+      // ... getById is called
+      when(() -> refreshTokenService.getRefreshTokenByUUID(uuid));
+
+      // THEN
+      // ... EntityNotFoundException is thrown
+      and.then(caughtException())
+        .isInstanceOf(InvalidRefreshTokenException.class)
+        .hasMessage(InvalidRefreshTokenException.Constants.exceptionMessageFormat)
+        .hasNoCause();
+    }
+
+    @Test
+    @DisplayName("GIVEN id " +
+      "... THEN RefreshToken is returned")
+    public void GIVEN_id_THEN_RefreshToken() {
+      // GIVEN
+      // ... id
+      val uuid = UUID.randomUUID();
+      val expectedRefreshToken = RefreshTokenMother.complete().build();
+      given(refreshTokenRepository.findByUuid(same(uuid))).willReturn(Optional.of(expectedRefreshToken));
+
+      // WHEN
+      // ... getById is called
+      val returnedRefreshToken = refreshTokenService.getRefreshTokenByUUID(uuid);
+
+      // THEN
+      // ... RefreshTokenResponseDto is returned
+      and.then(returnedRefreshToken)
         .isNotNull()
         .isEqualTo(expectedRefreshToken);
     }

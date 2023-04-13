@@ -78,28 +78,6 @@ public class RegistrationTokenServiceUnitTest implements ServiceUnitTest {
   public class WHEN_confirmRegistrationToken {
 
     @Test
-    @DisplayName("GIVEN invalid UUID " +
-      "... THEN InvalidRegistrationTokenException is thrown")
-    public void GIVEN_invalidUUID_THEN_InvalidRegistrationTokenException() {
-      // GIVEN
-      // ... UUID
-      val uuid = UUID.randomUUID();
-      // ... RegistrationTokenRepository fails to find RegistrationToken by UUID
-      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.empty());
-
-      // WHEN
-      // ... confirmRegistrationToken is called
-      when(() -> registrationTokenService.confirmRegistrationToken(uuid));
-
-      // THEN
-      // ... InvalidRegistrationTokenException is thrown
-      and.then(caughtException())
-        .isInstanceOf(InvalidRegistrationTokenException.class)
-        .hasMessage(InvalidRegistrationTokenException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
     @DisplayName("GIVEN UUID and confirmed RegistrationToken " +
       "... THEN RegistrationTokenAlreadyConfirmedException is thrown")
     public void GIVEN_UUIDAndConfirmed_THEN_RegistrationTokenAlreadyConfirmedException() {
@@ -180,28 +158,6 @@ public class RegistrationTokenServiceUnitTest implements ServiceUnitTest {
   public class WHEN_refreshRegistrationToken {
 
     @Test
-    @DisplayName("GIVEN invalid UUID" +
-      "... THEN InvalidRegistrationTokenException is thrown")
-    public void GIVEN_invalidUUID_THEN_InvalidRegistrationTokenException() {
-      // GIVEN
-      // ... UUID
-      val uuid = UUID.randomUUID();
-      // ... RegistrationTokenRepository fails to find RegistrationToken by UUID
-      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.empty());
-
-      // WHEN
-      // ... resendRegistrationToken is called
-      when(() -> registrationTokenService.refreshRegistrationToken(uuid));
-
-      // THEN
-      // ... InvalidRegistrationTokenException is thrown
-      and.then(caughtException())
-        .isInstanceOf(InvalidRegistrationTokenException.class)
-        .hasMessage(InvalidRegistrationTokenException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
     @DisplayName("GIVEN UUID" +
       "... THEN RegistrationToken is returned")
     public void GIVEN_UUID_THEN_RegistrationToken() {
@@ -225,6 +181,54 @@ public class RegistrationTokenServiceUnitTest implements ServiceUnitTest {
         .isNotNull()
         .isEqualTo(expectedRegistrationToken);
       and.then(registrationToken.getConfirmDateTime()).isNull();
+    }
+
+  }
+
+  @Nested
+  @DisplayName("WHEN getById is called")
+  public class WHEN_getById {
+
+    @Test
+    @DisplayName("GIVEN invalid id " +
+      "... THEN InvalidRegistrationTokenException is thrown")
+    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
+      // GIVEN
+      // ... invalid id
+      val uuid = UUID.randomUUID();
+      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.empty());
+
+      // WHEN
+      // ... getById is called
+      when(() -> registrationTokenService.getRegistrationTokenByUUID(uuid));
+
+      // THEN
+      // ... EntityNotFoundException is thrown
+      and.then(caughtException())
+        .isInstanceOf(InvalidRegistrationTokenException.class)
+        .hasMessage(InvalidRegistrationTokenException.Constants.exceptionMessageFormat)
+        .hasNoCause();
+    }
+
+    @Test
+    @DisplayName("GIVEN id " +
+      "... THEN RegistrationToken is returned")
+    public void GIVEN_id_THEN_RegistrationToken() {
+      // GIVEN
+      // ... id
+      val uuid = UUID.randomUUID();
+      val expectedRegistrationToken = RegistrationTokenMother.complete().build();
+      given(registrationTokenRepository.findByUuid(same(uuid))).willReturn(Optional.of(expectedRegistrationToken));
+
+      // WHEN
+      // ... getById is called
+      val returnedRegistrationToken = registrationTokenService.getRegistrationTokenByUUID(uuid);
+
+      // THEN
+      // ... RegistrationTokenResponseDto is returned
+      and.then(returnedRegistrationToken)
+        .isNotNull()
+        .isEqualTo(expectedRegistrationToken);
     }
 
   }

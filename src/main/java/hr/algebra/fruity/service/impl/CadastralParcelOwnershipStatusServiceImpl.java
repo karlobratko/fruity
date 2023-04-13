@@ -28,10 +28,11 @@ public class CadastralParcelOwnershipStatusServiceImpl implements CadastralParce
 
   @Override
   public CadastralParcelOwnershipStatusResponseDto getCadastralParcelOwnershipStatusById(Integer id) {
-    return conversionService.convert(getCadastralParcelOwnershipStatus(id), CadastralParcelOwnershipStatusResponseDto.class);
+    return conversionService.convert(getById(id), CadastralParcelOwnershipStatusResponseDto.class);
   }
 
-  private CadastralParcelOwnershipStatus getCadastralParcelOwnershipStatus(Integer id) {
+  @Override
+  public CadastralParcelOwnershipStatus getById(Integer id) {
     val cadastralParcelOwnershipStatus = cadastralParcelOwnershipStatusRepository.findById(id)
       .orElseThrow(EntityNotFoundException::new);
 

@@ -29,10 +29,11 @@ public class CadastralMunicipalityServiceImpl implements CadastralMunicipalitySe
 
   @Override
   public FullCadastralMunicipalityResponseDto getCadastralMunicipalityById(Integer id) {
-    return conversionService.convert(getCadastralMunicipality(id), FullCadastralMunicipalityResponseDto.class);
+    return conversionService.convert(getById(id), FullCadastralMunicipalityResponseDto.class);
   }
 
-  private CadastralMunicipality getCadastralMunicipality(Integer id) {
+  @Override
+  public CadastralMunicipality getById(Integer id) {
     val cadastralMunicipality = cadastralMunicipalityRepository.findById(id)
       .orElseThrow(EntityNotFoundException::new);
 

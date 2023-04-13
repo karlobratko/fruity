@@ -28,10 +28,11 @@ public class CountyServiceImpl implements CountyService {
 
   @Override
   public CountyResponseDto getCountyById(Integer id) {
-    return conversionService.convert(getCounty(id), CountyResponseDto.class);
+    return conversionService.convert(getById(id), CountyResponseDto.class);
   }
 
-  private County getCounty(Integer id) {
+  @Override
+  public County getById(Integer id) {
     val county = countyRepository.findById(id)
       .orElseThrow(EntityNotFoundException::new);
 

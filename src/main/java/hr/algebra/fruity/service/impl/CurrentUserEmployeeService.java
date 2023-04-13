@@ -57,7 +57,7 @@ public class CurrentUserEmployeeService implements EmployeeService {
 
   @Override
   public FullEmployeeResponseDto getEmployeeById(Long id) {
-    return conversionService.convert(getEmployee(id), FullEmployeeResponseDto.class);
+    return conversionService.convert(getById(id), FullEmployeeResponseDto.class);
   }
 
   @Override
@@ -79,7 +79,7 @@ public class CurrentUserEmployeeService implements EmployeeService {
   @Override
   @Transactional
   public FullEmployeeResponseDto updateEmployeeById(Long id, UpdateEmployeeRequestDto requestDto) {
-    val employee = getEmployee(id);
+    val employee = getById(id);
 
     employeeWithUpdateEmployeeRequestDtoValidator.validate(employee, requestDto);
 
@@ -94,7 +94,7 @@ public class CurrentUserEmployeeService implements EmployeeService {
   @Override
   @Transactional
   public void deleteEmployeeById(Long id) {
-    val employee = getEmployee(id);
+    val employee = getById(id);
 
     if (Objects.equals(employee.getRole(), employeeRoleService.getEmployeeRole(EmployeeRoles.ROLE_MANAGER)))
       throw new ManagerEmployeeDeleteException();
@@ -102,7 +102,8 @@ public class CurrentUserEmployeeService implements EmployeeService {
     employeeRepository.delete(employee);
   }
 
-  private Employee getEmployee(Long id) {
+  @Override
+  public Employee getById(Long id) {
     val employee = employeeRepository.findById(id)
       .orElseThrow(EntityNotFoundException::new);
 

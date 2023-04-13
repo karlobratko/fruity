@@ -78,27 +78,6 @@ public class CadastralParcelOwnershipStatusServiceUnitTest implements ServiceUni
   public class WHEN_getCadastralParcelOwnershipStatusById {
 
     @Test
-    @DisplayName("GIVEN invalid id " +
-      "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
-      // GIVEN
-      // ... invalid id
-      val id = 1;
-      given(cadastralParcelOwnershipStatusRepository.findById(same(id))).willReturn(Optional.empty());
-
-      // WHEN
-      // ... getCadastralParcelOwnershipStatusById is called
-      when(() -> cadastralParcelOwnershipStatusService.getCadastralParcelOwnershipStatusById(id));
-
-      // THEN
-      // ... EntityNotFoundException is thrown
-      and.then(caughtException())
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
     @DisplayName("GIVEN id " +
       "... THEN CadastralParcelOwnershipStatusResponseDto is returned")
     public void GIVEN_id_THEN_CadastralParcelOwnershipStatusResponseDto() {
@@ -120,6 +99,54 @@ public class CadastralParcelOwnershipStatusServiceUnitTest implements ServiceUni
       and.then(responseDto)
         .isNotNull()
         .isEqualTo(expectedResponseDto);
+    }
+
+  }
+
+  @Nested
+  @DisplayName("WHEN getById is called")
+  public class WHEN_getById {
+
+    @Test
+    @DisplayName("GIVEN invalid id " +
+      "... THEN EntityNotFoundException is thrown")
+    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
+      // GIVEN
+      // ... invalid id
+      val id = 1;
+      given(cadastralParcelOwnershipStatusRepository.findById(same(id))).willReturn(Optional.empty());
+
+      // WHEN
+      // ... getById is called
+      when(() -> cadastralParcelOwnershipStatusService.getById(id));
+
+      // THEN
+      // ... EntityNotFoundException is thrown
+      and.then(caughtException())
+        .isInstanceOf(EntityNotFoundException.class)
+        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
+        .hasNoCause();
+    }
+
+    @Test
+    @DisplayName("GIVEN id " +
+      "... THEN CadastralParcelOwnershipStatus is returned")
+    public void GIVEN_id_THEN_CadastralParcelOwnershipStatus() {
+      // GIVEN
+      // ... id
+      val id = 1;
+      val expectedCadastralParcelOwnershipStatus = CadastralParcelOwnershipStatusMother.complete().build();
+      given(cadastralParcelOwnershipStatusRepository.findById(same(id))).willReturn(Optional.of(expectedCadastralParcelOwnershipStatus));
+
+      // WHEN
+      // ... getById is called
+      val returnedCadastralParcelOwnershipStatus = cadastralParcelOwnershipStatusService.getById(id);
+
+      // THEN
+      // ... CadastralParcelOwnershipStatusResponseDto is returned
+      and.then(returnedCadastralParcelOwnershipStatus)
+        .isNotNull()
+        .isEqualTo(expectedCadastralParcelOwnershipStatus);
     }
 
   }
