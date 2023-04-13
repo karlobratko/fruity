@@ -7,8 +7,8 @@ import hr.algebra.fruity.mapper.AttachmentMapper;
 import hr.algebra.fruity.model.Attachment;
 import hr.algebra.fruity.repository.AttachmentRepository;
 import hr.algebra.fruity.service.impl.CurrentUserAttachmentService;
-import hr.algebra.fruity.utils.mother.dto.CreateAttachmentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.AttachmentResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.CreateAttachmentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateAttachmentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.model.AttachmentMother;
 import hr.algebra.fruity.utils.mother.model.UserMother;
@@ -63,52 +63,6 @@ public class AttachmentServiceUnitTest implements ServiceUnitTest {
   @Nested
   @DisplayName("WHEN getAttachmentById is called")
   public class WHEN_getAttachmentById {
-
-    @Test
-    @DisplayName("GIVEN invalid id " +
-      "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
-      // GIVEN
-      // ... invalid id
-      val id = 1L;
-      given(attachmentRepository.findById(same(id))).willReturn(Optional.empty());
-
-      // WHEN
-      // ... getAttachmentById is called
-      when(() -> attachmentService.getAttachmentById(id));
-
-      // THEN
-      // ... EntityNotFoundException is thrown
-      and.then(caughtException())
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val attachment = AttachmentMother.complete().build();
-      given(attachmentRepository.findById(same(id))).willReturn(Optional.of(attachment));
-      // ... CurrentUserService's logged-in User is not equal to Attachment User
-      val loggedInUser = UserMother.complete().id(attachment.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getAttachmentById is called
-      when(() -> attachmentService.getAttachmentById(id));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
 
     @Test
     @DisplayName("GIVEN id " +
@@ -180,56 +134,6 @@ public class AttachmentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_updateAttachmentById {
 
     @Test
-    @DisplayName("GIVEN invalid id and UpdateAttachmentRequestDto " +
-      "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidIdAndUpdateAttachmentRequestDto_THEN_EntityNotFoundException() {
-      // GIVEN
-      // ... invalid id
-      val id = 1L;
-      given(attachmentRepository.findById(same(id))).willReturn(Optional.empty());
-      // ... UpdateAttachmentRequestDto
-      val requestDto = UpdateAttachmentRequestDtoMother.complete().build();
-
-      // WHEN
-      // ... updateAttachmentById is called
-      when(() -> attachmentService.updateAttachmentById(id, requestDto));
-
-      // THEN
-      // ... EntityNotFoundException is thrown
-      and.then(caughtException())
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id, UpdateAttachmentRequestDto, and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndUpdateAttachmentRequestDtoAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val attachment = AttachmentMother.complete().build();
-      given(attachmentRepository.findById(same(id))).willReturn(Optional.of(attachment));
-      // ... UpdateAttachmentRequestDto
-      val requestDto = UpdateAttachmentRequestDtoMother.complete().build();
-      // ... CurrentUserService's logged-in User is not equal to User
-      val loggedInUser = UserMother.complete().id(attachment.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... updateAttachmentById is called
-      when(() -> attachmentService.updateAttachmentById(id, requestDto));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
     @DisplayName("GIVEN id and UpdateAttachmentRequestDto " +
       "... THEN AttachmentResponseDto is returned")
     public void GIVEN_idAndUpdateAttachmentRequestDto_THEN_AttachmentResponseDto() {
@@ -271,6 +175,34 @@ public class AttachmentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_deleteAttachmentById {
 
     @Test
+    @DisplayName("GIVEN id " +
+      "... THEN void")
+    public void GIVEN_id_THEN_void() {
+      // GIVEN
+      // ... id
+      val id = 1L;
+      val attachment = AttachmentMother.complete().build();
+      given(attachmentRepository.findById(same(id))).willReturn(Optional.of(attachment));
+      // ... CurrentUserService's logged-in User is not equal to Attachment User
+      val loggedInUser = attachment.getUser();
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      // ... AttachmentRepository successfully deletes Attachment
+      willDoNothing().given(attachmentRepository).delete(attachment);
+
+      // WHEN
+      attachmentService.deleteAttachmentById(id);
+
+      // THEN
+      // ... void
+    }
+
+  }
+
+  @Nested
+  @DisplayName("WHEN getById is called")
+  public class WHEN_getById {
+
+    @Test
     @DisplayName("GIVEN invalid id " +
       "... THEN EntityNotFoundException is thrown")
     public void GIVEN_invalidId_THEN_EntityNotFoundException() {
@@ -280,8 +212,8 @@ public class AttachmentServiceUnitTest implements ServiceUnitTest {
       given(attachmentRepository.findById(same(id))).willReturn(Optional.empty());
 
       // WHEN
-      // ... getAttachmentById is called
-      when(() -> attachmentService.deleteAttachmentById(id));
+      // ... getById is called
+      when(() -> attachmentService.getById(id));
 
       // THEN
       // ... EntityNotFoundException is thrown
@@ -305,8 +237,8 @@ public class AttachmentServiceUnitTest implements ServiceUnitTest {
       given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
-      // ... getAttachmentById is called
-      when(() -> attachmentService.deleteAttachmentById(id));
+      // ... getById is called
+      when(() -> attachmentService.getById(id));
 
       // THEN
       // ... ForeignUserDataAccessException is thrown
@@ -318,24 +250,26 @@ public class AttachmentServiceUnitTest implements ServiceUnitTest {
 
     @Test
     @DisplayName("GIVEN id " +
-      "... THEN void")
-    public void GIVEN_id_THEN_void() {
+      "... THEN Attachment is returned")
+    public void GIVEN_id_THEN_Attachment() {
       // GIVEN
       // ... id
       val id = 1L;
-      val attachment = AttachmentMother.complete().build();
-      given(attachmentRepository.findById(same(id))).willReturn(Optional.of(attachment));
-      // ... CurrentUserService's logged-in User is not equal to Attachment User
-      val loggedInUser = attachment.getUser();
+      val expectedAttachment = AttachmentMother.complete().build();
+      given(attachmentRepository.findById(same(id))).willReturn(Optional.of(expectedAttachment));
+      // ... CurrentUserService's logged-in User is equal to User
+      val loggedInUser = expectedAttachment.getUser();
       given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... AttachmentRepository successfully deletes Attachment
-      willDoNothing().given(attachmentRepository).delete(attachment);
 
       // WHEN
-      attachmentService.deleteAttachmentById(id);
+      // ... getById is called
+      val returnedAttachment = attachmentService.getById(id);
 
       // THEN
-      // ... void
+      // ... AttachmentResponseDto is returned
+      and.then(returnedAttachment)
+        .isNotNull()
+        .isEqualTo(expectedAttachment);
     }
 
   }

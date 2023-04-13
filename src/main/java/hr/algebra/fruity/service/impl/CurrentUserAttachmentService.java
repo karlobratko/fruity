@@ -10,6 +10,7 @@ import hr.algebra.fruity.model.Attachment;
 import hr.algebra.fruity.repository.AttachmentRepository;
 import hr.algebra.fruity.service.AttachmentService;
 import hr.algebra.fruity.service.CurrentRequestUserService;
+import hr.algebra.fruity.service.EquipmentService;
 import hr.algebra.fruity.validator.AttachmentWithUpdateAttachmentRequestDtoValidator;
 import hr.algebra.fruity.validator.CreateAttachmentRequestDtoValidator;
 import jakarta.transaction.Transactional;
@@ -36,6 +37,8 @@ public class CurrentUserAttachmentService implements AttachmentService {
 
   private final AttachmentRepository attachmentRepository;
 
+  private final EquipmentService equipmentService;
+
   @Override
   public List<AttachmentResponseDto> getAllAttachments() {
     return attachmentRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
@@ -44,8 +47,15 @@ public class CurrentUserAttachmentService implements AttachmentService {
   }
 
   @Override
+  public List<AttachmentResponseDto> getAllAttachmentsByEquipmentId(Long equipmentFk) {
+    return attachmentRepository.findAllByEquipment(equipmentService.getById(equipmentFk)).stream()
+      .map(equipment -> conversionService.convert(equipment, AttachmentResponseDto.class))
+      .toList();
+  }
+
+  @Override
   public AttachmentResponseDto getAttachmentById(Long id) {
-    return conversionService.convert(getAttachment(id), AttachmentResponseDto.class);
+    return conversionService.convert(getById(id), AttachmentResponseDto.class);
   }
 
   @Override
@@ -61,7 +71,7 @@ public class CurrentUserAttachmentService implements AttachmentService {
   @Override
   @Transactional
   public AttachmentResponseDto updateAttachmentById(Long id, UpdateAttachmentRequestDto requestDto) {
-    val attachment = getAttachment(id);
+    val attachment = getById(id);
 
     attachmentWithUpdateAttachmentRequestDtoValidator.validate(attachment, requestDto);
 
@@ -76,10 +86,11 @@ public class CurrentUserAttachmentService implements AttachmentService {
   @Override
   @Transactional
   public void deleteAttachmentById(Long id) {
-    attachmentRepository.delete(getAttachment(id));
+    attachmentRepository.delete(getById(id));
   }
 
-  private Attachment getAttachment(Long id) {
+  @Override
+  public Attachment getById(Long id) {
     val attachment = attachmentRepository.findById(id)
       .orElseThrow(EntityNotFoundException::new);
 
