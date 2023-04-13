@@ -4,8 +4,10 @@ import hr.algebra.fruity.constants.ApplicationConstants;
 import hr.algebra.fruity.dto.request.CreateCadastralParcelRequestDto;
 import hr.algebra.fruity.dto.request.UpdateCadastralParcelRequestDto;
 import hr.algebra.fruity.dto.response.ApiResponse;
+import hr.algebra.fruity.dto.response.ArcodeParcelResponseDto;
 import hr.algebra.fruity.dto.response.CadastralParcelResponseDto;
 import hr.algebra.fruity.dto.response.FullCadastralParcelResponseDto;
+import hr.algebra.fruity.service.ArcodeParcelService;
 import hr.algebra.fruity.service.CadastralParcelService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -28,6 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class CadastralParcelController {
 
   private final CadastralParcelService cadastralParcelService;
+
+  private final ArcodeParcelService arcodeParcelService;
 
   @GetMapping(Mappings.getAllCadastralParcelsGetMapping)
   public ResponseEntity<ApiResponse<List<CadastralParcelResponseDto>>> getAllCadastralParcels() {
@@ -80,6 +84,17 @@ public class CadastralParcelController {
       );
   }
 
+  @GetMapping(Mappings.getAllArcodeParcelsByCadastralParcelIdGetMapping)
+  public ResponseEntity<ApiResponse<List<ArcodeParcelResponseDto>>> getAllArcodeParcelsByCadastralParcelId(@PathVariable Long id) {
+    return ResponseEntity
+      .ok(
+        ApiResponse.ok(
+          arcodeParcelService.getAllArcodeParcelsByCadastralParcelId(id),
+          "Arkod parcele katastarske čestice uspješno dohvaćene."
+        )
+      );
+  }
+
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Mappings {
 
@@ -94,6 +109,8 @@ public class CadastralParcelController {
     public static final String updateCadastralParcelByIdPutMapping = "/{id}";
 
     public static final String deleteCadastralParcelByIdDeleteMapping = "/{id}";
+
+    public static final String getAllArcodeParcelsByCadastralParcelIdGetMapping = "/{id}/arcode-parcels";
 
   }
 

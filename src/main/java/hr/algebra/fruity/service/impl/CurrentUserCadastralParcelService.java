@@ -11,8 +11,8 @@ import hr.algebra.fruity.model.CadastralParcel;
 import hr.algebra.fruity.repository.CadastralParcelRepository;
 import hr.algebra.fruity.service.CadastralParcelService;
 import hr.algebra.fruity.service.CurrentRequestUserService;
-import hr.algebra.fruity.validator.CreateCadastralParcelRequestDtoValidator;
 import hr.algebra.fruity.validator.CadastralParcelWithUpdateCadastralParcelRequestDtoValidator;
+import hr.algebra.fruity.validator.CreateCadastralParcelRequestDtoValidator;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
@@ -46,7 +46,7 @@ public class CurrentUserCadastralParcelService implements CadastralParcelService
 
   @Override
   public FullCadastralParcelResponseDto getCadastralParcelById(Long id) {
-    return conversionService.convert(getCadastralParcel(id), FullCadastralParcelResponseDto.class);
+    return conversionService.convert(getById(id), FullCadastralParcelResponseDto.class);
   }
 
   @Override
@@ -62,7 +62,7 @@ public class CurrentUserCadastralParcelService implements CadastralParcelService
   @Override
   @Transactional
   public FullCadastralParcelResponseDto updateCadastralParcelById(Long id, UpdateCadastralParcelRequestDto requestDto) {
-    val cadastralParcel = getCadastralParcel(id);
+    val cadastralParcel = getById(id);
 
     cadastralParcelWithUpdateCadastralParcelRequestDtoValidator.validate(cadastralParcel, requestDto);
 
@@ -77,10 +77,11 @@ public class CurrentUserCadastralParcelService implements CadastralParcelService
   @Override
   @Transactional
   public void deleteCadastralParcelById(Long id) {
-    cadastralParcelRepository.delete(getCadastralParcel(id));
+    cadastralParcelRepository.delete(getById(id));
   }
 
-  private CadastralParcel getCadastralParcel(Long id) {
+  @Override
+  public CadastralParcel getById(Long id) {
     val cadastralParcel = cadastralParcelRepository.findById(id)
       .orElseThrow(EntityNotFoundException::new);
 

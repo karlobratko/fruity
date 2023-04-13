@@ -91,6 +91,10 @@ public class ArcodeParcel {
   @ToString.Include
   private @NonNull String name;
 
+  @ManyToOne(optional = false, fetch = FetchType.EAGER)
+  @JoinColumn(name = User.Constants.joinColumnName, nullable = false)
+  private @NonNull User user;
+
   @ManyToOne(optional = false, fetch = FetchType.LAZY)
   @JoinColumn(name = CadastralParcel.Constants.joinColumnName, nullable = false)
   private @NonNull CadastralParcel cadastralParcel;

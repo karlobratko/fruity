@@ -257,8 +257,8 @@ public class BootstrapDbRunner implements CommandLineRunner {
     // END INSERT CADASTRAL_PARCELS
 
     // BEGIN INSERT ARCODE_PARCELS
-    val arcodeParcel1 = ArcodeParcel.builder().cadastralParcel(cadastralParcel1).arcode(2970284).name("Oranica doma").surface(BigDecimal.valueOf(0.7200)).build();
-    val arcodeParcel2 = ArcodeParcel.builder().cadastralParcel(cadastralParcel1).arcode(2970303).name("Oranica doma 2").surface(BigDecimal.valueOf(0.1800)).build();
+    val arcodeParcel1 = ArcodeParcel.builder().cadastralParcel(cadastralParcel1).arcode(2970284).name("Oranica doma").user(user1).surface(BigDecimal.valueOf(0.7200)).build();
+    val arcodeParcel2 = ArcodeParcel.builder().cadastralParcel(cadastralParcel1).arcode(2970303).name("Oranica doma 2").user(user1).surface(BigDecimal.valueOf(0.1800)).build();
 
     arcodeParcelRepository.saveAll(
       List.of(

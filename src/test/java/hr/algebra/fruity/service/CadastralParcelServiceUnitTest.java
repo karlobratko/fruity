@@ -65,52 +65,6 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
   public class WHEN_getCadastralParcelById {
 
     @Test
-    @DisplayName("GIVEN invalid id " +
-      "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
-      // GIVEN
-      // ... invalid id
-      val id = 1L;
-      given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.empty());
-
-      // WHEN
-      // ... getCadastralParcelById is called
-      when(() -> cadastralParcelService.getCadastralParcelById(id));
-
-      // THEN
-      // ... EntityNotFoundException is thrown
-      and.then(caughtException())
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val cadastralParcel = CadastralParcelMother.complete().build();
-      given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.of(cadastralParcel));
-      // ... CurrentUserService's logged-in User is not equal to CadastralParcel User
-      val loggedInUser = UserMother.complete().id(cadastralParcel.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getCadastralParcelById is called
-      when(() -> cadastralParcelService.getCadastralParcelById(id));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
     @DisplayName("GIVEN id " +
       "... THEN FullCadastralParcelResponseDto is returned")
     public void GIVEN_id_THEN_FullCadastralParcelResponseDto() {
@@ -180,56 +134,6 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
   public class WHEN_updateCadastralParcelById {
 
     @Test
-    @DisplayName("GIVEN invalid id and UpdateCadastralParcelRequestDto " +
-      "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidIdAndUpdateCadastralParcelRequestDto_THEN_EntityNotFoundException() {
-      // GIVEN
-      // ... invalid id
-      val id = 1L;
-      given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.empty());
-      // ... UpdateCadastralParcelRequestDto
-      val requestDto = UpdateCadastralParcelRequestDtoMother.complete().build();
-
-      // WHEN
-      // ... updateCadastralParcelById is called
-      when(() -> cadastralParcelService.updateCadastralParcelById(id, requestDto));
-
-      // THEN
-      // ... EntityNotFoundException is thrown
-      and.then(caughtException())
-        .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id, UpdateCadastralParcelRequestDto, and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndUpdateCadastralParcelRequestDtoAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val cadastralParcel = CadastralParcelMother.complete().build();
-      given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.of(cadastralParcel));
-      // ... UpdateCadastralParcelRequestDto
-      val requestDto = UpdateCadastralParcelRequestDtoMother.complete().build();
-      // ... CurrentUserService's logged-in User is not equal to User
-      val loggedInUser = UserMother.complete().id(cadastralParcel.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... updateCadastralParcelById is called
-      when(() -> cadastralParcelService.updateCadastralParcelById(id, requestDto));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
     @DisplayName("GIVEN id and UpdateCadastralParcelRequestDto " +
       "... THEN FullCadastralParcelResponseDto is returned")
     public void GIVEN_idAndUpdateCadastralParcelRequestDto_THEN_FullCadastralParcelResponseDto() {
@@ -271,6 +175,34 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
   public class WHEN_deleteCadastralParcelById {
 
     @Test
+    @DisplayName("GIVEN id " +
+      "... THEN void")
+    public void GIVEN_id_THEN_void() {
+      // GIVEN
+      // ... id
+      val id = 1L;
+      val cadastralParcel = CadastralParcelMother.complete().build();
+      given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.of(cadastralParcel));
+      // ... CurrentUserService's logged-in User is not equal to CadastralParcel User
+      val loggedInUser = cadastralParcel.getUser();
+      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      // ... CadastralParcelRepository successfully deletes CadastralParcel
+      willDoNothing().given(cadastralParcelRepository).delete(cadastralParcel);
+
+      // WHEN
+      cadastralParcelService.deleteCadastralParcelById(id);
+
+      // THEN
+      // ... void
+    }
+
+  }
+
+  @Nested
+  @DisplayName("WHEN getById is called")
+  public class WHEN_getById {
+
+    @Test
     @DisplayName("GIVEN invalid id " +
       "... THEN EntityNotFoundException is thrown")
     public void GIVEN_invalidId_THEN_EntityNotFoundException() {
@@ -280,8 +212,8 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
       given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.empty());
 
       // WHEN
-      // ... getCadastralParcelById is called
-      when(() -> cadastralParcelService.deleteCadastralParcelById(id));
+      // ... getById is called
+      when(() -> cadastralParcelService.getById(id));
 
       // THEN
       // ... EntityNotFoundException is thrown
@@ -305,8 +237,8 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
       given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
-      // ... getCadastralParcelById is called
-      when(() -> cadastralParcelService.deleteCadastralParcelById(id));
+      // ... getById is called
+      when(() -> cadastralParcelService.getById(id));
 
       // THEN
       // ... ForeignUserDataAccessException is thrown
@@ -318,24 +250,26 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
 
     @Test
     @DisplayName("GIVEN id " +
-      "... THEN void")
-    public void GIVEN_id_THEN_void() {
+      "... THEN CadastralParcel is returned")
+    public void GIVEN_id_THEN_CadastralParcel() {
       // GIVEN
       // ... id
       val id = 1L;
-      val cadastralParcel = CadastralParcelMother.complete().build();
-      given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.of(cadastralParcel));
-      // ... CurrentUserService's logged-in User is not equal to CadastralParcel User
-      val loggedInUser = cadastralParcel.getUser();
+      val expectedCadastralParcel = CadastralParcelMother.complete().build();
+      given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.of(expectedCadastralParcel));
+      // ... CurrentUserService's logged-in User is equal to User
+      val loggedInUser = expectedCadastralParcel.getUser();
       given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... CadastralParcelRepository successfully deletes CadastralParcel
-      willDoNothing().given(cadastralParcelRepository).delete(cadastralParcel);
 
       // WHEN
-      cadastralParcelService.deleteCadastralParcelById(id);
+      // ... getById is called
+      val returnedCadastralParcel = cadastralParcelService.getById(id);
 
       // THEN
-      // ... void
+      // ... CadastralParcelResponseDto is returned
+      and.then(returnedCadastralParcel)
+        .isNotNull()
+        .isEqualTo(expectedCadastralParcel);
     }
 
   }
