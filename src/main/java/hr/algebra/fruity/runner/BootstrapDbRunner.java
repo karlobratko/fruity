@@ -268,15 +268,15 @@ public class BootstrapDbRunner implements CommandLineRunner {
     // END INSERT ARCODE_PARCELS
 
     // BEGIN INSERT ROW_CLUSTERS
-    val rowCluster1 = RowCluster.builder().arcodeParcel(arcodeParcel1).name("T1 Malina Polana").surface(BigDecimal.valueOf(715.00)).build();
-    val rowCluster2 = RowCluster.builder().arcodeParcel(arcodeParcel1).name("T2 Kupina Lochness").surface(BigDecimal.valueOf(887.50)).build();
-    val rowCluster3 = RowCluster.builder().arcodeParcel(arcodeParcel1).name("T3 Malina Sugana").surface(BigDecimal.valueOf(875.00)).build();
-    val rowCluster4 = RowCluster.builder().arcodeParcel(arcodeParcel1).name("T4 Aronija Nero").surface(BigDecimal.valueOf(720.00)).build();
-    val rowCluster5 = RowCluster.builder().arcodeParcel(arcodeParcel1).name("T5 Ribiz crni Titania").surface(BigDecimal.valueOf(1080.00)).build();
-    val rowCluster6 = RowCluster.builder().arcodeParcel(arcodeParcel1).name("T6 Ribiz crveni Rovada").surface(BigDecimal.valueOf(585.00)).build();
-    val rowCluster7 = RowCluster.builder().arcodeParcel(arcodeParcel1).name("T7 Ribiz crni Titania").surface(BigDecimal.valueOf(585.00)).build();
-    val rowCluster8 = RowCluster.builder().arcodeParcel(arcodeParcel1).name("T8 Aronia Nero").surface(BigDecimal.valueOf(408.75)).build();
-    val rowCluster9 = RowCluster.builder().arcodeParcel(arcodeParcel1).name("T9 Aronia Viking").surface(BigDecimal.valueOf(221.25)).build();
+    val rowCluster1 = RowCluster.builder().arcodeParcel(arcodeParcel1).user(user1).name("T1 Malina Polana").surface(BigDecimal.valueOf(715.00)).build();
+    val rowCluster2 = RowCluster.builder().arcodeParcel(arcodeParcel1).user(user1).name("T2 Kupina Lochness").surface(BigDecimal.valueOf(887.50)).build();
+    val rowCluster3 = RowCluster.builder().arcodeParcel(arcodeParcel1).user(user1).name("T3 Malina Sugana").surface(BigDecimal.valueOf(875.00)).build();
+    val rowCluster4 = RowCluster.builder().arcodeParcel(arcodeParcel1).user(user1).name("T4 Aronija Nero").surface(BigDecimal.valueOf(720.00)).build();
+    val rowCluster5 = RowCluster.builder().arcodeParcel(arcodeParcel1).user(user1).name("T5 Ribiz crni Titania").surface(BigDecimal.valueOf(1080.00)).build();
+    val rowCluster6 = RowCluster.builder().arcodeParcel(arcodeParcel1).user(user1).name("T6 Ribiz crveni Rovada").surface(BigDecimal.valueOf(585.00)).build();
+    val rowCluster7 = RowCluster.builder().arcodeParcel(arcodeParcel1).user(user1).name("T7 Ribiz crni Titania").surface(BigDecimal.valueOf(585.00)).build();
+    val rowCluster8 = RowCluster.builder().arcodeParcel(arcodeParcel1).user(user1).name("T8 Aronia Nero").surface(BigDecimal.valueOf(408.75)).build();
+    val rowCluster9 = RowCluster.builder().arcodeParcel(arcodeParcel1).user(user1).name("T9 Aronia Viking").surface(BigDecimal.valueOf(221.25)).build();
 
     rowClusterRepository.saveAll(
       List.of(

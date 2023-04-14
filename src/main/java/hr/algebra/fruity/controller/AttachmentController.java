@@ -26,13 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AttachmentController {
 
-  private final AttachmentService equipmentService;
+  private final AttachmentService attachmentService;
 
   @GetMapping(Mappings.getAllAttachmentGetMapping)
   public ResponseEntity<ApiResponse<List<AttachmentResponseDto>>> getAllAttachment() {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        equipmentService.getAllAttachments(),
+        attachmentService.getAllAttachments(),
         "Priključci uspješno dohvaćeni."
       )
     );
@@ -42,7 +42,7 @@ public class AttachmentController {
   public ResponseEntity<ApiResponse<AttachmentResponseDto>> getAttachmentById(@PathVariable Long id) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        equipmentService.getAttachmentById(id),
+        attachmentService.getAttachmentById(id),
         "Priključak uspješno dohvaćen."
       )
     );
@@ -52,7 +52,7 @@ public class AttachmentController {
   public ResponseEntity<ApiResponse<AttachmentResponseDto>> createAttachment(@Valid @RequestBody CreateAttachmentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        equipmentService.createAttachment(requestDto),
+        attachmentService.createAttachment(requestDto),
         "Priključak uspješno dodan."
       )
     );
@@ -62,7 +62,7 @@ public class AttachmentController {
   public ResponseEntity<ApiResponse<AttachmentResponseDto>> updateAttachmentById(@PathVariable Long id, @Valid @RequestBody UpdateAttachmentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        equipmentService.updateAttachmentById(id, requestDto),
+        attachmentService.updateAttachmentById(id, requestDto),
         "Priključak uspješno promijenjen."
       )
     );
@@ -70,7 +70,7 @@ public class AttachmentController {
 
   @DeleteMapping(Mappings.deleteAttachmentByIdDeleteMapping)
   public ResponseEntity<ApiResponse<?>> deleteAttachmentById(@PathVariable Long id) {
-    equipmentService.deleteAttachmentById(id);
+    attachmentService.deleteAttachmentById(id);
     return ResponseEntity
       .ok(
         ApiResponse.ok(

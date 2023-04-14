@@ -18,13 +18,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CadastralParcelOwnershipStatusController {
 
-  private final CadastralParcelOwnershipStatusService cadastralMunicipalityService;
+  private final CadastralParcelOwnershipStatusService cadastralParcelOwnershipStatusService;
 
   @GetMapping(Mappings.getAllCountiesGetMapping)
   public ResponseEntity<ApiResponse<List<CadastralParcelOwnershipStatusResponseDto>>> getAllCounties() {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        cadastralMunicipalityService.getAllCadastralParcelOwnershipStatuses(),
+        cadastralParcelOwnershipStatusService.getAllCadastralParcelOwnershipStatuses(),
         "Statusi katastarskih čestica uspješno dohvaćeni."
       )
     );
@@ -34,7 +34,7 @@ public class CadastralParcelOwnershipStatusController {
   public ResponseEntity<ApiResponse<CadastralParcelOwnershipStatusResponseDto>> getCadastralParcelOwnershipStatusById(@PathVariable Integer id) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        cadastralMunicipalityService.getCadastralParcelOwnershipStatusById(id),
+        cadastralParcelOwnershipStatusService.getCadastralParcelOwnershipStatusById(id),
         "Status katastarske čestice uspješno dohvaćen."
       )
     );
