@@ -317,30 +317,30 @@ public class BootstrapDbRunner implements CommandLineRunner {
     // END INSERT FRUIT_CULTIVARS
 
     // BEGIN INSERT ROWS
-    val row1 = Row.builder().rowCluster(rowCluster1).ordinal(1).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
-    val row2 = Row.builder().rowCluster(rowCluster1).ordinal(2).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
-    val row3 = Row.builder().rowCluster(rowCluster1).ordinal(3).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
-    val row4 = Row.builder().rowCluster(rowCluster1).ordinal(4).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
-    val row5 = Row.builder().rowCluster(rowCluster1).ordinal(5).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
-    val row6 = Row.builder().rowCluster(rowCluster1).ordinal(6).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
-    val row7 = Row.builder().rowCluster(rowCluster1).ordinal(7).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
-    val row8 = Row.builder().rowCluster(rowCluster1).ordinal(8).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
-    val row9 = Row.builder().rowCluster(rowCluster1).ordinal(9).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
-    val row10 = Row.builder().rowCluster(rowCluster1).ordinal(10).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
-    val row11 = Row.builder().rowCluster(rowCluster1).ordinal(11).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
-    val row12 = Row.builder().rowCluster(rowCluster1).ordinal(12).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
-    val row13 = Row.builder().rowCluster(rowCluster1).ordinal(13).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
+    val row1 = Row.builder().user(user1).rowCluster(rowCluster1).ordinal(1).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
+    val row2 = Row.builder().user(user1).rowCluster(rowCluster1).ordinal(2).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
+    val row3 = Row.builder().user(user1).rowCluster(rowCluster1).ordinal(3).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
+    val row4 = Row.builder().user(user1).rowCluster(rowCluster1).ordinal(4).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
+    val row5 = Row.builder().user(user1).rowCluster(rowCluster1).ordinal(5).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
+    val row6 = Row.builder().user(user1).rowCluster(rowCluster1).ordinal(6).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
+    val row7 = Row.builder().user(user1).rowCluster(rowCluster1).ordinal(7).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
+    val row8 = Row.builder().user(user1).rowCluster(rowCluster1).ordinal(8).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
+    val row9 = Row.builder().user(user1).rowCluster(rowCluster1).ordinal(9).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
+    val row10 = Row.builder().user(user1).rowCluster(rowCluster1).ordinal(10).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
+    val row11 = Row.builder().user(user1).rowCluster(rowCluster1).ordinal(11).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
+    val row12 = Row.builder().user(user1).rowCluster(rowCluster1).ordinal(12).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
+    val row13 = Row.builder().user(user1).rowCluster(rowCluster1).ordinal(13).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar1).build();
 
-    val row14 = Row.builder().rowCluster(rowCluster2).ordinal(1).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
-    val row15 = Row.builder().rowCluster(rowCluster2).ordinal(2).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
-    val row16 = Row.builder().rowCluster(rowCluster2).ordinal(3).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
-    val row17 = Row.builder().rowCluster(rowCluster2).ordinal(4).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
-    val row18 = Row.builder().rowCluster(rowCluster2).ordinal(5).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
-    val row19 = Row.builder().rowCluster(rowCluster2).ordinal(6).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
-    val row20 = Row.builder().rowCluster(rowCluster2).ordinal(7).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
-    val row21 = Row.builder().rowCluster(rowCluster2).ordinal(8).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
-    val row22 = Row.builder().rowCluster(rowCluster2).ordinal(9).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
-    val row23 = Row.builder().rowCluster(rowCluster2).ordinal(10).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
+    val row14 = Row.builder().user(user1).rowCluster(rowCluster2).ordinal(1).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
+    val row15 = Row.builder().user(user1).rowCluster(rowCluster2).ordinal(2).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
+    val row16 = Row.builder().user(user1).rowCluster(rowCluster2).ordinal(3).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
+    val row17 = Row.builder().user(user1).rowCluster(rowCluster2).ordinal(4).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
+    val row18 = Row.builder().user(user1).rowCluster(rowCluster2).ordinal(5).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
+    val row19 = Row.builder().user(user1).rowCluster(rowCluster2).ordinal(6).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
+    val row20 = Row.builder().user(user1).rowCluster(rowCluster2).ordinal(7).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
+    val row21 = Row.builder().user(user1).rowCluster(rowCluster2).ordinal(8).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
+    val row22 = Row.builder().user(user1).rowCluster(rowCluster2).ordinal(9).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
+    val row23 = Row.builder().user(user1).rowCluster(rowCluster2).ordinal(10).plantingYear(2015).numberOfSeedlings(44).fruitCultivar(fruitCultivar3).build();
 
     rowRepository.saveAll(
       List.of(

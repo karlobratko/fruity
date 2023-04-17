@@ -6,7 +6,9 @@ import hr.algebra.fruity.dto.request.UpdateRowClusterRequestDto;
 import hr.algebra.fruity.dto.response.ApiResponse;
 import hr.algebra.fruity.dto.response.FullRowClusterResponseDto;
 import hr.algebra.fruity.dto.response.RowClusterResponseDto;
+import hr.algebra.fruity.dto.response.RowResponseDto;
 import hr.algebra.fruity.service.RowClusterService;
+import hr.algebra.fruity.service.RowService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.AccessLevel;
@@ -28,6 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class RowClusterController {
 
   private final RowClusterService rowClusterService;
+
+  private final RowService rowService;
 
   @GetMapping(Mappings.getAllRowClustersGetMapping)
   public ResponseEntity<ApiResponse<List<RowClusterResponseDto>>> getAllRowCluster() {
@@ -80,6 +84,17 @@ public class RowClusterController {
       );
   }
 
+  @GetMapping(Mappings.getAllRowsByRowClusterIdGetMapping)
+  public ResponseEntity<ApiResponse<List<RowResponseDto>>> getAllRowsByRowClusterId(@PathVariable Long id) {
+    return ResponseEntity
+      .ok(
+        ApiResponse.ok(
+          rowService.getAllRowsByRowClusterId(id),
+          "Redovi table uspješno dohvaćeni."
+        )
+      );
+  }
+
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Mappings {
 
@@ -94,6 +109,8 @@ public class RowClusterController {
     public static final String updateRowClusterByIdPutMapping = "/{id}";
 
     public static final String deleteRowClusterByIdDeleteMapping = "/{id}";
+
+    public static final String getAllRowsByRowClusterIdGetMapping = "/{id}/rows";
 
   }
 

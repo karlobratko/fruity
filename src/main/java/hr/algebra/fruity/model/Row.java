@@ -15,7 +15,6 @@ import jakarta.persistence.PreRemove;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
@@ -37,18 +36,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
-@Table(
-  name = Row.Constants.tableName,
-  uniqueConstraints = {
-    @UniqueConstraint(
-      name = Row.Constants.rowClusterAndOrdinalUniqueConstraintName,
-      columnNames = {
-        RowCluster.Constants.joinColumnName,
-        Row.Constants.ordinalColumnName
-      }
-    )
-  }
-)
+@Table(name = Row.Constants.tableName)
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
 @Builder
@@ -85,6 +73,10 @@ public class Row {
   @Column(name = Constants.deleteDateColumnName)
   @Temporal(TemporalType.DATE)
   private LocalDate deleteDate;
+
+  @ManyToOne(optional = false, fetch = FetchType.EAGER)
+  @JoinColumn(name = User.Constants.joinColumnName, nullable = false)
+  private @NonNull User user;
 
   @Column(name = Constants.ordinalColumnName, nullable = false)
   @ToString.Include

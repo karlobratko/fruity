@@ -14,6 +14,7 @@ import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.RowClusterService;
 import hr.algebra.fruity.validator.CreateRowClusterRequestDtoValidator;
 import hr.algebra.fruity.validator.RowClusterWithUpdateRowClusterRequestDtoValidator;
+import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +61,7 @@ public class CurrentUserRowClusterService implements RowClusterService {
   }
 
   @Override
+  @Transactional
   public FullRowClusterResponseDto createRowCluster(CreateRowClusterRequestDto requestDto) {
     createRowClusterRequestDtoValidator.validate(requestDto);
 
@@ -69,6 +71,7 @@ public class CurrentUserRowClusterService implements RowClusterService {
   }
 
   @Override
+  @Transactional
   public FullRowClusterResponseDto updateRowClusterById(Long id, UpdateRowClusterRequestDto requestDto) {
     val rowCluster = getById(id);
 
@@ -83,6 +86,7 @@ public class CurrentUserRowClusterService implements RowClusterService {
   }
 
   @Override
+  @Transactional
   public void deleteRowClusterById(Long id) {
     rowClusterRepository.delete(getById(id));
   }
