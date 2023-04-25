@@ -597,10 +597,16 @@ public class BootstrapDbRunner implements CommandLineRunner {
 
     // BEGIN INSERT AGENTS
     val agent1 = Agent.builder().name("ALBATROS HYDRO").manufacturer("Yara").state(agentState1).build();
+    val agent2 = Agent.builder().name("AZOS 300").manufacturer("Yara").state(agentState2).build();
+    val agent3 = Agent.builder().name("BEETRAC").manufacturer("Phosyn").state(agentState2).build();
+    val agent4 = Agent.builder().name("NPK 10-20-30").manufacturer(null).state(agentState3).build();
+    val agent5 = Agent.builder().name("MULTI-K").manufacturer("Haifa Chemicals").state(agentState4).build();
+    val agent6 = Agent.builder().name("OMEX").manufacturer("A.H. Marks").state(agentState5).build();
+    val agent7 = Agent.builder().name("Promet Ca").manufacturer("A.H. Marks").state(agentState2).build();
 
     agentRepository.saveAll(
       List.of(
-        agent1
+        agent1, agent2, agent3, agent4, agent5, agent6, agent7
       )
     );
     // END INSERT AGENTS

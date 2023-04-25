@@ -62,7 +62,7 @@ public class WorkEquipment {
   }
 
   @Embeddable
-  @NoArgsConstructor
+  @NoArgsConstructor(force = true)
   @AllArgsConstructor
   @Builder
   @Getter

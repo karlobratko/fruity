@@ -62,7 +62,7 @@ public class RealisationAttachment {
   }
 
   @Embeddable
-  @NoArgsConstructor
+  @NoArgsConstructor(force = true)
   @AllArgsConstructor
   @Builder
   @Getter

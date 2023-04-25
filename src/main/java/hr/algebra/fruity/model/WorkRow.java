@@ -58,7 +58,7 @@ public class WorkRow {
   }
 
   @Embeddable
-  @NoArgsConstructor
+  @NoArgsConstructor(force = true)
   @AllArgsConstructor
   @Builder
   @Getter

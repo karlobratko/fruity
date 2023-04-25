@@ -73,7 +73,7 @@ public class RealisationHarvest {
   }
 
   @Embeddable
-  @NoArgsConstructor
+  @NoArgsConstructor(force = true)
   @AllArgsConstructor
   @Builder
   @Getter

@@ -58,7 +58,7 @@ public class RealisationRow {
   }
 
   @Embeddable
-  @NoArgsConstructor
+  @NoArgsConstructor(force = true)
   @AllArgsConstructor
   @Builder
   @Getter
