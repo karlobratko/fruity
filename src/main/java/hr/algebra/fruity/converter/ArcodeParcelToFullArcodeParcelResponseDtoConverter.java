@@ -11,14 +11,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ArcodeParcelToFullArcodeParcelResponseDtoConverter implements Converter<ArcodeParcel, FullArcodeParcelResponseDto> {
 
-  private final CadastralParcelToCadastralParcelResponseDtoConverter cadastralParcelToCadastralParcelResponseDtoConverter;
+  private final CadastralParcelToCadastralParcelResponseDtoConverter cadastralParcelConverter;
 
   @Override
   public FullArcodeParcelResponseDto convert(@NonNull ArcodeParcel source) {
     return new FullArcodeParcelResponseDto(
       source.getId(),
       source.getName(),
-      cadastralParcelToCadastralParcelResponseDtoConverter.convert(source.getCadastralParcel()),
+      cadastralParcelConverter.convert(source.getCadastralParcel()),
       source.getArcode(),
       source.getSurface()
     );

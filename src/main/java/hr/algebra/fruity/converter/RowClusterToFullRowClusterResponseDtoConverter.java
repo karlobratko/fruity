@@ -11,14 +11,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RowClusterToFullRowClusterResponseDtoConverter implements Converter<RowCluster, FullRowClusterResponseDto> {
 
-  private final ArcodeParcelToArcodeParcelResponseDtoConverter arcodeParcelToArcodeParcelResponseDtoConverter;
+  private final ArcodeParcelToArcodeParcelResponseDtoConverter arcodeParcelConverter;
 
   @Override
   public FullRowClusterResponseDto convert(@NonNull RowCluster source) {
     return new FullRowClusterResponseDto(
       source.getId(),
       source.getName(),
-      arcodeParcelToArcodeParcelResponseDtoConverter.convert(source.getArcodeParcel()),
+      arcodeParcelConverter.convert(source.getArcodeParcel()),
       source.getSurface()
     );
   }

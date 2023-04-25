@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EquipmentToFullEquipmentResponseDtoConverter implements Converter<Equipment, FullEquipmentResponseDto> {
 
-  private final AttachmentToAttachmentResponseDtoConverter attachmentToAttachmentResponseDtoConverter;
+  private final AttachmentToAttachmentResponseDtoConverter attachmentConverter;
 
   @Override
   public FullEquipmentResponseDto convert(@NonNull Equipment source) {
@@ -21,7 +21,7 @@ public class EquipmentToFullEquipmentResponseDtoConverter implements Converter<E
       source.getProductionYear(),
       source.getCostPerHour(),
       source.getPurchasePrice(),
-      source.getAttachments().stream().map(attachmentToAttachmentResponseDtoConverter::convert).toList()
+      source.getAttachments().stream().map(attachmentConverter::convert).toList()
     );
   }
 

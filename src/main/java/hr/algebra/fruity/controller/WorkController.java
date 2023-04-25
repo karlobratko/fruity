@@ -83,7 +83,7 @@ public class WorkController {
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Mappings {
 
-    public static final String requestMapping = ApplicationConstants.apiInventoryManagementRequestMapping + "/works";
+    public static final String requestMapping = ApplicationConstants.apiWorkManagementRequestMapping + "/works";
 
     public static final String getAllWorksGetMapping = "";
 

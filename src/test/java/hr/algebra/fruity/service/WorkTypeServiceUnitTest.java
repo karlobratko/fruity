@@ -1,11 +1,11 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.WorkTypeResponseDto;
+import hr.algebra.fruity.dto.response.FullWorkTypeResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.model.WorkType;
 import hr.algebra.fruity.repository.WorkTypeRepository;
 import hr.algebra.fruity.service.impl.WorkTypeServiceImpl;
-import hr.algebra.fruity.utils.mother.dto.WorkTypeResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.FullWorkTypeResponseDtoMother;
 import hr.algebra.fruity.utils.mother.model.WorkTypeMother;
 import java.util.List;
 import java.util.Optional;
@@ -46,8 +46,8 @@ public class WorkTypeServiceUnitTest implements ServiceUnitTest {
 
     @Test
     @DisplayName("GIVEN non-empty WorkTypeRepository " +
-      "... THEN List<WorkTypeResponseDto> is returned")
-    public void GIVEN_nonEmptyRepository_THEN_ListOfWorkTypeResponseDto() {
+      "... THEN List<FullWorkTypeResponseDto> is returned")
+    public void GIVEN_nonEmptyRepository_THEN_ListOfFullWorkTypeResponseDto() {
       // GIVEN
       // ... non-empty WorkTypeRepository
       val counties = List.of(
@@ -56,8 +56,8 @@ public class WorkTypeServiceUnitTest implements ServiceUnitTest {
         WorkTypeMother.complete().id(3).build()
       );
       given(workTypeRepository.findAll()).willReturn(counties);
-      // ... ConversionService successfully converts from WorkType to WorkTypeResponseDto
-      given(conversionService.convert(any(WorkType.class), same(WorkTypeResponseDto.class))).willAnswer(invocation -> WorkTypeResponseDtoMother.complete().id(invocation.<WorkType>getArgument(0).getId()).build());
+      // ... ConversionService successfully converts from WorkType to FullWorkTypeResponseDto
+      given(conversionService.convert(any(WorkType.class), same(FullWorkTypeResponseDto.class))).willAnswer(invocation -> FullWorkTypeResponseDtoMother.complete().id(invocation.<WorkType>getArgument(0).getId()).build());
 
       // WHEN
       // ... getAllWorkTypes is called
@@ -87,8 +87,8 @@ public class WorkTypeServiceUnitTest implements ServiceUnitTest {
       val workType = WorkTypeMother.complete().build();
       given(workTypeRepository.findById(same(id))).willReturn(Optional.of(workType));
       // ... ConversionService successfully converts from WorkType to WorkTypeResponseDto
-      val expectedResponseDto = WorkTypeResponseDtoMother.complete().build();
-      given(conversionService.convert(same(workType), same(WorkTypeResponseDto.class))).willReturn(expectedResponseDto);
+      val expectedResponseDto = FullWorkTypeResponseDtoMother.complete().build();
+      given(conversionService.convert(same(workType), same(FullWorkTypeResponseDto.class))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getWorkTypeById is called

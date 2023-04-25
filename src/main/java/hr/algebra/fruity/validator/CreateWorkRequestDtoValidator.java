@@ -9,7 +9,7 @@ public class CreateWorkRequestDtoValidator implements Validator<CreateWorkReques
 
   @Override
   public void validate(CreateWorkRequestDto target) {
-    if (target.endDateTime().isAfter(target.startDateTime()))
+    if (target.startDateTime().isAfter(target.endDateTime()))
       throw new InvalidTimePointsException();
   }
 

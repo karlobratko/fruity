@@ -1,6 +1,5 @@
 package hr.algebra.fruity.dto.response;
 
-import hr.algebra.fruity.model.WorkType;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -12,7 +11,8 @@ public record FullWorkResponseDto(
   LocalDateTime startDateTime,
   LocalDateTime endDateTime,
   Boolean finished,
-  WorkTypeResponseDto type
+  String note,
+  FullWorkTypeResponseDto type
 ) {
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -25,6 +25,8 @@ public record FullWorkResponseDto(
     private static final String endDateTime = "endDateTime";
 
     private static final String finished = "finished";
+
+    public static final String note = "note";
 
     private static final String type = "type";
 

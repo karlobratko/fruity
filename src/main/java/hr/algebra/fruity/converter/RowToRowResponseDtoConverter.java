@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RowToRowResponseDtoConverter implements Converter<Row, RowResponseDto> {
 
-  private final FruitCultivarToFruitCultivarResponseDtoConverter fruitCultivarToFruitCultivarResponseDtoConverter;
+  private final FruitCultivarToFruitCultivarResponseDtoConverter fruitCultivarConverter;
 
   @Override
   public RowResponseDto convert(@NonNull Row source) {
@@ -20,7 +20,7 @@ public class RowToRowResponseDtoConverter implements Converter<Row, RowResponseD
       source.getOrdinal(),
       source.getRowCluster().getId(),
       source.getNumberOfSeedlings(),
-      fruitCultivarToFruitCultivarResponseDtoConverter.convert(source.getFruitCultivar()),
+      fruitCultivarConverter.convert(source.getFruitCultivar()),
       source.getPlantingYear()
     );
   }

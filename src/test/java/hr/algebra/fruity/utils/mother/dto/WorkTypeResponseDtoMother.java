@@ -11,13 +11,7 @@ public class WorkTypeResponseDtoMother {
   public static WorkTypeResponseDto.WorkTypeResponseDtoBuilder complete() {
     return WorkTypeResponseDto.builder()
       .id(Constants.instanceId)
-      .name(Constants.instanceName)
-      .workersTab(Constants.instanceWorkersTab)
-      .rowsTab(Constants.instanceRowsTab)
-      .equipmentsTab(Constants.instanceEquipmentsTab)
-      .attachmentsTab(Constants.instanceAttachmentsTab)
-      .agentsTab(Constants.instanceAgentsTab)
-      .quantitiesTab(Constants.instanceQuantitiesTab);
+      .name(Constants.instanceName);
   }
 
   public static class Constants {
@@ -27,20 +21,6 @@ public class WorkTypeResponseDtoMother {
     public static final UUID instanceUuid = UUID.randomUUID();
 
     public static final String instanceName = "name";
-
-    public static final String instanceDisplayName = "displayName";
-
-    public static final Boolean instanceWorkersTab = false;
-
-    public static final Boolean instanceRowsTab = false;
-
-    public static final Boolean instanceEquipmentsTab = false;
-
-    public static final Boolean instanceAttachmentsTab = false;
-
-    public static final Boolean instanceAgentsTab = false;
-
-    public static final Boolean instanceQuantitiesTab = false;
 
   }
 

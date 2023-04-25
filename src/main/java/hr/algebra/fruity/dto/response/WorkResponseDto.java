@@ -11,7 +11,7 @@ public record WorkResponseDto(
   LocalDateTime startDateTime,
   LocalDateTime endDateTime,
   Boolean finished,
-  Integer typeFk
+  WorkTypeResponseDto type
 ) {
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -25,7 +25,7 @@ public record WorkResponseDto(
 
     private static final String finished = "finished";
 
-    private static final String typeFk = "typeFk";
+    private static final String type = "type";
 
   }
 

@@ -2,6 +2,7 @@ package hr.algebra.fruity.controller;
 
 import hr.algebra.fruity.constants.ApplicationConstants;
 import hr.algebra.fruity.dto.response.ApiResponse;
+import hr.algebra.fruity.dto.response.FullWorkTypeResponseDto;
 import hr.algebra.fruity.dto.response.WorkTypeResponseDto;
 import hr.algebra.fruity.service.WorkTypeService;
 import java.util.List;
@@ -22,7 +23,7 @@ public class WorkTypeController {
   private final WorkTypeService workTypeService;
 
   @GetMapping(Mappings.getAllWorkTypesGetMapping)
-  public ResponseEntity<ApiResponse<List<WorkTypeResponseDto>>> getAllWorkTypes() {
+  public ResponseEntity<ApiResponse<List<FullWorkTypeResponseDto>>> getAllWorkTypes() {
     return ResponseEntity.ok(
       ApiResponse.ok(
         workTypeService.getAllWorkTypes(),
@@ -32,7 +33,7 @@ public class WorkTypeController {
   }
 
   @GetMapping(Mappings.getWorkTypeByIdGetMapping)
-  public ResponseEntity<ApiResponse<WorkTypeResponseDto>> getWorkTypeById(@PathVariable Integer id) {
+  public ResponseEntity<ApiResponse<FullWorkTypeResponseDto>> getWorkTypeById(@PathVariable Integer id) {
     return ResponseEntity.ok(
       ApiResponse.ok(
         workTypeService.getWorkTypeById(id),
@@ -44,7 +45,7 @@ public class WorkTypeController {
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Mappings {
 
-    public static final String requestMapping = ApplicationConstants.apiWorkManagementRequestMapping + "/work-types";
+    public static final String requestMapping = WorkController.Mappings.requestMapping + "/types";
 
     public static final String getAllWorkTypesGetMapping = "";
 

@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class WorkToFullWorkResponseDtoConverter implements Converter<Work, FullWorkResponseDto> {
 
-  private final WorkTypeToWorkTypeResponseDtoConverter workTypeToWorkTypeResponseDtoConverter;
+  private final WorkTypeToFullWorkTypeResponseDtoConverter workTypeConverter;
 
   @Override
   public FullWorkResponseDto convert(@NonNull Work source) {
@@ -20,7 +20,8 @@ public class WorkToFullWorkResponseDtoConverter implements Converter<Work, FullW
       source.getStartDateTime(),
       source.getEndDateTime(),
       source.isFinished(),
-      workTypeToWorkTypeResponseDtoConverter.convert(source.getType())
+      source.getNote(),
+      workTypeConverter.convert(source.getType())
     );
   }
 

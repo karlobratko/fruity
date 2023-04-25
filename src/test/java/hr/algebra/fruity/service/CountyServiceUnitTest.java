@@ -27,7 +27,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("County Service Unit Test")
+@DisplayName("CountyService Unit Test")
 @SuppressWarnings("static-access")
 public class CountyServiceUnitTest implements ServiceUnitTest {
 

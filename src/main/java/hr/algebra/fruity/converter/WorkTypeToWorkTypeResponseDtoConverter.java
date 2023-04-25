@@ -13,13 +13,7 @@ public class WorkTypeToWorkTypeResponseDtoConverter implements Converter<WorkTyp
   public WorkTypeResponseDto convert(@NonNull WorkType source) {
     return new WorkTypeResponseDto(
       source.getId(),
-      source.getDisplayName(),
-      source.getWorkersTab(),
-      source.getRowsTab(),
-      source.getEquipmentsTab(),
-      source.getAttachmentsTab(),
-      source.getAgentsTab(),
-      source.getQuantitiesTab()
+      source.getDisplayName()
     );
   }
 

@@ -11,18 +11,18 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RowToFullRowResponseDtoConverter implements Converter<Row, FullRowResponseDto> {
 
-  private final RowClusterToRowClusterResponseDtoConverter rowClusterToRowClusterResponseDtoConverter;
+  private final RowClusterToRowClusterResponseDtoConverter rowClusterConverter;
 
-  private final FruitCultivarToFruitCultivarResponseDtoConverter fruitCultivarToFruitCultivarResponseDtoConverter;
+  private final FruitCultivarToFruitCultivarResponseDtoConverter fruitCultivarConverter;
 
   @Override
   public FullRowResponseDto convert(@NonNull Row source) {
     return new FullRowResponseDto(
       source.getId(),
       source.getOrdinal(),
-      rowClusterToRowClusterResponseDtoConverter.convert(source.getRowCluster()),
+      rowClusterConverter.convert(source.getRowCluster()),
       source.getNumberOfSeedlings(),
-      fruitCultivarToFruitCultivarResponseDtoConverter.convert(source.getFruitCultivar()),
+      fruitCultivarConverter.convert(source.getFruitCultivar()),
       source.getPlantingYear()
     );
   }

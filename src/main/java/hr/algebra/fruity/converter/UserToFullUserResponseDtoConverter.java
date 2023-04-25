@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class UserToFullUserResponseDtoConverter implements Converter<User, FullUserResponseDto> {
 
-  private final CountyToCountyResponseDtoConverter countyToCountyResponseDtoConverter;
+  private final CountyToCountyResponseDtoConverter countyConverter;
 
   @Override
   public FullUserResponseDto convert(@NonNull User source) {
@@ -22,7 +22,7 @@ public class UserToFullUserResponseDtoConverter implements Converter<User, FullU
       source.getOib(),
       source.getPhoneNumber(),
       source.getAddress(),
-      Objects.nonNull(source.getCounty()) ? countyToCountyResponseDtoConverter.convert(source.getCounty()) : null
+      Objects.nonNull(source.getCounty()) ? countyConverter.convert(source.getCounty()) : null
     );
   }
 

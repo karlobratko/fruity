@@ -3,11 +3,15 @@ package hr.algebra.fruity.converter;
 import hr.algebra.fruity.dto.response.WorkResponseDto;
 import hr.algebra.fruity.model.Work;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class WorkToWorkResponseDtoConverter implements Converter<Work, WorkResponseDto> {
+
+  private final WorkTypeToWorkTypeResponseDtoConverter workTypeConverter;
 
   @Override
   public WorkResponseDto convert(@NonNull Work source) {
@@ -16,7 +20,7 @@ public class WorkToWorkResponseDtoConverter implements Converter<Work, WorkRespo
       source.getStartDateTime(),
       source.getEndDateTime(),
       source.isFinished(),
-      source.getType().getId()
+      workTypeConverter.convert(source.getType())
     );
   }
 

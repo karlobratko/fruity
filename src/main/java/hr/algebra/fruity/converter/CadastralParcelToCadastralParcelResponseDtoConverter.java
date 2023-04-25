@@ -11,14 +11,14 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CadastralParcelToCadastralParcelResponseDtoConverter implements Converter<CadastralParcel, CadastralParcelResponseDto> {
 
-  private final CadastralMunicipalityToCadastralMunicipalityResponseDtoConverter cadastralMunicipalityToCadastralMunicipalityResponseDtoConverter;
+  private final CadastralMunicipalityToCadastralMunicipalityResponseDtoConverter cadastralMunicipalityConverter;
 
   @Override
   public CadastralParcelResponseDto convert(@NonNull CadastralParcel source) {
     return new CadastralParcelResponseDto(
       source.getId(),
       source.getName(),
-      cadastralMunicipalityToCadastralMunicipalityResponseDtoConverter.convert(source.getCadastralMunicipality()),
+      cadastralMunicipalityConverter.convert(source.getCadastralMunicipality()),
       source.getCadastralNumber(),
       source.getSurface(),
       source.getOwnershipStatus().getDisplayName()
