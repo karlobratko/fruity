@@ -1,5 +1,6 @@
 package hr.algebra.fruity.dto.response;
 
+import hr.algebra.fruity.repository.FruitCultivarRepository;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,7 @@ public record RowResponseDto(
   Integer ordinal,
   Long rowClusterFk,
   Integer numberOfSeedlings,
-  Integer fruitCultivarFk,
+  FruitCultivarResponseDto fruitCultivar,
   Integer plantingYear
 ) {
 
@@ -25,7 +26,7 @@ public record RowResponseDto(
 
     public static final String numberOfSeedlings = "numberOfSeedlings";
 
-    public static final String fruitCultivarFk = "fruitCultivarFk";
+    public static final String fruitCultivar = "fruitCultivar";
 
     public static final String plantingYear = "plantingYear";
 
