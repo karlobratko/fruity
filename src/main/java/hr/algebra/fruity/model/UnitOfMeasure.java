@@ -75,6 +75,10 @@ public class UnitOfMeasure {
 
     public static final String name = "name";
 
+    public static final String base = "base";
+
+    public static final String baseMultiplier = "baseMultiplier";
+
   }
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
