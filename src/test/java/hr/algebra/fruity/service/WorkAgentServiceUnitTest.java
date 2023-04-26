@@ -37,7 +37,7 @@ import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("WorkAgentService Unit Test")
+@DisplayName("WorkAgent Service Unit Test")
 @SuppressWarnings("static-access")
 public class WorkAgentServiceUnitTest implements ServiceUnitTest {
 

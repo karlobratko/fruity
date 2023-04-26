@@ -29,48 +29,48 @@ public class WorkAgentController {
   private final WorkAgentService workService;
 
   @GetMapping(Mappings.getAllWorkAgentsGetMapping)
-  public ResponseEntity<ApiResponse<List<WorkAgentResponseDto>>> getAllWorkAgentsByWorkId(@PathVariable Long workId) {
+  public ResponseEntity<ApiResponse<List<WorkAgentResponseDto>>> getAllWorkAgentsByWorkId(@PathVariable Long workFk) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workService.getAllWorkAgentsByWorkId(workId),
+        workService.getAllWorkAgentsByWorkId(workFk),
         "Sredstva korištena u radu uspješno dohvaćena."
       )
     );
   }
 
   @GetMapping(Mappings.getWorkAgentByIdGetMapping)
-  public ResponseEntity<ApiResponse<FullWorkAgentResponseDto>> getWorkAgentByWorkIdAndAgentId(@PathVariable Long workId, @PathVariable Integer agentId) {
+  public ResponseEntity<ApiResponse<FullWorkAgentResponseDto>> getWorkAgentByWorkIdAndAgentId(@PathVariable Long workFk, @PathVariable Integer agentFk) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workService.getWorkAgentByWorkIdAndAgentId(workId, agentId),
+        workService.getWorkAgentByWorkIdAndAgentId(workFk, agentFk),
         "Sredstvo korišteno u radu uspješno dohvaćeno."
       )
     );
   }
 
   @PostMapping(Mappings.createWorkAgentPostMapping)
-  public ResponseEntity<ApiResponse<FullWorkAgentResponseDto>> createWorkAgentForWorkId(@PathVariable Long workId, @Valid @RequestBody CreateWorkAgentRequestDto requestDto) {
+  public ResponseEntity<ApiResponse<FullWorkAgentResponseDto>> createWorkAgentForWorkId(@PathVariable Long workFk, @Valid @RequestBody CreateWorkAgentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workService.createWorkAgentForWorkId(workId, requestDto),
+        workService.createWorkAgentForWorkId(workFk, requestDto),
         "Sredstvo uspješno dodano u rad."
       )
     );
   }
 
   @PutMapping(Mappings.updateWorkAgentByIdPutMapping)
-  public ResponseEntity<ApiResponse<FullWorkAgentResponseDto>> updateWorkAgentByWorkIdAndAgentId(@PathVariable Long workId, @PathVariable Integer agentId, @Valid @RequestBody UpdateWorkAgentRequestDto requestDto) {
+  public ResponseEntity<ApiResponse<FullWorkAgentResponseDto>> updateWorkAgentByWorkIdAndAgentId(@PathVariable Long workFk, @PathVariable Integer agentFk, @Valid @RequestBody UpdateWorkAgentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workService.updateWorkAgentByWorkIdAndAgentId(workId, agentId, requestDto),
+        workService.updateWorkAgentByWorkIdAndAgentId(workFk, agentFk, requestDto),
         "Sredstvo korišteno u radu uspješno promijenjeno."
       )
     );
   }
 
   @DeleteMapping(Mappings.deleteWorkAgentByIdDeleteMapping)
-  public ResponseEntity<ApiResponse<?>> deleteWorkAgentByWorkIdAndAgentId(@PathVariable Long workId, @PathVariable Integer agentId) {
-    workService.deleteWorkAgentByWorkIdAndAgentId(workId, agentId);
+  public ResponseEntity<ApiResponse<?>> deleteWorkAgentByWorkIdAndAgentId(@PathVariable Long workFk, @PathVariable Integer agentFk) {
+    workService.deleteWorkAgentByWorkIdAndAgentId(workFk, agentFk);
     return ResponseEntity
       .ok(
         ApiResponse.ok(
@@ -82,17 +82,17 @@ public class WorkAgentController {
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Mappings {
 
-    public static final String requestMapping = WorkController.Mappings.requestMapping + "/{workId}/agents";
+    public static final String requestMapping = WorkController.Mappings.requestMapping + "/{workFk}/agents";
 
     public static final String getAllWorkAgentsGetMapping = "";
 
-    public static final String getWorkAgentByIdGetMapping = "/{agentId}";
+    public static final String getWorkAgentByIdGetMapping = "/{agentFk}";
 
     public static final String createWorkAgentPostMapping = "";
 
-    public static final String updateWorkAgentByIdPutMapping = "/{agentId}";
+    public static final String updateWorkAgentByIdPutMapping = "/{agentFk}";
 
-    public static final String deleteWorkAgentByIdDeleteMapping = "/{agentId}";
+    public static final String deleteWorkAgentByIdDeleteMapping = "/{agentFk}";
 
   }
 

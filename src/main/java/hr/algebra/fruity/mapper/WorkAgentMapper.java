@@ -32,7 +32,7 @@ public abstract class WorkAgentMapper {
   @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, unmappedTargetPolicy = ReportingPolicy.IGNORE)
   @Mapping(source = UpdateWorkAgentRequestDto.Fields.agentUnitOfMeasureFk, target = WorkAgent.Fields.agentUnitOfMeasure, qualifiedByName = {MappingHelpers.mapIdToUnitOfMeasure})
   @Mapping(source = UpdateWorkAgentRequestDto.Fields.waterUnitOfMeasureFk, target = WorkAgent.Fields.waterUnitOfMeasure, qualifiedByName = {MappingHelpers.mapIdToUnitOfMeasure})
-  public abstract WorkAgent partialUpdate(@MappingTarget WorkAgent work, UpdateWorkAgentRequestDto requestDto);
+  public abstract WorkAgent partialUpdate(@MappingTarget WorkAgent workAgent, UpdateWorkAgentRequestDto requestDto);
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class MappingHelpers {
