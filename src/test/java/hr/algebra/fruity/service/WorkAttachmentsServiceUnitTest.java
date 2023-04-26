@@ -67,15 +67,15 @@ public class WorkAttachmentsServiceUnitTest implements ServiceUnitTest {
   public class WHEN_getWorkAttachmentByWorkIdAndAttachmentId {
 
     @Test
-    @DisplayName("GIVEN workId and agentId " +
+    @DisplayName("GIVEN workId and attachmentId " +
       "... THEN WorkAttachmentResponseDto is returned")
     public void GIVEN_ids_THEN_WorkAttachmentResponseDto() {
       // GIVEN
       // ... ids
       val workId = 1L;
-      val agentId = 1L;
+      val attachmentId = 1L;
       val workAttachment = WorkAttachmentMother.complete().build();
-      given(workAttachmentRepository.findByWorkIdAndAttachmentId(same(workId), same(agentId))).willReturn(Optional.of(workAttachment));
+      given(workAttachmentRepository.findByWorkIdAndAttachmentId(same(workId), same(attachmentId))).willReturn(Optional.of(workAttachment));
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = workAttachment.getWork().getUser();
       given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
@@ -85,7 +85,7 @@ public class WorkAttachmentsServiceUnitTest implements ServiceUnitTest {
 
       // WHEN
       // ... getWorkAttachmentByWorkIdAndAttachmentId is called
-      val responseDto = workAttachmentService.getWorkAttachmentByWorkIdAndAttachmentId(workId, agentId);
+      val responseDto = workAttachmentService.getWorkAttachmentByWorkIdAndAttachmentId(workId, attachmentId);
 
       // THEN
       // ... FullWorkAttachmentResponseDto is returned
@@ -142,15 +142,15 @@ public class WorkAttachmentsServiceUnitTest implements ServiceUnitTest {
   public class WHEN_updateWorkAttachmentByWorkIdAndAttachmentId {
 
     @Test
-    @DisplayName("GIVEN workId, agentId, and UpdateWorkAttachmentRequestDto " +
+    @DisplayName("GIVEN workId, attachmentId, and UpdateWorkAttachmentRequestDto " +
       "... THEN WorkAttachmentResponseDto is returned")
     public void GIVEN_idsAndUpdateWorkAttachmentRequestDto_THEN_WorkAttachmentResponseDto() {
       // GIVEN
       // ... ids
       val workId = 1L;
-      val agentId = 1L;
+      val attachmentId = 1L;
       val workAttachment = WorkAttachmentMother.complete().build();
-      given(workAttachmentRepository.findByWorkIdAndAttachmentId(same(workId), same(agentId))).willReturn(Optional.of(workAttachment));
+      given(workAttachmentRepository.findByWorkIdAndAttachmentId(same(workId), same(attachmentId))).willReturn(Optional.of(workAttachment));
       // ... UpdateWorkAttachmentRequestDto
       val requestDto = UpdateWorkAttachmentRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is equal to User
@@ -166,7 +166,7 @@ public class WorkAttachmentsServiceUnitTest implements ServiceUnitTest {
 
       // WHEN
       // ... updateWorkAttachmentByWorkIdAndAttachmentId is called
-      val responseDto = workAttachmentService.updateWorkAttachmentByWorkIdAndAttachmentId(workId, agentId, requestDto);
+      val responseDto = workAttachmentService.updateWorkAttachmentByWorkIdAndAttachmentId(workId, attachmentId, requestDto);
 
       // THEN
       // ... WorkAttachmentResponseDto is returned
@@ -182,15 +182,15 @@ public class WorkAttachmentsServiceUnitTest implements ServiceUnitTest {
   public class WHEN_deleteWorkAttachmentByWorkIdAndAttachmentId {
 
     @Test
-    @DisplayName("GIVEN workId and agentId " +
+    @DisplayName("GIVEN workId and attachmentId " +
       "... THEN void")
     public void GIVEN_ids_THEN_void() {
       // GIVEN
       // ... ids
       val workId = 1L;
-      val agentId = 1L;
+      val attachmentId = 1L;
       val workAttachment = WorkAttachmentMother.complete().build();
-      given(workAttachmentRepository.findByWorkIdAndAttachmentId(same(workId), same(agentId))).willReturn(Optional.of(workAttachment));
+      given(workAttachmentRepository.findByWorkIdAndAttachmentId(same(workId), same(attachmentId))).willReturn(Optional.of(workAttachment));
       // ... CurrentUserService's logged-in User is not equal to WorkAttachment User
       val loggedInUser = workAttachment.getWork().getUser();
       given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
@@ -199,7 +199,7 @@ public class WorkAttachmentsServiceUnitTest implements ServiceUnitTest {
 
       // WHEN
       // ... deleteWorkAttachmentByWorkIdAndAttachmentId is called
-      workAttachmentService.deleteWorkAttachmentByWorkIdAndAttachmentId(workId, agentId);
+      workAttachmentService.deleteWorkAttachmentByWorkIdAndAttachmentId(workId, attachmentId);
 
       // THEN
       // ... void
@@ -212,18 +212,18 @@ public class WorkAttachmentsServiceUnitTest implements ServiceUnitTest {
   public class WHEN_getById {
 
     @Test
-    @DisplayName("GIVEN invalid workId and agentId " +
+    @DisplayName("GIVEN invalid workId and attachmentId " +
       "... THEN EntityNotFoundException is thrown")
     public void GIVEN_invalidIds_THEN_EntityNotFoundException() {
       // GIVEN
       // ... invalid ids
       val workId = 1L;
-      val agentId = 1L;
-      given(workAttachmentRepository.findByWorkIdAndAttachmentId(same(workId), same(agentId))).willReturn(Optional.empty());
+      val attachmentId = 1L;
+      given(workAttachmentRepository.findByWorkIdAndAttachmentId(same(workId), same(attachmentId))).willReturn(Optional.empty());
 
       // WHEN
       // ... getById is called
-      when(() -> workAttachmentService.getByWorkIdAndAttachmentId(workId, agentId));
+      when(() -> workAttachmentService.getByWorkIdAndAttachmentId(workId, attachmentId));
 
       // THEN
       // ... EntityNotFoundException is thrown
@@ -234,22 +234,22 @@ public class WorkAttachmentsServiceUnitTest implements ServiceUnitTest {
     }
 
     @Test
-    @DisplayName("GIVEN workId, agentId, and foreign logged-in User " +
+    @DisplayName("GIVEN workId, attachmentId, and foreign logged-in User " +
       "... THEN ForeignUserDataAccessException is thrown")
     public void GIVEN_idsAndForeignUser_THEN_ForeignUserDataAccessException() {
       // GIVEN
       // ... ids
       val workId = 1L;
-      val agentId = 1L;
+      val attachmentId = 1L;
       val workAttachment = WorkAttachmentMother.complete().build();
-      given(workAttachmentRepository.findByWorkIdAndAttachmentId(same(workId), same(agentId))).willReturn(Optional.of(workAttachment));
+      given(workAttachmentRepository.findByWorkIdAndAttachmentId(same(workId), same(attachmentId))).willReturn(Optional.of(workAttachment));
       // ... CurrentUserService's logged-in User is not equal to WorkAttachment User
       val loggedInUser = UserMother.complete().id(workAttachment.getWork().getUser().getId() + 1).build();
       given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
       // ... getById is called
-      when(() -> workAttachmentService.getByWorkIdAndAttachmentId(workId, agentId));
+      when(() -> workAttachmentService.getByWorkIdAndAttachmentId(workId, attachmentId));
 
       // THEN
       // ... ForeignUserDataAccessException is thrown
@@ -260,22 +260,22 @@ public class WorkAttachmentsServiceUnitTest implements ServiceUnitTest {
     }
 
     @Test
-    @DisplayName("GIVEN workId and agentId " +
+    @DisplayName("GIVEN workId and attachmentId " +
       "... THEN WorkAttachment is returned")
     public void GIVEN_ids_THEN_WorkAttachment() {
       // GIVEN
       // ... ids
       val workId = 1L;
-      val agentId = 1L;
+      val attachmentId = 1L;
       val expectedWorkAttachment = WorkAttachmentMother.complete().build();
-      given(workAttachmentRepository.findByWorkIdAndAttachmentId(same(workId), same(agentId))).willReturn(Optional.of(expectedWorkAttachment));
+      given(workAttachmentRepository.findByWorkIdAndAttachmentId(same(workId), same(attachmentId))).willReturn(Optional.of(expectedWorkAttachment));
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = expectedWorkAttachment.getWork().getUser();
       given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
 
       // WHEN
       // ... getById is called
-      val returnedWorkAttachment = workAttachmentService.getByWorkIdAndAttachmentId(workId, agentId);
+      val returnedWorkAttachment = workAttachmentService.getByWorkIdAndAttachmentId(workId, attachmentId);
 
       // THEN
       // ... WorkAttachmentResponseDto is returned
