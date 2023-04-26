@@ -1,5 +1,7 @@
 package hr.algebra.fruity.repository;
 
+import hr.algebra.fruity.model.ArcodeParcel;
+import hr.algebra.fruity.model.CadastralParcel;
 import hr.algebra.fruity.model.Row;
 import hr.algebra.fruity.model.RowCluster;
 import hr.algebra.fruity.model.User;
@@ -30,5 +32,17 @@ public interface RowRepository extends PagingAndSortingRepository<Row, Long>, Jp
   Set<Row> findByOrdinalGreaterThanEqualAndRowClusterOrderByOrdinalAsc(Integer ordinal, RowCluster rowCluster);
 
   Set<Row> findByOrdinalGreaterThanEqualAndRowClusterIdOrderByOrdinalAsc(Integer ordinal, Long rowClusterFk);
+
+  Set<Row> findAllByRowCluster(RowCluster rowCluster);
+
+  Set<Row> findAllByRowClusterId(Long rowClusterFk);
+
+  Set<Row> findAllByRowClusterArcodeParcel(ArcodeParcel arcodeParcel);
+
+  Set<Row> findAllByRowClusterArcodeParcelId(Long arcodeParcelFk);
+
+  Set<Row> findAllByRowClusterArcodeParcelCadastralParcel(CadastralParcel cadastralParcel);
+
+  Set<Row> findAllByRowClusterArcodeParcelCadastralParcelId(Long cadastralParcelFk);
 
 }

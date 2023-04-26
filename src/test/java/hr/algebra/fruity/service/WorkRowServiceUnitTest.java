@@ -1,26 +1,32 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.request.CreateWorkRowRequestDtoWithWorkAdapter;
 import hr.algebra.fruity.dto.response.FullWorkRowResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.exception.ForeignUserDataAccessException;
+import hr.algebra.fruity.exception.NoNewRowsForWorkRowCreationException;
 import hr.algebra.fruity.mapper.WorkRowMapper;
+import hr.algebra.fruity.model.Row;
 import hr.algebra.fruity.model.WorkRow;
+import hr.algebra.fruity.repository.RowRepository;
 import hr.algebra.fruity.repository.WorkRowRepository;
 import hr.algebra.fruity.service.impl.CurrentUserWorkRowService;
 import hr.algebra.fruity.utils.mother.dto.CreateWorkRowRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullWorkRowResponseDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateWorkRowRequestDtoMother;
+import hr.algebra.fruity.utils.mother.model.RowMother;
 import hr.algebra.fruity.utils.mother.model.UserMother;
-import hr.algebra.fruity.utils.mother.model.WorkRowMother;
 import hr.algebra.fruity.utils.mother.model.WorkMother;
-import hr.algebra.fruity.validator.CreateWorkRowRequestDtoWithWorkAdapterValidator;
+import hr.algebra.fruity.utils.mother.model.WorkRowMother;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -29,12 +35,9 @@ import org.springframework.core.convert.ConversionService;
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
 import static org.assertj.core.api.BDDAssertions.and;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
-import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("WorkRow Service Unit Test")
@@ -48,9 +51,6 @@ public class WorkRowServiceUnitTest implements ServiceUnitTest {
   private ConversionService conversionService;
 
   @Mock
-  private CreateWorkRowRequestDtoWithWorkAdapterValidator createWorkRowRequestDtoWithWorkAdapterValidator;
-
-  @Mock
   private WorkRowMapper workRowMapper;
 
   @Mock
@@ -58,6 +58,9 @@ public class WorkRowServiceUnitTest implements ServiceUnitTest {
 
   @Mock
   private WorkRowRepository workRowRepository;
+
+  @Mock
+  private RowRepository rowRepository;
 
   @Mock
   private WorkService workService;
@@ -100,6 +103,93 @@ public class WorkRowServiceUnitTest implements ServiceUnitTest {
   @DisplayName("WHEN createWorkRowForWorkId is called")
   public class WHEN_createWorkRowForWorkId {
 
+    @Captor
+    ArgumentCaptor<Set<WorkRow>> setOfWorkRowCaptor;
+
+    @Test
+    @DisplayName("GIVEN workId and CreateWorkRowRequestDto with no Rows " +
+      "... THEN NoNewRowsForWorkRowCreationException is thrown")
+    public void GIVEN_LongAndCreateWorkRowRequestDtoNoRows_THEN_NoNewRowsForWorkRowCreationException() {
+      // GIVEN
+      // ... workId
+      val workId = 1L;
+      // ... CreateWorkRowRequestDto
+      val requestDto = CreateWorkRowRequestDtoMother.complete()
+        .rowFk(1L)
+        .rowFks(List.of(2L, 3L))
+        .build();
+      // ... WorkService successfully gets Work by id
+      val work = WorkMother.complete().build();
+      given(workService.getById(same(workId))).willReturn(work);
+      // ... RowRepository successfully finds all Rows
+      given(rowRepository.findById(same(requestDto.rowFk()))).willReturn(Optional.empty());
+      List<Row> rows = List.of();
+      given(rowRepository.findAllById(same(requestDto.rowFks()))).willReturn(rows);
+      Set<Row> rowsFromRowCluster = Set.of();
+      given(rowRepository.findAllByRowClusterId(same(requestDto.rowClusterFk()))).willReturn(rowsFromRowCluster);
+      Set<Row> rowsFromArcodeParcel = Set.of();
+      given(rowRepository.findAllByRowClusterArcodeParcelId(same(requestDto.arcodeParcelFk()))).willReturn(rowsFromArcodeParcel);
+      Set<Row> rowsFromCadastralParcel = Set.of();
+      given(rowRepository.findAllByRowClusterArcodeParcelCadastralParcelId(same(requestDto.cadastralParcelFk()))).willReturn(rowsFromCadastralParcel);
+      // ... WorkRowRepository successfully finds all WorkRows by workId
+      val existingRows = List.of(WorkRowMother.complete().row(RowMother.complete().id(1L).build()).build(), WorkRowMother.complete().row(RowMother.complete().id(2L).build()).build());
+      given(workRowRepository.findAllByWorkId(same(work.getId()))).willReturn(existingRows);
+
+      // WHEN
+      // ... createWorkRowForWorkId is called
+      when(() -> workRowService.createWorkRowForWorkId(workId, requestDto));
+
+      // THEN
+      // ... NoNewRowsForWorkRowCreationException is thrown
+      and.then(caughtException())
+        .isInstanceOf(NoNewRowsForWorkRowCreationException.class)
+        .hasMessage(NoNewRowsForWorkRowCreationException.Constants.exceptionMessageFormat)
+        .hasNoCause();
+    }
+
+    @Test
+    @DisplayName("GIVEN workId and CreateWorkRowRequestDto with existing Rows " +
+      "... THEN NoNewRowsForWorkRowCreationException is thrown")
+    public void GIVEN_LongAndCreateWorkRowRequestDtoExistingRows_THEN_NoNewRowsForWorkRowCreationException() {
+      // GIVEN
+      // ... workId
+      val workId = 1L;
+      // ... CreateWorkRowRequestDto
+      val requestDto = CreateWorkRowRequestDtoMother.complete()
+        .rowFk(1L)
+        .rowFks(List.of(2L, 3L))
+        .build();
+      // ... WorkService successfully gets Work by id
+      val work = WorkMother.complete().build();
+      given(workService.getById(same(workId))).willReturn(work);
+      // ... RowRepository successfully finds all Rows
+      val row = RowMother.complete().id(1L).build();
+      given(rowRepository.findById(same(requestDto.rowFk()))).willReturn(Optional.of(row));
+      val rows = List.of(RowMother.complete().id(2L).build());
+      given(rowRepository.findAllById(same(requestDto.rowFks()))).willReturn(rows);
+      Set<Row> rowsFromRowCluster = Set.of();
+      given(rowRepository.findAllByRowClusterId(same(requestDto.rowClusterFk()))).willReturn(rowsFromRowCluster);
+      Set<Row> rowsFromArcodeParcel = Set.of();
+      given(rowRepository.findAllByRowClusterArcodeParcelId(same(requestDto.arcodeParcelFk()))).willReturn(rowsFromArcodeParcel);
+      Set<Row> rowsFromCadastralParcel = Set.of();
+      given(rowRepository.findAllByRowClusterArcodeParcelCadastralParcelId(same(requestDto.cadastralParcelFk()))).willReturn(rowsFromCadastralParcel);
+      // ... WorkRowRepository successfully finds all WorkRows by workId
+      val existingRows = List.of(WorkRowMother.complete().row(RowMother.complete().id(1L).build()).build(), WorkRowMother.complete().row(RowMother.complete().id(2L).build()).build());
+      given(workRowRepository.findAllByWorkId(same(work.getId()))).willReturn(existingRows);
+
+      // WHEN
+      // ... createWorkRowForWorkId is called
+      when(() -> workRowService.createWorkRowForWorkId(workId, requestDto));
+
+      // THEN
+      // ... NoNewRowsForWorkRowCreationException is thrown
+      and.then(caughtException())
+        .isInstanceOf(NoNewRowsForWorkRowCreationException.class)
+        .hasMessage(NoNewRowsForWorkRowCreationException.Constants.exceptionMessageFormat)
+        .hasNoCause();
+    }
+
+
     @Test
     @DisplayName("GIVEN workId and CreateWorkRowRequestDto " +
       "... THEN WorkRowResponseDto")
@@ -108,31 +198,39 @@ public class WorkRowServiceUnitTest implements ServiceUnitTest {
       // ... workId
       val workId = 1L;
       // ... CreateWorkRowRequestDto
-      val requestDto = CreateWorkRowRequestDtoMother.complete().build();
+      val requestDto = CreateWorkRowRequestDtoMother.complete()
+        .rowFk(1L)
+        .rowFks(List.of(2L, 3L))
+        .build();
       // ... WorkService successfully gets Work by id
       val work = WorkMother.complete().build();
       given(workService.getById(same(workId))).willReturn(work);
-      // ... CreateWorkRowRequestDtoWithWorkAdapterValidator successfully validates requestDto and Work
-      willDoNothing().given(createWorkRowRequestDtoWithWorkAdapterValidator).validate(any(CreateWorkRowRequestDtoWithWorkAdapter.class));
-      // ... ConversionService successfully converts from CreateWorkRowRequestDtoWithWorkAdapter to WorkRow
-      val workRow = WorkRowMother.complete().build();
-      given(conversionService.convert(any(CreateWorkRowRequestDtoWithWorkAdapter.class), same(WorkRow.class))).willReturn(workRow);
+      // ... RowRepository successfully finds all Rows
+      val row = RowMother.complete().id(1L).build();
+      given(rowRepository.findById(same(requestDto.rowFk()))).willReturn(Optional.of(row));
+      val rows = List.of(RowMother.complete().id(2L).build(), RowMother.complete().id(3L).build());
+      given(rowRepository.findAllById(same(requestDto.rowFks()))).willReturn(rows);
+      val rowsFromRowCluster = Set.of(RowMother.complete().id(3L).build(), RowMother.complete().id(4L).build());
+      given(rowRepository.findAllByRowClusterId(same(requestDto.rowClusterFk()))).willReturn(rowsFromRowCluster);
+      val rowsFromArcodeParcel = Set.of(RowMother.complete().id(4L).build(), RowMother.complete().id(5L).build());
+      given(rowRepository.findAllByRowClusterArcodeParcelId(same(requestDto.arcodeParcelFk()))).willReturn(rowsFromArcodeParcel);
+      val rowsFromCadastralParcel = Set.of(RowMother.complete().id(6L).build(), RowMother.complete().id(7L).build());
+      given(rowRepository.findAllByRowClusterArcodeParcelCadastralParcelId(same(requestDto.cadastralParcelFk()))).willReturn(rowsFromCadastralParcel);
+      // ... WorkRowRepository successfully finds all WorkRows by workId
+      val existingRows = List.of(WorkRowMother.complete().row(RowMother.complete().id(3L).build()).build(), WorkRowMother.complete().row(RowMother.complete().id(7L).build()).build());
+      given(workRowRepository.findAllByWorkId(same(work.getId()))).willReturn(existingRows);
       // ... WorkRowRepository will successfully save WorkRow
-      given(workRowRepository.save(same(workRow))).willReturn(workRow);
-      // ... ConversionService successfully converts from WorkRow to FullWorkRowResponseDto
-      val expectedResponseDto = FullWorkRowResponseDtoMother.complete().build();
-      given(conversionService.convert(same(workRow), same(FullWorkRowResponseDto.class))).willReturn(expectedResponseDto);
+      given(workRowRepository.saveAll(setOfWorkRowCaptor.capture())).willReturn(List.of());
 
       // WHEN
       // ... createWorkRowForWorkId is called
-      val responseDto = workRowService.createWorkRowForWorkId(workId, requestDto);
+      workRowService.createWorkRowForWorkId(workId, requestDto);
 
       // THEN
       // ... WorkRowResponseDto
-      then(workRowRepository).should(times(1)).save(same(workRow));
-      and.then(responseDto)
+      and.then(setOfWorkRowCaptor.getValue())
         .isNotNull()
-        .isEqualTo(expectedResponseDto);
+        .hasSize(5);
     }
 
   }

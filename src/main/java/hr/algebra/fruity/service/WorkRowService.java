@@ -13,7 +13,7 @@ public interface WorkRowService {
 
   FullWorkRowResponseDto getWorkRowByWorkIdAndRowId(Long workFk, Long rowFk);
 
-  FullWorkRowResponseDto createWorkRowForWorkId(Long workFk, CreateWorkRowRequestDto requestDto);
+  void createWorkRowForWorkId(Long workFk, CreateWorkRowRequestDto requestDto);
 
   FullWorkRowResponseDto updateWorkRowByWorkIdAndRowId(Long workFk, Long rowFk, UpdateWorkRowRequestDto requestDto);
 

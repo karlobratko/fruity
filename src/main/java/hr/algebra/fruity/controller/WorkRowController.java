@@ -11,6 +11,7 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,13 +50,15 @@ public class WorkRowController {
   }
 
   @PostMapping(Mappings.createWorkRowPostMapping)
-  public ResponseEntity<ApiResponse<FullWorkRowResponseDto>> createWorkRowForWorkId(@PathVariable Long workFk, @Valid @RequestBody CreateWorkRowRequestDto requestDto) {
-    return ResponseEntity.ok(
-      ApiResponse.ok(
-        workRowService.createWorkRowForWorkId(workFk, requestDto),
-        "Red uspješno dodan u rad."
-      )
-    );
+  public ResponseEntity<ApiResponse<?>> createWorkRowForWorkId(@PathVariable Long workFk, @Valid @RequestBody CreateWorkRowRequestDto requestDto) {
+    workRowService.createWorkRowForWorkId(workFk, requestDto);
+    return ResponseEntity
+      .status(HttpStatus.CREATED)
+      .body(
+        ApiResponse.created(
+          "Red/ovi uspješno dodan/i u rad."
+        )
+      );
   }
 
   @PutMapping(Mappings.updateWorkRowByIdPutMapping)

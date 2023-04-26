@@ -20,6 +20,10 @@ public interface WorkRowRepository extends JpaRepository<WorkRow, WorkRowId> {
 
   List<WorkRow> findAllByWork(Work work);
 
+  List<WorkRow> findAllByWorkIdOrderByRowRowClusterAscRowOrdinalAsc(Long workFk);
+
+  List<WorkRow> findAllByWorkOrderByRowRowClusterAscRowOrdinalAsc(Work work);
+
   boolean existsByWorkIdAndRowId(Long workFk, Long rowFk);
 
   boolean existsByWorkAndRow(Work work, Row row);
