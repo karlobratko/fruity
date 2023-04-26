@@ -17,8 +17,6 @@ public class UpdateWorkAttachmentRequestDtoMother {
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Constants {
 
-    public static final Long instanceAttachmentFk = 1L;
-
     public static final BigDecimal instanceCostPerHour = BigDecimal.ONE;
 
     public static final String instanceNote = "note";

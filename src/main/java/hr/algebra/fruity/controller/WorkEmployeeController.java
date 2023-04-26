@@ -26,13 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class WorkEmployeeController {
 
-  private final WorkEmployeeService workEmployees;
+  private final WorkEmployeeService workEmployeeService;
 
   @GetMapping(Mappings.getAllWorkEmployeesGetMapping)
   public ResponseEntity<ApiResponse<List<WorkEmployeeResponseDto>>> getAllWorkEmployeesByWorkId(@PathVariable Long workFk) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workEmployees.getAllWorkEmployeesByWorkId(workFk),
+        workEmployeeService.getAllWorkEmployeesByWorkId(workFk),
         "Zaposlenici koji sudjeluju u radu uspješno dohvaćeni."
       )
     );
@@ -42,7 +42,7 @@ public class WorkEmployeeController {
   public ResponseEntity<ApiResponse<FullWorkEmployeeResponseDto>> getWorkEmployeeByWorkIdAndEmployeeId(@PathVariable Long workFk, @PathVariable Long employeeId) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workEmployees.getWorkEmployeeByWorkIdAndEmployeeId(workFk, employeeId),
+        workEmployeeService.getWorkEmployeeByWorkIdAndEmployeeId(workFk, employeeId),
         "Zaposlenik koji sudjeluje u radu uspješno dohvaćen."
       )
     );
@@ -52,7 +52,7 @@ public class WorkEmployeeController {
   public ResponseEntity<ApiResponse<FullWorkEmployeeResponseDto>> createWorkEmployeeForWorkId(@PathVariable Long workFk, @Valid @RequestBody CreateWorkEmployeeRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workEmployees.createWorkEmployeeForWorkId(workFk, requestDto),
+        workEmployeeService.createWorkEmployeeForWorkId(workFk, requestDto),
         "Zaposlenik uspješno dodan u rad."
       )
     );
@@ -62,7 +62,7 @@ public class WorkEmployeeController {
   public ResponseEntity<ApiResponse<FullWorkEmployeeResponseDto>> updateWorkEmployeeByWorkIdAndEmployeeId(@PathVariable Long workFk, @PathVariable Long employeeId, @Valid @RequestBody UpdateWorkEmployeeRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workEmployees.updateWorkEmployeeByWorkIdAndEmployeeId(workFk, employeeId, requestDto),
+        workEmployeeService.updateWorkEmployeeByWorkIdAndEmployeeId(workFk, employeeId, requestDto),
         "Zaposlenik koji sudjeluje u radu uspješno promijenjen."
       )
     );
@@ -70,7 +70,7 @@ public class WorkEmployeeController {
 
   @DeleteMapping(Mappings.deleteWorkEmployeeByIdDeleteMapping)
   public ResponseEntity<ApiResponse<?>> deleteWorkEmployeeByWorkIdAndEmployeeId(@PathVariable Long workFk, @PathVariable Long employeeId) {
-    workEmployees.deleteWorkEmployeeByWorkIdAndEmployeeId(workFk, employeeId);
+    workEmployeeService.deleteWorkEmployeeByWorkIdAndEmployeeId(workFk, employeeId);
     return ResponseEntity
       .ok(
         ApiResponse.ok(

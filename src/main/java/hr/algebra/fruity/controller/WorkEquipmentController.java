@@ -26,13 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class WorkEquipmentController {
 
-  private final WorkEquipmentService workEquipment;
+  private final WorkEquipmentService workEquipmentService;
 
   @GetMapping(Mappings.getAllWorkEquipmentGetMapping)
   public ResponseEntity<ApiResponse<List<WorkEquipmentResponseDto>>> getAllWorkEquipmentByWorkId(@PathVariable Long workFk) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workEquipment.getAllWorkEquipmentByWorkId(workFk),
+        workEquipmentService.getAllWorkEquipmentByWorkId(workFk),
         "Oprema korištena u radu uspješno dohvaćena."
       )
     );
@@ -42,7 +42,7 @@ public class WorkEquipmentController {
   public ResponseEntity<ApiResponse<FullWorkEquipmentResponseDto>> getWorkEquipmentByWorkIdAndEquipmentId(@PathVariable Long workFk, @PathVariable Long equipmentFk) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workEquipment.getWorkEquipmentByWorkIdAndEquipmentId(workFk, equipmentFk),
+        workEquipmentService.getWorkEquipmentByWorkIdAndEquipmentId(workFk, equipmentFk),
         "Oprema korištena u radu uspješno dohvaćena."
       )
     );
@@ -52,7 +52,7 @@ public class WorkEquipmentController {
   public ResponseEntity<ApiResponse<FullWorkEquipmentResponseDto>> createWorkEquipmentForWorkId(@PathVariable Long workFk, @Valid @RequestBody CreateWorkEquipmentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workEquipment.createWorkEquipmentForWorkId(workFk, requestDto),
+        workEquipmentService.createWorkEquipmentForWorkId(workFk, requestDto),
         "Oprema uspješno dodana u rad."
       )
     );
@@ -62,7 +62,7 @@ public class WorkEquipmentController {
   public ResponseEntity<ApiResponse<FullWorkEquipmentResponseDto>> updateWorkEquipmentByWorkIdAndEquipmentId(@PathVariable Long workFk, @PathVariable Long equipmentFk, @Valid @RequestBody UpdateWorkEquipmentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workEquipment.updateWorkEquipmentByWorkIdAndEquipmentId(workFk, equipmentFk, requestDto),
+        workEquipmentService.updateWorkEquipmentByWorkIdAndEquipmentId(workFk, equipmentFk, requestDto),
         "Oprema korištena u radu uspješno promijenjena."
       )
     );
@@ -70,7 +70,7 @@ public class WorkEquipmentController {
 
   @DeleteMapping(Mappings.deleteWorkEquipmentByIdDeleteMapping)
   public ResponseEntity<ApiResponse<?>> deleteWorkEquipmentByWorkIdAndEquipmentId(@PathVariable Long workFk, @PathVariable Long equipmentFk) {
-    workEquipment.deleteWorkEquipmentByWorkIdAndEquipmentId(workFk, equipmentFk);
+    workEquipmentService.deleteWorkEquipmentByWorkIdAndEquipmentId(workFk, equipmentFk);
     return ResponseEntity
       .ok(
         ApiResponse.ok(

@@ -26,13 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class WorkAttachmentController {
 
-  private final WorkAttachmentService workAttachment;
+  private final WorkAttachmentService workAttachmentService;
 
   @GetMapping(Mappings.getAllWorkAttachmentsGetMapping)
   public ResponseEntity<ApiResponse<List<WorkAttachmentResponseDto>>> getAllWorkAttachmentsByWorkId(@PathVariable Long workFk) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workAttachment.getAllWorkAttachmentsByWorkId(workFk),
+        workAttachmentService.getAllWorkAttachmentsByWorkId(workFk),
         "Priključci korišteni u radu uspješno dohvaćeni."
       )
     );
@@ -42,7 +42,7 @@ public class WorkAttachmentController {
   public ResponseEntity<ApiResponse<FullWorkAttachmentResponseDto>> getWorkAttachmentByWorkIdAndAttachmentId(@PathVariable Long workFk, @PathVariable Long attachmentFk) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workAttachment.getWorkAttachmentByWorkIdAndAttachmentId(workFk, attachmentFk),
+        workAttachmentService.getWorkAttachmentByWorkIdAndAttachmentId(workFk, attachmentFk),
         "Priključak korišten u radu uspješno dohvaćen."
       )
     );
@@ -52,7 +52,7 @@ public class WorkAttachmentController {
   public ResponseEntity<ApiResponse<FullWorkAttachmentResponseDto>> createWorkAttachmentForWorkId(@PathVariable Long workFk, @Valid @RequestBody CreateWorkAttachmentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workAttachment.createWorkAttachmentForWorkId(workFk, requestDto),
+        workAttachmentService.createWorkAttachmentForWorkId(workFk, requestDto),
         "Priključak uspješno dodan u rad."
       )
     );
@@ -62,7 +62,7 @@ public class WorkAttachmentController {
   public ResponseEntity<ApiResponse<FullWorkAttachmentResponseDto>> updateWorkAttachmentByWorkIdAndAttachmentId(@PathVariable Long workFk, @PathVariable Long attachmentFk, @Valid @RequestBody UpdateWorkAttachmentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workAttachment.updateWorkAttachmentByWorkIdAndAttachmentId(workFk, attachmentFk, requestDto),
+        workAttachmentService.updateWorkAttachmentByWorkIdAndAttachmentId(workFk, attachmentFk, requestDto),
         "Priključak korišten u radu uspješno promijenjen."
       )
     );
@@ -70,7 +70,7 @@ public class WorkAttachmentController {
 
   @DeleteMapping(Mappings.deleteWorkAttachmentByIdDeleteMapping)
   public ResponseEntity<ApiResponse<?>> deleteWorkAttachmentByWorkIdAndAttachmentId(@PathVariable Long workFk, @PathVariable Long attachmentFk) {
-    workAttachment.deleteWorkAttachmentByWorkIdAndAttachmentId(workFk, attachmentFk);
+    workAttachmentService.deleteWorkAttachmentByWorkIdAndAttachmentId(workFk, attachmentFk);
     return ResponseEntity
       .ok(
         ApiResponse.ok(

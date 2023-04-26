@@ -17,8 +17,6 @@ public class UpdateWorkEmployeeRequestDtoMother {
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Constants {
 
-    public static final Long instanceEmployeeFk = 1L;
-
     public static final BigDecimal instanceCostPerHour = BigDecimal.ONE;
 
     public static final String instanceNote = "note";
