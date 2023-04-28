@@ -93,7 +93,7 @@ public class Realisation {
   @JoinColumn(name = Work.Constants.joinColumnName, nullable = false)
   private @NonNull Work work;
 
-  @ManyToOne(optional = false, fetch = FetchType.LAZY)
+  @ManyToOne(optional = false, fetch = FetchType.EAGER)
   @JoinColumn(name = Employee.Constants.joinColumnName, nullable = false)
   private @NonNull Employee employee;
 
