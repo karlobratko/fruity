@@ -9,7 +9,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 @Builder
 public record UpdateRealisationRequestDto(
-  Long workFk,
   Long employeeFk,
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   LocalDateTime startDateTime,

@@ -21,7 +21,6 @@ public class UpdateRealisationRequestDtoToJoinedUpdateRealisationRequestDtoConve
   @Override
   public JoinedUpdateRealisationRequestDto convert(@NonNull UpdateRealisationRequestDto source) {
     return new JoinedUpdateRealisationRequestDto(
-      Objects.nonNull(source.workFk()) ? workService.getById(source.workFk()) : null,
       Objects.nonNull(source.employeeFk()) ? employeeService.getById(source.employeeFk()) : null,
       source.startDateTime(),
       source.endDateTime(),

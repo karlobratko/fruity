@@ -10,7 +10,6 @@ public class UpdateRealisationRequestDtoMother {
 
   public static UpdateRealisationRequestDto.UpdateRealisationRequestDtoBuilder complete() {
     return UpdateRealisationRequestDto.builder()
-      .workFk(Constants.instanceWorkFk)
       .employeeFk(Constants.instanceEmployeeFk)
       .startDateTime(Constants.instanceStartDateTime)
       .endDateTime(Constants.instanceEndDateTime)
@@ -21,8 +20,6 @@ public class UpdateRealisationRequestDtoMother {
   public static class Constants {
 
     public static final Long instanceId = 1L;
-
-    public static final Long instanceWorkFk = 1L;
 
     public static final Long instanceEmployeeFk = 1L;
 

@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 
 @Builder
 public record JoinedUpdateRealisationRequestDto(
-  Work work,
   Employee employee,
   LocalDateTime startDateTime,
   LocalDateTime endDateTime,
@@ -19,8 +18,6 @@ public record JoinedUpdateRealisationRequestDto(
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Fields {
-
-    public static final String work = "work";
 
     public static final String employee = "employee";
 

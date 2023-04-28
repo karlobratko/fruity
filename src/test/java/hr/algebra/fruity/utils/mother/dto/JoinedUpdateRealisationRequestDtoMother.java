@@ -14,7 +14,6 @@ public class JoinedUpdateRealisationRequestDtoMother {
 
   public static JoinedUpdateRealisationRequestDto.JoinedUpdateRealisationRequestDtoBuilder complete() {
     return JoinedUpdateRealisationRequestDto.builder()
-      .work(Constants.instanceWork)
       .employee(Constants.instanceEmployee)
       .startDateTime(Constants.instanceStartDateTime)
       .endDateTime(Constants.instanceEndDateTime)
@@ -25,8 +24,6 @@ public class JoinedUpdateRealisationRequestDtoMother {
   public static class Constants {
 
     public static final Long instanceId = 1L;
-
-    public static final Work instanceWork = WorkMother.complete().build();
 
     public static final Employee instanceEmployee = EmployeeMother.complete().build();
 
