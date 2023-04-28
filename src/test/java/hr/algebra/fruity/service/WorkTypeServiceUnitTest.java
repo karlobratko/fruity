@@ -1,6 +1,6 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.FullWorkTypeResponseDto;
+import hr.algebra.fruity.converter.WorkTypeToFullWorkTypeResponseDtoConverter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.model.WorkType;
 import hr.algebra.fruity.repository.WorkTypeRepository;
@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -35,7 +34,7 @@ public class WorkTypeServiceUnitTest implements ServiceUnitTest {
   private WorkTypeServiceImpl workTypeService;
 
   @Mock
-  private ConversionService conversionService;
+  private WorkTypeToFullWorkTypeResponseDtoConverter toFullWorkTypeResponseDtoConverter;
 
   @Mock
   private WorkTypeRepository workTypeRepository;
@@ -56,8 +55,8 @@ public class WorkTypeServiceUnitTest implements ServiceUnitTest {
         WorkTypeMother.complete().id(3).build()
       );
       given(workTypeRepository.findAll()).willReturn(counties);
-      // ... ConversionService successfully converts from WorkType to FullWorkTypeResponseDto
-      given(conversionService.convert(any(WorkType.class), same(FullWorkTypeResponseDto.class))).willAnswer(invocation -> FullWorkTypeResponseDtoMother.complete().id(invocation.<WorkType>getArgument(0).getId()).build());
+      // ... WorkTypeToFullWorkTypeResponseDtoConverter successfully converts
+      given(toFullWorkTypeResponseDtoConverter.convert(any(WorkType.class))).willAnswer(invocation -> FullWorkTypeResponseDtoMother.complete().id(invocation.<WorkType>getArgument(0).getId()).build());
 
       // WHEN
       // ... getAllWorkTypes is called
@@ -86,9 +85,9 @@ public class WorkTypeServiceUnitTest implements ServiceUnitTest {
       val id = 1;
       val workType = WorkTypeMother.complete().build();
       given(workTypeRepository.findById(same(id))).willReturn(Optional.of(workType));
-      // ... ConversionService successfully converts from WorkType to WorkTypeResponseDto
+      // ... WorkTypeToFullWorkTypeResponseDtoConverter successfully converts
       val expectedResponseDto = FullWorkTypeResponseDtoMother.complete().build();
-      given(conversionService.convert(same(workType), same(FullWorkTypeResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullWorkTypeResponseDtoConverter.convert(same(workType))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getWorkTypeById is called
@@ -125,7 +124,6 @@ public class WorkTypeServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 

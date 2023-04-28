@@ -1,20 +1,21 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.request.CreateWorkEquipmentRequestDtoWithWorkAdapter;
-import hr.algebra.fruity.dto.response.FullWorkEquipmentResponseDto;
+import hr.algebra.fruity.converter.CreateWorkEquipmentRequestDtoToJoinedCreateWorkEquipmentRequestDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateWorkEquipmentRequestDtoWithWorkAdapterToWorkEquipmentConverter;
+import hr.algebra.fruity.converter.WorkEquipmentToFullWorkEquipmentResponseDtoConverter;
+import hr.algebra.fruity.converter.WorkEquipmentToWorkEquipmentResponseDtoConverter;
+import hr.algebra.fruity.dto.request.joined.JoinedCreateWorkEquipmentRequestDtoWithWorkAdapter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.WorkEquipmentMapper;
-import hr.algebra.fruity.model.WorkEquipment;
 import hr.algebra.fruity.repository.WorkEquipmentRepository;
 import hr.algebra.fruity.service.impl.CurrentUserWorkEquipmentService;
 import hr.algebra.fruity.utils.mother.dto.CreateWorkEquipmentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullWorkEquipmentResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedCreateWorkEquipmentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateWorkEquipmentRequestDtoMother;
-import hr.algebra.fruity.utils.mother.model.UserMother;
 import hr.algebra.fruity.utils.mother.model.WorkEquipmentMother;
 import hr.algebra.fruity.utils.mother.model.WorkMother;
-import hr.algebra.fruity.validator.CreateWorkEquipmentRequestDtoWithWorkAdapterValidator;
+import hr.algebra.fruity.validator.JoinedCreateWorkEquipmentRequestDtoWithWorkAdapterValidator;
 import java.util.Optional;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -45,10 +45,19 @@ public class WorkEquipmentServiceUnitTest implements ServiceUnitTest {
   private CurrentUserWorkEquipmentService workEquipmentService;
 
   @Mock
-  private ConversionService conversionService;
+  private WorkEquipmentToWorkEquipmentResponseDtoConverter toWorkEquipmentResponseDtoConverter;
 
   @Mock
-  private CreateWorkEquipmentRequestDtoWithWorkAdapterValidator createWorkEquipmentRequestDtoWithWorkAdapterValidator;
+  private WorkEquipmentToFullWorkEquipmentResponseDtoConverter toFullWorkEquipmentResponseDtoConverter;
+
+  @Mock
+  private CreateWorkEquipmentRequestDtoToJoinedCreateWorkEquipmentRequestDtoConverter toJoinedCreateWorkEquipmentRequestDtoConverter;
+
+  @Mock
+  private JoinedCreateWorkEquipmentRequestDtoWithWorkAdapterToWorkEquipmentConverter fromJoinedCreateWorkEquipmentRequestDtoWithWorkAdapterConverter;
+
+  @Mock
+  private JoinedCreateWorkEquipmentRequestDtoWithWorkAdapterValidator joinedCreateWorkEquipmentRequestDtoWithWorkAdapterValidator;
 
   @Mock
   private WorkEquipmentMapper workEquipmentMapper;
@@ -67,25 +76,26 @@ public class WorkEquipmentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_getWorkEquipmentByWorkIdAndEquipmentId {
 
     @Test
-    @DisplayName("GIVEN workId and attachmentId " +
+    @DisplayName("GIVEN workId and equipmentId " +
       "... THEN WorkEquipmentResponseDto is returned")
     public void GIVEN_ids_THEN_WorkEquipmentResponseDto() {
       // GIVEN
-      // ... ids
+      // ... invalid ids
       val workId = 1L;
-      val attachmentId = 1L;
+      val equipmentId = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkEquipmentRepository successfully finds
       val workEquipment = WorkEquipmentMother.complete().build();
-      given(workEquipmentRepository.findByWorkIdAndEquipmentId(same(workId), same(attachmentId))).willReturn(Optional.of(workEquipment));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = workEquipment.getWork().getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... ConversionService successfully converts from User to FullWorkEquipmentResponseDto
+      given(workEquipmentRepository.findByWorkIdAndEquipmentIdAndWorkUserId(same(workId), same(equipmentId), same(userId))).willReturn(Optional.of(workEquipment));
+      // ... WorkEquipmentToFullWorkEquipmentResponseDtoConverter successfully converts
       val expectedResponseDto = FullWorkEquipmentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(workEquipment), same(FullWorkEquipmentResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullWorkEquipmentResponseDtoConverter.convert(same(workEquipment))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getWorkEquipmentByWorkIdAndEquipmentId is called
-      val responseDto = workEquipmentService.getWorkEquipmentByWorkIdAndEquipmentId(workId, attachmentId);
+      val responseDto = workEquipmentService.getWorkEquipmentByWorkIdAndEquipmentId(workId, equipmentId);
 
       // THEN
       // ... FullWorkEquipmentResponseDto is returned
@@ -112,16 +122,19 @@ public class WorkEquipmentServiceUnitTest implements ServiceUnitTest {
       // ... WorkService successfully gets Work by id
       val work = WorkMother.complete().build();
       given(workService.getById(same(workId))).willReturn(work);
-      // ... CreateWorkEquipmentRequestDtoWithWorkAdapterValidator successfully validates requestDto and Work
-      willDoNothing().given(createWorkEquipmentRequestDtoWithWorkAdapterValidator).validate(any(CreateWorkEquipmentRequestDtoWithWorkAdapter.class));
-      // ... ConversionService successfully converts from CreateWorkEquipmentRequestDtoWithWorkAdapter to WorkEquipment
+      // ... CreateWorkEquipmentRequestDtoToJoinedCreateWorkEquipmentRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedCreateWorkEquipmentRequestDtoMother.complete().build();
+      given(toJoinedCreateWorkEquipmentRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
+      // ... JoinedCreateWorkEquipmentRequestDtoWithWorkAdapterValidator successfully validates
+      willDoNothing().given(joinedCreateWorkEquipmentRequestDtoWithWorkAdapterValidator).validate(any(JoinedCreateWorkEquipmentRequestDtoWithWorkAdapter.class));
+      // ... JoinedCreateWorkEquipmentRequestDtoWithWorkAdapterToWorkEquipmentConverter successfully converts
       val workEquipment = WorkEquipmentMother.complete().build();
-      given(conversionService.convert(any(CreateWorkEquipmentRequestDtoWithWorkAdapter.class), same(WorkEquipment.class))).willReturn(workEquipment);
-      // ... WorkEquipmentRepository will successfully save WorkEquipment
+      given(fromJoinedCreateWorkEquipmentRequestDtoWithWorkAdapterConverter.convert(any(JoinedCreateWorkEquipmentRequestDtoWithWorkAdapter.class))).willReturn(workEquipment);
+      // ... WorkEquipmentRepository successfully saves
       given(workEquipmentRepository.save(same(workEquipment))).willReturn(workEquipment);
-      // ... ConversionService successfully converts from WorkEquipment to FullWorkEquipmentResponseDto
+      // ... WorkEquipmentToFullWorkEquipmentResponseDtoConverter successfully converts
       val expectedResponseDto = FullWorkEquipmentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(workEquipment), same(FullWorkEquipmentResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullWorkEquipmentResponseDtoConverter.convert(same(workEquipment))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... createWorkEquipmentForWorkId is called
@@ -142,31 +155,32 @@ public class WorkEquipmentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_updateWorkEquipmentByWorkIdAndEquipmentId {
 
     @Test
-    @DisplayName("GIVEN workId, attachmentId, and UpdateWorkEquipmentRequestDto " +
+    @DisplayName("GIVEN workId, equipmentId, and UpdateWorkEquipmentRequestDto " +
       "... THEN WorkEquipmentResponseDto is returned")
     public void GIVEN_idsAndUpdateWorkEquipmentRequestDto_THEN_WorkEquipmentResponseDto() {
       // GIVEN
-      // ... ids
+      // ... invalid ids
       val workId = 1L;
-      val attachmentId = 1L;
-      val workEquipment = WorkEquipmentMother.complete().build();
-      given(workEquipmentRepository.findByWorkIdAndEquipmentId(same(workId), same(attachmentId))).willReturn(Optional.of(workEquipment));
+      val equipmentId = 1L;
       // ... UpdateWorkEquipmentRequestDto
       val requestDto = UpdateWorkEquipmentRequestDtoMother.complete().build();
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = workEquipment.getWork().getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkEquipmentRepository successfully finds
+      val workEquipment = WorkEquipmentMother.complete().build();
+      given(workEquipmentRepository.findByWorkIdAndEquipmentIdAndWorkUserId(same(workId), same(equipmentId), same(userId))).willReturn(Optional.of(workEquipment));
       // ... WorkEquipmentMapper successfully partially updates WorkEquipment with UpdateWorkEquipmentRequestDto
       given(workEquipmentMapper.partialUpdate(same(workEquipment), same(requestDto))).willReturn(workEquipment);
       // ... WorkEquipmentRepository successfully saves WorkEquipment
       given(workEquipmentRepository.save(same(workEquipment))).willReturn(workEquipment);
-      // ... ConversionService successfully converts from WorkEquipment to FullWorkEquipmentResponseDto
+      // ... WorkEquipmentToFullWorkEquipmentResponseDtoConverter successfully converts
       val expectedResponseDto = FullWorkEquipmentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(workEquipment), same(FullWorkEquipmentResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullWorkEquipmentResponseDtoConverter.convert(same(workEquipment))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... updateWorkEquipmentByWorkIdAndEquipmentId is called
-      val responseDto = workEquipmentService.updateWorkEquipmentByWorkIdAndEquipmentId(workId, attachmentId, requestDto);
+      val responseDto = workEquipmentService.updateWorkEquipmentByWorkIdAndEquipmentId(workId, equipmentId, requestDto);
 
       // THEN
       // ... WorkEquipmentResponseDto is returned
@@ -182,24 +196,25 @@ public class WorkEquipmentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_deleteWorkEquipmentByWorkIdAndEquipmentId {
 
     @Test
-    @DisplayName("GIVEN workId and attachmentId " +
+    @DisplayName("GIVEN workId and equipmentId " +
       "... THEN void")
     public void GIVEN_ids_THEN_void() {
       // GIVEN
-      // ... ids
+      // ... invalid ids
       val workId = 1L;
-      val attachmentId = 1L;
+      val equipmentId = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkEquipmentRepository successfully finds
       val workEquipment = WorkEquipmentMother.complete().build();
-      given(workEquipmentRepository.findByWorkIdAndEquipmentId(same(workId), same(attachmentId))).willReturn(Optional.of(workEquipment));
-      // ... CurrentUserService's logged-in User is not equal to WorkEquipment User
-      val loggedInUser = workEquipment.getWork().getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(workEquipmentRepository.findByWorkIdAndEquipmentIdAndWorkUserId(same(workId), same(equipmentId), same(userId))).willReturn(Optional.of(workEquipment));
       // ... WorkEquipmentRepository successfully deletes WorkEquipment
       willDoNothing().given(workEquipmentRepository).delete(workEquipment);
 
       // WHEN
       // ... deleteWorkEquipmentByWorkIdAndEquipmentId is called
-      workEquipmentService.deleteWorkEquipmentByWorkIdAndEquipmentId(workId, attachmentId);
+      workEquipmentService.deleteWorkEquipmentByWorkIdAndEquipmentId(workId, equipmentId);
 
       // THEN
       // ... void
@@ -212,70 +227,48 @@ public class WorkEquipmentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_getById {
 
     @Test
-    @DisplayName("GIVEN invalid workId and attachmentId " +
+    @DisplayName("GIVEN invalid workId and equipmentId " +
       "... THEN EntityNotFoundException is thrown")
     public void GIVEN_invalidIds_THEN_EntityNotFoundException() {
       // GIVEN
       // ... invalid ids
       val workId = 1L;
-      val attachmentId = 1L;
-      given(workEquipmentRepository.findByWorkIdAndEquipmentId(same(workId), same(attachmentId))).willReturn(Optional.empty());
+      val equipmentId = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkEquipmentRepository fails to find
+      given(workEquipmentRepository.findByWorkIdAndEquipmentIdAndWorkUserId(same(workId), same(equipmentId), same(userId))).willReturn(Optional.empty());
 
       // WHEN
       // ... getById is called
-      when(() -> workEquipmentService.getByWorkIdAndEquipmentId(workId, attachmentId));
+      when(() -> workEquipmentService.getByWorkIdAndEquipmentId(workId, equipmentId));
 
       // THEN
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 
     @Test
-    @DisplayName("GIVEN workId, attachmentId, and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idsAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... ids
-      val workId = 1L;
-      val attachmentId = 1L;
-      val workEquipment = WorkEquipmentMother.complete().build();
-      given(workEquipmentRepository.findByWorkIdAndEquipmentId(same(workId), same(attachmentId))).willReturn(Optional.of(workEquipment));
-      // ... CurrentUserService's logged-in User is not equal to WorkEquipment User
-      val loggedInUser = UserMother.complete().id(workEquipment.getWork().getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getById is called
-      when(() -> workEquipmentService.getByWorkIdAndEquipmentId(workId, attachmentId));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN workId and attachmentId " +
+    @DisplayName("GIVEN workId and equipmentId " +
       "... THEN WorkEquipment is returned")
     public void GIVEN_ids_THEN_WorkEquipment() {
       // GIVEN
-      // ... ids
+      // ... invalid ids
       val workId = 1L;
-      val attachmentId = 1L;
+      val equipmentId = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkEquipmentRepository successfully finds
       val expectedWorkEquipment = WorkEquipmentMother.complete().build();
-      given(workEquipmentRepository.findByWorkIdAndEquipmentId(same(workId), same(attachmentId))).willReturn(Optional.of(expectedWorkEquipment));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = expectedWorkEquipment.getWork().getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(workEquipmentRepository.findByWorkIdAndEquipmentIdAndWorkUserId(same(workId), same(equipmentId), same(userId))).willReturn(Optional.of(expectedWorkEquipment));
 
       // WHEN
       // ... getById is called
-      val returnedWorkEquipment = workEquipmentService.getByWorkIdAndEquipmentId(workId, attachmentId);
+      val returnedWorkEquipment = workEquipmentService.getByWorkIdAndEquipmentId(workId, equipmentId);
 
       // THEN
       // ... WorkEquipmentResponseDto is returned

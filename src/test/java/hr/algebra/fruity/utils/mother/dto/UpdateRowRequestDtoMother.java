@@ -9,7 +9,6 @@ public class UpdateRowRequestDtoMother {
 
   public static UpdateRowRequestDto.UpdateRowRequestDtoBuilder complete() {
     return UpdateRowRequestDto.builder()
-      .rowClusterFk(Constants.instanceRowClusterFk)
       .ordinal(Constants.instanceOrdinal)
       .plantingYear(Constants.instancePlantingYear)
       .numberOfSeedlings(Constants.instanceNumberOfSeedlings)
@@ -20,8 +19,6 @@ public class UpdateRowRequestDtoMother {
   public static class Constants {
 
     public static final Integer instanceOrdinal = 1;
-
-    public static final Long instanceRowClusterFk = 1L;
 
     public static final Integer instancePlantingYear = 1990;
 

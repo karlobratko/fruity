@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 public record UpdateRowRequestDto(
   @PositiveOrZero(message = "Redni broj mora biti pozitivan broj ili nula.")
   Integer ordinal,
-  Long rowClusterFk,
   @PositiveOrZero(message = "Broj sadnica mora biti pozitivan broj ili nula.")
   Integer numberOfSeedlings,
   Integer fruitCultivarFk,
@@ -22,8 +21,6 @@ public record UpdateRowRequestDto(
   public static class Fields {
 
     public static final String ordinal = "ordinal";
-
-    public static final String rowClusterFk = "rowClusterFk";
 
     public static final String numberOfSeedlings = "numberOfSeedlings";
 

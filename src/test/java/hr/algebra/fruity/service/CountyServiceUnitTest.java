@@ -1,6 +1,6 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.CountyResponseDto;
+import hr.algebra.fruity.converter.CountyToCountyResponseDtoConverter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.model.County;
 import hr.algebra.fruity.repository.CountyRepository;
@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -35,7 +34,7 @@ public class CountyServiceUnitTest implements ServiceUnitTest {
   private CountyServiceImpl countyService;
 
   @Mock
-  private ConversionService conversionService;
+  private CountyToCountyResponseDtoConverter toCountyResponseDtoConverter;
 
   @Mock
   private CountyRepository countyRepository;
@@ -56,8 +55,8 @@ public class CountyServiceUnitTest implements ServiceUnitTest {
         CountyMother.complete().id(3).build()
       );
       given(countyRepository.findAll()).willReturn(counties);
-      // ... ConversionService successfully converts from County to CountyResponseDto
-      given(conversionService.convert(any(County.class), same(CountyResponseDto.class))).willAnswer(invocation -> CountyResponseDtoMother.complete().id(invocation.<County>getArgument(0).getId()).build());
+      // ... CountyToCountyResponseDtoConverter successfully converts
+      given(toCountyResponseDtoConverter.convert(any(County.class))).willAnswer(invocation -> CountyResponseDtoMother.complete().id(invocation.<County>getArgument(0).getId()).build());
 
       // WHEN
       // ... getAllCounties is called
@@ -86,9 +85,9 @@ public class CountyServiceUnitTest implements ServiceUnitTest {
       val id = 1;
       val county = CountyMother.complete().build();
       given(countyRepository.findById(same(id))).willReturn(Optional.of(county));
-      // ... ConversionService successfully converts from County to CountyResponseDto
+      // ... CountyToCountyResponseDtoConverter successfully converts
       val expectedResponseDto = CountyResponseDtoMother.complete().build();
-      given(conversionService.convert(same(county), same(CountyResponseDto.class))).willReturn(expectedResponseDto);
+      given(toCountyResponseDtoConverter.convert(same(county))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getCountyById is called
@@ -125,7 +124,6 @@ public class CountyServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 

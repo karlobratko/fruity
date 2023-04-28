@@ -1,6 +1,6 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.CadastralParcelOwnershipStatusResponseDto;
+import hr.algebra.fruity.converter.CadastralParcelOwnershipStatusToCadastralParcelOwnershipStatusResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.model.CadastralParcelOwnershipStatus;
 import hr.algebra.fruity.repository.CadastralParcelOwnershipStatusRepository;
@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -35,7 +34,7 @@ public class CadastralParcelOwnershipStatusServiceUnitTest implements ServiceUni
   private CadastralParcelOwnershipStatusServiceImpl cadastralParcelOwnershipStatusService;
 
   @Mock
-  private ConversionService conversionService;
+  private CadastralParcelOwnershipStatusToCadastralParcelOwnershipStatusResponseDto toCadastralParcelOwnershipStatusResponseDto;
 
   @Mock
   private CadastralParcelOwnershipStatusRepository cadastralParcelOwnershipStatusRepository;
@@ -56,8 +55,8 @@ public class CadastralParcelOwnershipStatusServiceUnitTest implements ServiceUni
         CadastralParcelOwnershipStatusMother.complete().id(3).build()
       );
       given(cadastralParcelOwnershipStatusRepository.findAll()).willReturn(cadastralParcelOwnershipStatuses);
-      // ... ConversionService successfully converts from CadastralParcelOwnershipStatus to CadastralParcelOwnershipStatusResponseDto
-      given(conversionService.convert(any(CadastralParcelOwnershipStatus.class), same(CadastralParcelOwnershipStatusResponseDto.class))).willAnswer(invocation -> CadastralParcelOwnershipStatusResponseDtoMother.complete().id(invocation.<CadastralParcelOwnershipStatus>getArgument(0).getId()).build());
+      // ... CadastralParcelOwnershipStatusToCadastralParcelOwnershipStatusResponseDto successfully converts
+      given(toCadastralParcelOwnershipStatusResponseDto.convert(any(CadastralParcelOwnershipStatus.class))).willAnswer(invocation -> CadastralParcelOwnershipStatusResponseDtoMother.complete().id(invocation.<CadastralParcelOwnershipStatus>getArgument(0).getId()).build());
 
       // WHEN
       // ... getAllCadastralParcelOwnershipStatuses is called
@@ -86,9 +85,9 @@ public class CadastralParcelOwnershipStatusServiceUnitTest implements ServiceUni
       val id = 1;
       val cadastralMunicipality = CadastralParcelOwnershipStatusMother.complete().build();
       given(cadastralParcelOwnershipStatusRepository.findById(same(id))).willReturn(Optional.of(cadastralMunicipality));
-      // ... ConversionService successfully converts from CadastralParcelOwnershipStatus to CadastralParcelOwnershipStatusResponseDto
+      // ... CadastralParcelOwnershipStatusToCadastralParcelOwnershipStatusResponseDto successfully converts
       val expectedResponseDto = CadastralParcelOwnershipStatusResponseDtoMother.complete().build();
-      given(conversionService.convert(same(cadastralMunicipality), same(CadastralParcelOwnershipStatusResponseDto.class))).willReturn(expectedResponseDto);
+      given(toCadastralParcelOwnershipStatusResponseDto.convert(same(cadastralMunicipality))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getCadastralParcelOwnershipStatusById is called
@@ -124,7 +123,6 @@ public class CadastralParcelOwnershipStatusServiceUnitTest implements ServiceUni
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 

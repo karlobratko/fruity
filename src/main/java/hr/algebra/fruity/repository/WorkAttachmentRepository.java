@@ -1,6 +1,7 @@
 package hr.algebra.fruity.repository;
 
 import hr.algebra.fruity.model.Attachment;
+import hr.algebra.fruity.model.User;
 import hr.algebra.fruity.model.Work;
 import hr.algebra.fruity.model.WorkAttachment;
 import hr.algebra.fruity.model.WorkAttachment.WorkAttachmentId;
@@ -12,9 +13,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface WorkAttachmentRepository extends JpaRepository<WorkAttachment, WorkAttachmentId> {
 
-  Optional<WorkAttachment> findByWorkIdAndAttachmentId(Long workFk, Long attachmentFk);
+  Optional<WorkAttachment> findByWorkIdAndAttachmentIdAndWorkUserId(Long workFk, Long attachmentFk, Long userFk);
 
-  Optional<WorkAttachment> findByWorkAndAttachment(Work work, Attachment attachment);
+  Optional<WorkAttachment> findByWorkAndAttachmentAndWorkUser(Work work, Attachment attachment, User user);
 
   List<WorkAttachment> findAllByWorkId(Long workFk);
 

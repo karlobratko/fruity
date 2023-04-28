@@ -11,8 +11,6 @@ public interface RowService {
 
   List<RowResponseDto> getAllRows();
 
-  List<RowResponseDto> getAllRowsByRowClusterId(Long rowClusterFk);
-
   FullRowResponseDto getRowById(Long id);
 
   FullRowResponseDto createRow(CreateRowRequestDto requestDto);
@@ -22,5 +20,13 @@ public interface RowService {
   void deleteRowById(Long id);
 
   Row getById(Long id);
+
+  List<Row> getAllById(List<Long> ids);
+
+  List<Row> getAllByRowClusterId(Long rowClusterFk);
+
+  List<Row> getAllByArcodeParcelId(Long arcodeParcelFk);
+
+  List<Row> getAllByCadastralParcelId(Long cadastralParcelFk);
 
 }

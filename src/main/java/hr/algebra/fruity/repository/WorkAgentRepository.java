@@ -1,6 +1,7 @@
 package hr.algebra.fruity.repository;
 
 import hr.algebra.fruity.model.Agent;
+import hr.algebra.fruity.model.User;
 import hr.algebra.fruity.model.Work;
 import hr.algebra.fruity.model.WorkAgent;
 import hr.algebra.fruity.model.WorkAgent.WorkAgentId;
@@ -12,9 +13,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface WorkAgentRepository extends JpaRepository<WorkAgent, WorkAgentId> {
 
-  Optional<WorkAgent> findByWorkIdAndAgentId(Long workFk, Integer agentFk);
+  Optional<WorkAgent> findByWorkIdAndAgentIdAndWorkUserId(Long workFk, Integer agentFk, Long userFk);
 
-  Optional<WorkAgent> findByWorkAndAgent(Work work, Agent agent);
+  Optional<WorkAgent> findByWorkAndAgentAndWorkUser(Work work, Agent agent, User user);
 
   List<WorkAgent> findAllByWorkId(Long workFk);
 

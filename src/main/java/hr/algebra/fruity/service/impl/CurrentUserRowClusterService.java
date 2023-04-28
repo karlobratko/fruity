@@ -1,36 +1,51 @@
 package hr.algebra.fruity.service.impl;
 
+import hr.algebra.fruity.converter.CreateRowClusterRequestDtoToJoinedCreateRowClusterRequestDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateRowClusterRequestDtoToRowClusterConverter;
+import hr.algebra.fruity.converter.RowClusterToFullRowClusterResponseDtoConverter;
+import hr.algebra.fruity.converter.RowClusterToRowClusterResponseDtoConverter;
+import hr.algebra.fruity.converter.RowToRowResponseDtoConverter;
+import hr.algebra.fruity.converter.UpdateRowClusterRequestDtoToJoinedUpdateRowClusterRequestDtoConverter;
 import hr.algebra.fruity.dto.request.CreateRowClusterRequestDto;
 import hr.algebra.fruity.dto.request.UpdateRowClusterRequestDto;
 import hr.algebra.fruity.dto.response.FullRowClusterResponseDto;
 import hr.algebra.fruity.dto.response.RowClusterResponseDto;
+import hr.algebra.fruity.dto.response.RowResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.RowClusterMapper;
 import hr.algebra.fruity.model.RowCluster;
 import hr.algebra.fruity.repository.RowClusterRepository;
-import hr.algebra.fruity.service.ArcodeParcelService;
+import hr.algebra.fruity.repository.RowRepository;
 import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.RowClusterService;
-import hr.algebra.fruity.validator.CreateRowClusterRequestDtoValidator;
-import hr.algebra.fruity.validator.RowClusterWithUpdateRowClusterRequestDtoValidator;
+import hr.algebra.fruity.validator.JoinedCreateRowClusterRequestDtoValidator;
+import hr.algebra.fruity.validator.RowClusterWithJoinedUpdateRowClusterRequestDtoValidator;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CurrentUserRowClusterService implements RowClusterService {
 
-  private final ConversionService conversionService;
+  private final RowClusterToRowClusterResponseDtoConverter toRowClusterResponseDtoConverter;
 
-  private final CreateRowClusterRequestDtoValidator createRowClusterRequestDtoValidator;
+  private final RowClusterToFullRowClusterResponseDtoConverter toFullRowClusterResponseDtoConverter;
 
-  private final RowClusterWithUpdateRowClusterRequestDtoValidator rowClusterWithUpdateRowClusterRequestDtoValidator;
+  private final CreateRowClusterRequestDtoToJoinedCreateRowClusterRequestDtoConverter toJoinedCreateRowClusterRequestDtoConverter;
+
+  private final JoinedCreateRowClusterRequestDtoToRowClusterConverter fromJoinedCreateRowClusterRequestDtoConverter;
+
+  private final UpdateRowClusterRequestDtoToJoinedUpdateRowClusterRequestDtoConverter toJoinedUpdateRowClusterRequestDtoConverter;
+
+  private final RowToRowResponseDtoConverter toRowResponseDtoConverter;
+
+  private final JoinedCreateRowClusterRequestDtoValidator joinedCreateRowClusterRequestDtoValidator;
+
+  private final RowClusterWithJoinedUpdateRowClusterRequestDtoValidator rowClusterWithJoinedUpdateRowClusterRequestDtoValidator;
 
   private final RowClusterMapper rowClusterMapper;
 
@@ -38,50 +53,52 @@ public class CurrentUserRowClusterService implements RowClusterService {
 
   private final RowClusterRepository rowClusterRepository;
 
-  private final ArcodeParcelService arcodeParcelService;
+  private final RowRepository rowRepository;
 
   @Override
   public List<RowClusterResponseDto> getAllRowClusters() {
     return rowClusterRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
-      .map(rowCluster -> conversionService.convert(rowCluster, RowClusterResponseDto.class))
+      .map(toRowClusterResponseDtoConverter::convert)
       .toList();
   }
 
   @Override
-  public List<RowClusterResponseDto> getAllRowClustersByArcodeParcelId(Long arcodeParcelId) {
-    return rowClusterRepository.findAllByArcodeParcel(arcodeParcelService.getById(arcodeParcelId)).stream()
-      .map(rowCluster -> conversionService.convert(rowCluster, RowClusterResponseDto.class))
+  public List<RowResponseDto> getAllRowsByRowClusterId(Long rowClusterId) {
+    return rowRepository.findAllByRowClusterOrderByOrdinalAsc(getById(rowClusterId)).stream()
+      .map(toRowResponseDtoConverter::convert)
       .toList();
   }
 
   @Override
   public FullRowClusterResponseDto getRowClusterById(Long id) {
-    return conversionService.convert(getById(id), FullRowClusterResponseDto.class);
+    return toFullRowClusterResponseDtoConverter.convert(getById(id));
 
   }
 
   @Override
   @Transactional
   public FullRowClusterResponseDto createRowCluster(CreateRowClusterRequestDto requestDto) {
-    createRowClusterRequestDtoValidator.validate(requestDto);
+    val joinedRequestDto = Objects.requireNonNull(toJoinedCreateRowClusterRequestDtoConverter.convert(requestDto));
 
-    val rowCluster = rowClusterRepository.save(Objects.requireNonNull(conversionService.convert(requestDto, RowCluster.class)));
+    joinedCreateRowClusterRequestDtoValidator.validate(joinedRequestDto);
 
-    return conversionService.convert(rowCluster, FullRowClusterResponseDto.class);
+    val rowCluster = rowClusterRepository.save(Objects.requireNonNull(fromJoinedCreateRowClusterRequestDtoConverter.convert(joinedRequestDto)));
+
+    return toFullRowClusterResponseDtoConverter.convert(rowCluster);
   }
 
   @Override
   @Transactional
   public FullRowClusterResponseDto updateRowClusterById(Long id, UpdateRowClusterRequestDto requestDto) {
     val rowCluster = getById(id);
+    val joinedRequestDto = Objects.requireNonNull(toJoinedUpdateRowClusterRequestDtoConverter.convert(requestDto));
 
-    rowClusterWithUpdateRowClusterRequestDtoValidator.validate(rowCluster, requestDto);
+    rowClusterWithJoinedUpdateRowClusterRequestDtoValidator.validate(rowCluster, joinedRequestDto);
 
-    return conversionService.convert(
+    return toFullRowClusterResponseDtoConverter.convert(
       rowClusterRepository.save(
-        rowClusterMapper.partialUpdate(rowCluster, requestDto)
-      ),
-      FullRowClusterResponseDto.class
+        rowClusterMapper.partialUpdate(rowCluster, joinedRequestDto)
+      )
     );
   }
 
@@ -93,13 +110,8 @@ public class CurrentUserRowClusterService implements RowClusterService {
 
   @Override
   public RowCluster getById(Long id) {
-    val rowCluster = rowClusterRepository.findById(id)
-      .orElseThrow(EntityNotFoundException::new);
-
-    if (!Objects.equals(rowCluster.getUser().getId(), currentRequestUserService.getUserId()))
-      throw new ForeignUserDataAccessException();
-
-    return rowCluster;
+    return rowClusterRepository.findByIdAndUserId(id, currentRequestUserService.getUserId())
+      .orElseThrow(EntityNotFoundException.supplier("Tabla"));
   }
 
 }

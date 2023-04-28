@@ -5,6 +5,7 @@ import hr.algebra.fruity.dto.request.CreateWorkRequestDto;
 import hr.algebra.fruity.dto.request.UpdateWorkRequestDto;
 import hr.algebra.fruity.dto.response.ApiResponse;
 import hr.algebra.fruity.dto.response.FullWorkResponseDto;
+import hr.algebra.fruity.dto.response.RealisationResponseDto;
 import hr.algebra.fruity.dto.response.WorkResponseDto;
 import hr.algebra.fruity.service.WorkService;
 import jakarta.validation.Valid;
@@ -30,7 +31,7 @@ public class WorkController {
   private final WorkService workService;
 
   @GetMapping(Mappings.getAllWorksGetMapping)
-  public ResponseEntity<ApiResponse<List<WorkResponseDto>>> getAllWork() {
+  public ResponseEntity<ApiResponse<List<WorkResponseDto>>> getAllWorks() {
     return ResponseEntity.ok(
       ApiResponse.ok(
         workService.getAllWorks(),
@@ -80,6 +81,17 @@ public class WorkController {
       );
   }
 
+  @GetMapping(Mappings.getAllRealisationsByWorkIdGetMapping)
+  public ResponseEntity<ApiResponse<List<RealisationResponseDto>>> getAllRealisationsByWorkId(@PathVariable Long id) {
+    return ResponseEntity
+      .ok(
+        ApiResponse.ok(
+          workService.getAllRealisationsByWorkId(id),
+          "Realizacije rada uspješno dohvaćene."
+        )
+      );
+  }
+
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Mappings {
 
@@ -94,6 +106,8 @@ public class WorkController {
     public static final String updateWorkByIdPutMapping = "/{id}";
 
     public static final String deleteWorkByIdDeleteMapping = "/{id}";
+
+    public static final String getAllRealisationsByWorkIdGetMapping = "/{id}/realisations";
 
   }
 

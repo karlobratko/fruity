@@ -1,19 +1,24 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.FullEquipmentResponseDto;
+import hr.algebra.fruity.converter.AttachmentToAttachmentResponseDtoConverter;
+import hr.algebra.fruity.converter.CreateEquipmentRequestDtoToJoinedCreateEquipmentRequestDtoConverter;
+import hr.algebra.fruity.converter.EquipmentToEquipmentResponseDtoConverter;
+import hr.algebra.fruity.converter.EquipmentToFullEquipmentResponseDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateEquipmentRequestDtoToEquipmentConverter;
+import hr.algebra.fruity.converter.UpdateEquipmentRequestDtoToJoinedUpdateEquipmentRequestDtoConverter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.EquipmentMapper;
-import hr.algebra.fruity.model.Equipment;
+import hr.algebra.fruity.repository.AttachmentRepository;
 import hr.algebra.fruity.repository.EquipmentRepository;
 import hr.algebra.fruity.service.impl.CurrentUserEquipmentService;
 import hr.algebra.fruity.utils.mother.dto.CreateEquipmentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullEquipmentResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedCreateEquipmentRequestDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedUpdateEquipmentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateEquipmentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.model.EquipmentMother;
-import hr.algebra.fruity.utils.mother.model.UserMother;
-import hr.algebra.fruity.validator.CreateEquipmentRequestDtoValidator;
-import hr.algebra.fruity.validator.EquipmentWithUpdateEquipmentRequestDtoValidator;
+import hr.algebra.fruity.validator.EquipmentWithJoinedUpdateEquipmentRequestDtoValidator;
+import hr.algebra.fruity.validator.JoinedCreateEquipmentRequestDtoValidator;
 import java.util.Optional;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +28,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -43,13 +47,28 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
   private CurrentUserEquipmentService equipmentService;
 
   @Mock
-  private ConversionService conversionService;
+  private EquipmentToEquipmentResponseDtoConverter toEquipmentResponseDtoConverter;
 
   @Mock
-  private CreateEquipmentRequestDtoValidator createEquipmentRequestDtoValidator;
+  private EquipmentToFullEquipmentResponseDtoConverter toFullEquipmentResponseDtoConverter;
 
   @Mock
-  private EquipmentWithUpdateEquipmentRequestDtoValidator equipmentWithUpdateEquipmentRequestDtoValidator;
+  private CreateEquipmentRequestDtoToJoinedCreateEquipmentRequestDtoConverter toJoinedCreateEquipmentRequestDtoConverter;
+
+  @Mock
+  private JoinedCreateEquipmentRequestDtoToEquipmentConverter fromJoinedCreateEquipmentRequestDtoConverter;
+
+  @Mock
+  private UpdateEquipmentRequestDtoToJoinedUpdateEquipmentRequestDtoConverter toJoinedUpdateEquipmentRequestDtoConverter;
+
+  @Mock
+  private AttachmentToAttachmentResponseDtoConverter toAttachmentResponseDtoConverter;
+
+  @Mock
+  private JoinedCreateEquipmentRequestDtoValidator joinedCreateEquipmentRequestDtoValidator;
+
+  @Mock
+  private EquipmentWithJoinedUpdateEquipmentRequestDtoValidator equipmentWithJoinedUpdateEquipmentRequestDtoValidator;
 
   @Mock
   private EquipmentMapper equipmentMapper;
@@ -59,6 +78,9 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
 
   @Mock
   private EquipmentRepository equipmentRepository;
+
+  @Mock
+  private AttachmentRepository attachmentRepository;
 
   @Nested
   @DisplayName("WHEN getEquipmentById is called")
@@ -71,14 +93,15 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... EquipmentRepository successfully finds
       val equipment = EquipmentMother.complete().build();
-      given(equipmentRepository.findById(same(id))).willReturn(Optional.of(equipment));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = equipment.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... ConversionService successfully converts from User to FullEquipmentResponseDto
+      given(equipmentRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(equipment));
+      // ... EquipmentToFullEquipmentResponseDtoConverter successfully converts
       val expectedResponseDto = FullEquipmentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(equipment), same(FullEquipmentResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullEquipmentResponseDtoConverter.convert(same(equipment))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getEquipmentById is called
@@ -104,16 +127,19 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... CreateEquipmentRequestDto
       val requestDto = CreateEquipmentRequestDtoMother.complete().build();
-      // CreateEquipmentRequestDtoValidator successfully validates CreateEquipmentRequestDto
-      willDoNothing().given(createEquipmentRequestDtoValidator).validate(same(requestDto));
-      // ... ConversionService successfully converts from CreateEquipmentRequestDto to Equipment
+      // ... CreateEquipmentRequestDtoToJoinedCreateEquipmentRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedCreateEquipmentRequestDtoMother.complete().build();
+      given(toJoinedCreateEquipmentRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
+      // ... JoinedCreateEquipmentRequestDtoValidator successfully validates
+      willDoNothing().given(joinedCreateEquipmentRequestDtoValidator).validate(same(joinedRequestDto));
+      // ... JoinedCreateEquipmentRequestDtoToEquipmentConverter successfully converts
       val equipment = EquipmentMother.complete().build();
-      given(conversionService.convert(same(requestDto), same(Equipment.class))).willReturn(equipment);
-      // ... EquipmentRepository will successfully save Equipment
+      given(fromJoinedCreateEquipmentRequestDtoConverter.convert(same(joinedRequestDto))).willReturn(equipment);
+      // ... EquipmentRepository successfully saves
       given(equipmentRepository.save(same(equipment))).willReturn(equipment);
-      // ... ConversionService successfully converts from Equipment to FullEquipmentResponseDto
+      // ... EquipmentToFullEquipmentResponseDtoConverter successfully converts
       val expectedResponseDto = FullEquipmentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(equipment), same(FullEquipmentResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullEquipmentResponseDtoConverter.convert(same(equipment))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... createEquipment is called
@@ -140,22 +166,26 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
-      val equipment = EquipmentMother.complete().build();
-      given(equipmentRepository.findById(same(id))).willReturn(Optional.of(equipment));
       // ... UpdateEquipmentRequestDto
       val requestDto = UpdateEquipmentRequestDtoMother.complete().build();
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = equipment.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... EquipmentWithUpdateEquipmentRequestDtoValidator successfully validates Equipment with UpdateEquipmentRequestDto
-      willDoNothing().given(equipmentWithUpdateEquipmentRequestDtoValidator).validate(same(equipment), same(requestDto));
-      // ... EquipmentMapper successfully partially updates Equipment with UpdateEquipmentRequestDto
-      given(equipmentMapper.partialUpdate(same(equipment), same(requestDto))).willReturn(equipment);
-      // ... EquipmentRepository successfully saves Equipment
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... EquipmentRepository successfully finds
+      val equipment = EquipmentMother.complete().build();
+      given(equipmentRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(equipment));
+      // ... UpdateEquipmentRequestDtoToJoinedUpdateEquipmentRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedUpdateEquipmentRequestDtoMother.complete().build();
+      given(toJoinedUpdateEquipmentRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
+      // ... EquipmentWithJoinedUpdateEquipmentRequestDtoValidator successfully validates
+      willDoNothing().given(equipmentWithJoinedUpdateEquipmentRequestDtoValidator).validate(same(equipment), same(joinedRequestDto));
+      // ... EquipmentMapper successfully partially updates
+      given(equipmentMapper.partialUpdate(same(equipment), same(joinedRequestDto))).willReturn(equipment);
+      // ... EquipmentRepository successfully saves
       given(equipmentRepository.save(same(equipment))).willReturn(equipment);
-      // ... ConversionService successfully converts from Equipment to FullEquipmentResponseDto
+      // ... EquipmentToFullEquipmentResponseDtoConverter successfully converts
       val expectedResponseDto = FullEquipmentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(equipment), same(FullEquipmentResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullEquipmentResponseDtoConverter.convert(same(equipment))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... updateEquipmentById is called
@@ -181,11 +211,12 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... EquipmentRepository successfully finds
       val equipment = EquipmentMother.complete().build();
-      given(equipmentRepository.findById(same(id))).willReturn(Optional.of(equipment));
-      // ... CurrentUserService's logged-in User is not equal to Equipment User
-      val loggedInUser = equipment.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(equipmentRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(equipment));
       // ... EquipmentRepository successfully deletes Equipment
       willDoNothing().given(equipmentRepository).delete(equipment);
 
@@ -203,13 +234,17 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_getById {
 
     @Test
-    @DisplayName("GIVEN invalid id " +
+    @DisplayName("GIVEN invalid id or userId" +
       "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
+    public void GIVEN_invalidIdOrUserId_THEN_EntityNotFoundException() {
       // GIVEN
-      // ... invalid id
+      // ... id
       val id = 1L;
-      given(equipmentRepository.findById(same(id))).willReturn(Optional.empty());
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... EquipmentRepository fails to findByIdAndUserId
+      given(equipmentRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.empty());
 
       // WHEN
       // ... getById is called
@@ -219,32 +254,6 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val equipment = EquipmentMother.complete().build();
-      given(equipmentRepository.findById(same(id))).willReturn(Optional.of(equipment));
-      // ... CurrentUserService's logged-in User is not equal to Equipment User
-      val loggedInUser = UserMother.complete().id(equipment.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getById is called
-      when(() -> equipmentService.getById(id));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 
@@ -255,11 +264,12 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... EquipmentRepository successfully finds
       val expectedEquipment = EquipmentMother.complete().build();
-      given(equipmentRepository.findById(same(id))).willReturn(Optional.of(expectedEquipment));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = expectedEquipment.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(equipmentRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(expectedEquipment));
 
       // WHEN
       // ... getById is called

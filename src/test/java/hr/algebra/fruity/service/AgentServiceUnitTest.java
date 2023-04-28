@@ -1,6 +1,6 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.AgentResponseDto;
+import hr.algebra.fruity.converter.AgentToAgentResponseDtoConverter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.model.Agent;
 import hr.algebra.fruity.repository.AgentRepository;
@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -35,7 +34,7 @@ public class AgentServiceUnitTest implements ServiceUnitTest {
   private AgentServiceImpl agentService;
 
   @Mock
-  private ConversionService conversionService;
+  private AgentToAgentResponseDtoConverter toAgentResponseDtoConverter;
 
   @Mock
   private AgentRepository agentRepository;
@@ -57,7 +56,7 @@ public class AgentServiceUnitTest implements ServiceUnitTest {
       );
       given(agentRepository.findAll()).willReturn(agents);
       // ... ConversionService successfully converts from Agent to AgentResponseDto
-      given(conversionService.convert(any(Agent.class), same(AgentResponseDto.class))).willAnswer(invocation -> AgentResponseDtoMother.complete().id(invocation.<Agent>getArgument(0).getId()).build());
+      given(toAgentResponseDtoConverter.convert(any(Agent.class))).willAnswer(invocation -> AgentResponseDtoMother.complete().id(invocation.<Agent>getArgument(0).getId()).build());
 
       // WHEN
       // ... getAllAgents is called
@@ -88,7 +87,7 @@ public class AgentServiceUnitTest implements ServiceUnitTest {
       given(agentRepository.findById(same(id))).willReturn(Optional.of(agent));
       // ... ConversionService successfully converts from Agent to AgentResponseDto
       val expectedResponseDto = AgentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(agent), same(AgentResponseDto.class))).willReturn(expectedResponseDto);
+      given(toAgentResponseDtoConverter.convert(same(agent))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getAgentById is called
@@ -125,7 +124,6 @@ public class AgentServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 

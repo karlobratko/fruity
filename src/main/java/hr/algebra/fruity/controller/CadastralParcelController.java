@@ -7,7 +7,6 @@ import hr.algebra.fruity.dto.response.ApiResponse;
 import hr.algebra.fruity.dto.response.ArcodeParcelResponseDto;
 import hr.algebra.fruity.dto.response.CadastralParcelResponseDto;
 import hr.algebra.fruity.dto.response.FullCadastralParcelResponseDto;
-import hr.algebra.fruity.service.ArcodeParcelService;
 import hr.algebra.fruity.service.CadastralParcelService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -30,8 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class CadastralParcelController {
 
   private final CadastralParcelService cadastralParcelService;
-
-  private final ArcodeParcelService arcodeParcelService;
 
   @GetMapping(Mappings.getAllCadastralParcelsGetMapping)
   public ResponseEntity<ApiResponse<List<CadastralParcelResponseDto>>> getAllCadastralParcels() {
@@ -89,7 +86,7 @@ public class CadastralParcelController {
     return ResponseEntity
       .ok(
         ApiResponse.ok(
-          arcodeParcelService.getAllArcodeParcelsByCadastralParcelId(id),
+          cadastralParcelService.getAllArcodeParcelsByCadastralParcelId(id),
           "Arkod parcele katastarske čestice uspješno dohvaćene."
         )
       );

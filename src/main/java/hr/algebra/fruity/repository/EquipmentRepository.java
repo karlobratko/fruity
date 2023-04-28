@@ -11,6 +11,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface EquipmentRepository extends PagingAndSortingRepository<Equipment, Long>, JpaRepository<Equipment, Long> {
 
+  Optional<Equipment> findByIdAndUser(Long id, User user);
+
+  Optional<Equipment> findByIdAndUserId(Long id, Long userFk);
+
   Set<Equipment> findAllByUser(User user);
 
   Set<Equipment> findAllByUserId(Long userFk);

@@ -1,5 +1,6 @@
 package hr.algebra.fruity.repository;
 
+import hr.algebra.fruity.model.CadastralMunicipality;
 import hr.algebra.fruity.model.CadastralParcel;
 import hr.algebra.fruity.model.User;
 import java.util.Optional;
@@ -11,6 +12,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CadastralParcelRepository extends PagingAndSortingRepository<CadastralParcel, Long>, JpaRepository<CadastralParcel, Long> {
 
+  Optional<CadastralParcel> findByIdAndUser(Long id, User user);
+
+  Optional<CadastralParcel> findByIdAndUserId(Long id, Long userFk);
+
   Set<CadastralParcel> findAllByUser(User user);
 
   Set<CadastralParcel> findAllByUserId(Long userFk);
@@ -20,5 +25,7 @@ public interface CadastralParcelRepository extends PagingAndSortingRepository<Ca
   Optional<CadastralParcel> findByNameAndUserId(String name, Long userFk);
 
   Optional<CadastralParcel> findByCadastralMunicipalityIdAndCadastralNumber(Integer cadastralMunicipalityFk, String cadastralNumber);
+
+  Optional<CadastralParcel> findByCadastralMunicipalityAndCadastralNumber(CadastralMunicipality cadastralMunicipality, String cadastralNumber);
 
 }

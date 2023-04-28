@@ -1,5 +1,9 @@
 package hr.algebra.fruity.service.impl;
 
+import hr.algebra.fruity.converter.EmployeeToAuthenticationResponseDtoConverter;
+import hr.algebra.fruity.converter.RegisterRequestDtoToEmployeeConverter;
+import hr.algebra.fruity.converter.RegisterRequestDtoToUserConverter;
+import hr.algebra.fruity.converter.RegistrationTokenToRegistrationTokenResponseDtoConverter;
 import hr.algebra.fruity.dto.request.ConfirmRegistrationRequestDto;
 import hr.algebra.fruity.dto.request.LoginMobileRequestDto;
 import hr.algebra.fruity.dto.request.LoginRequestDto;
@@ -11,7 +15,6 @@ import hr.algebra.fruity.dto.response.RegistrationTokenResponseDto;
 import hr.algebra.fruity.exception.UsernameNotFoundException;
 import hr.algebra.fruity.model.Employee;
 import hr.algebra.fruity.model.RegistrationToken;
-import hr.algebra.fruity.model.User;
 import hr.algebra.fruity.repository.EmployeeRepository;
 import hr.algebra.fruity.repository.UserRepository;
 import hr.algebra.fruity.service.AuthenticationService;
@@ -25,7 +28,6 @@ import jakarta.transaction.Transactional;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -38,7 +40,13 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class JwtAuthenticationService implements AuthenticationService {
 
-  private final ConversionService conversionService;
+  private final RegisterRequestDtoToUserConverter fromRegisterRequestDtoToUserConverter;
+
+  private final RegisterRequestDtoToEmployeeConverter fromRegisterRequestDtoToEmployeeConverter;
+
+  private final RegistrationTokenToRegistrationTokenResponseDtoConverter toRegistrationTokenResponseDtoConverter;
+
+  private final EmployeeToAuthenticationResponseDtoConverter toAuthenticationResponseDtoConverter;
 
   private final RegisterRequestDtoValidator registerRequestDtoValidator;
 
@@ -64,12 +72,12 @@ public class JwtAuthenticationService implements AuthenticationService {
     registerRequestDtoValidator.validate(requestDto);
 
     val user = userRepository.save(
-      Objects.requireNonNull(conversionService.convert(requestDto, User.class))
+      Objects.requireNonNull(fromRegisterRequestDtoToUserConverter.convert(requestDto))
     );
 
     val registrationToken = registrationTokenService.createRegistrationToken();
 
-    val employee = Objects.requireNonNull(conversionService.convert(requestDto, Employee.class));
+    val employee = Objects.requireNonNull(fromRegisterRequestDtoToEmployeeConverter.convert(requestDto));
     employee.setUser(user);
     employee.setRegistrationToken(registrationToken);
     employee.setRefreshToken(refreshTokenService.createRefreshToken());
@@ -88,7 +96,7 @@ public class JwtAuthenticationService implements AuthenticationService {
     employee.activate();
     employeeRepository.save(employee);
 
-    return conversionService.convert(registrationToken, RegistrationTokenResponseDto.class);
+    return toRegistrationTokenResponseDtoConverter.convert(registrationToken);
   }
 
   @Override
@@ -98,7 +106,7 @@ public class JwtAuthenticationService implements AuthenticationService {
 
     composeAndSendConfirmRegistrationEmail(registrationToken.getEmployee(), registrationToken, requestDto.confirmRegistrationUrl());
 
-    return conversionService.convert(registrationToken, RegistrationTokenResponseDto.class);
+    return toRegistrationTokenResponseDtoConverter.convert(registrationToken);
   }
 
   @Override
@@ -117,7 +125,7 @@ public class JwtAuthenticationService implements AuthenticationService {
 
       employee.setRefreshToken(refreshTokenService.refreshRefreshToken(employee.getRefreshToken().getUuid()));
 
-      return conversionService.convert(employee, AuthenticationResponseDto.class);
+      return toAuthenticationResponseDtoConverter.convert(employee);
     } catch (AuthenticationException e) {
       employeeRepository.findByUsername(requestDto.username())
         .ifPresentOrElse(
@@ -143,7 +151,7 @@ public class JwtAuthenticationService implements AuthenticationService {
   public AuthenticationResponseDto loginMobile(LoginMobileRequestDto requestDto) {
     val mobileToken = mobileTokenService.verifyMobileToken(requestDto.mobileToken());
 
-    return conversionService.convert(mobileToken.getEmployee(), AuthenticationResponseDto.class);
+    return toAuthenticationResponseDtoConverter.convert(mobileToken.getEmployee());
   }
 
   @Override
@@ -151,7 +159,7 @@ public class JwtAuthenticationService implements AuthenticationService {
   public AuthenticationResponseDto refreshToken(RefreshTokenRequestDto requestDto) {
     val refreshToken = refreshTokenService.verifyRefreshToken(requestDto.refreshToken());
 
-    return conversionService.convert(refreshToken.getEmployee(), AuthenticationResponseDto.class);
+    return toAuthenticationResponseDtoConverter.convert(refreshToken.getEmployee());
   }
 
   private void composeAndSendConfirmRegistrationEmail(Employee employee, RegistrationToken registrationToken, String registrationUrl) {

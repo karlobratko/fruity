@@ -1,5 +1,7 @@
 package hr.algebra.fruity.service.impl;
 
+import hr.algebra.fruity.converter.CadastralMunicipalityToCadastralMunicipalityResponseDtoConverter;
+import hr.algebra.fruity.converter.CadastralMunicipalityToFullCadastralMunicipalityResponseDtoConverter;
 import hr.algebra.fruity.dto.response.CadastralMunicipalityResponseDto;
 import hr.algebra.fruity.dto.response.FullCadastralMunicipalityResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
@@ -9,35 +11,34 @@ import hr.algebra.fruity.service.CadastralMunicipalityService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CadastralMunicipalityServiceImpl implements CadastralMunicipalityService {
 
-  private final ConversionService conversionService;
+  private final CadastralMunicipalityToCadastralMunicipalityResponseDtoConverter toCadastralMunicipalityResponseDtoConverter;
+
+  private final CadastralMunicipalityToFullCadastralMunicipalityResponseDtoConverter toFullCadastralMunicipalityResponseDtoConverter;
 
   private final CadastralMunicipalityRepository cadastralMunicipalityRepository;
 
   @Override
   public List<CadastralMunicipalityResponseDto> getAllCadastralMunicipalities() {
     return cadastralMunicipalityRepository.findAll().stream()
-      .map(cadastralMunicipality -> conversionService.convert(cadastralMunicipality, CadastralMunicipalityResponseDto.class))
+      .map(toCadastralMunicipalityResponseDtoConverter::convert)
       .toList();
   }
 
   @Override
   public FullCadastralMunicipalityResponseDto getCadastralMunicipalityById(Integer id) {
-    return conversionService.convert(getById(id), FullCadastralMunicipalityResponseDto.class);
+    return toFullCadastralMunicipalityResponseDtoConverter.convert(getById(id));
   }
 
   @Override
   public CadastralMunicipality getById(Integer id) {
-    val cadastralMunicipality = cadastralMunicipalityRepository.findById(id)
-      .orElseThrow(EntityNotFoundException::new);
-
-    return cadastralMunicipality;
+    return cadastralMunicipalityRepository.findById(id)
+      .orElseThrow(EntityNotFoundException.supplier("Katastarska općina"));
   }
 
 }

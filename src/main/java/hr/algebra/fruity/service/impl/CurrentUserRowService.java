@@ -1,14 +1,21 @@
 package hr.algebra.fruity.service.impl;
 
+import hr.algebra.fruity.converter.CreateRowRequestDtoToJoinedCreateRowRequestDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateRowRequestDtoToRowConverter;
+import hr.algebra.fruity.converter.RowToFullRowResponseDtoConverter;
+import hr.algebra.fruity.converter.RowToRowResponseDtoConverter;
+import hr.algebra.fruity.converter.UpdateRowRequestDtoToJoinedUpdateRowRequestDtoConverter;
 import hr.algebra.fruity.dto.request.CreateRowRequestDto;
 import hr.algebra.fruity.dto.request.UpdateRowRequestDto;
 import hr.algebra.fruity.dto.response.FullRowResponseDto;
 import hr.algebra.fruity.dto.response.RowResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.RowMapper;
 import hr.algebra.fruity.model.Row;
+import hr.algebra.fruity.model.RowCluster;
 import hr.algebra.fruity.repository.RowRepository;
+import hr.algebra.fruity.service.ArcodeParcelService;
+import hr.algebra.fruity.service.CadastralParcelService;
 import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.RowClusterService;
 import hr.algebra.fruity.service.RowService;
@@ -20,14 +27,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntUnaryOperator;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CurrentUserRowService implements RowService {
 
-  private final ConversionService conversionService;
+  private final RowToRowResponseDtoConverter toRowResponseDtoConverter;
+
+  private final RowToFullRowResponseDtoConverter toFullRowResponseDtoConverter;
+
+  private final CreateRowRequestDtoToJoinedCreateRowRequestDtoConverter toJoinedCreateRowRequestDtoConverter;
+
+  private final JoinedCreateRowRequestDtoToRowConverter fromJoinedCreateRowRequestDtoConverter;
+
+  private final UpdateRowRequestDtoToJoinedUpdateRowRequestDtoConverter toJoinedUpdateRowRequestDtoConverter;
 
   private final RowMapper rowMapper;
 
@@ -37,59 +51,58 @@ public class CurrentUserRowService implements RowService {
 
   private final RowClusterService rowClusterService;
 
+  private final ArcodeParcelService arcodeParcelService;
+
+  private final CadastralParcelService cadastralParcelService;
+
   @Override
   public List<RowResponseDto> getAllRows() {
     return rowRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
-      .map(row -> conversionService.convert(row, RowResponseDto.class))
-      .toList();
-  }
-
-  @Override
-  public List<RowResponseDto> getAllRowsByRowClusterId(Long rowClusterId) {
-    return rowRepository.findAllByRowClusterOrderByOrdinalAsc(rowClusterService.getById(rowClusterId)).stream()
-      .map(row -> conversionService.convert(row, RowResponseDto.class))
+      .map(toRowResponseDtoConverter::convert)
       .toList();
   }
 
   @Override
   public FullRowResponseDto getRowById(Long id) {
-    return conversionService.convert(getById(id), FullRowResponseDto.class);
+    return toFullRowResponseDtoConverter.convert(getById(id));
 
   }
 
   @Override
   @Transactional
   public FullRowResponseDto createRow(CreateRowRequestDto requestDto) {
-    if (rowRepository.existsByOrdinalAndRowClusterId(requestDto.ordinal(), requestDto.rowClusterFk()))
-      mapOrdinalWhereOrdinalGreaterThanEqualAndRowClusterId(requestDto.ordinal(), requestDto.rowClusterFk(), IntegerUtils::increment);
+    val joinedRequestDto = Objects.requireNonNull(toJoinedCreateRowRequestDtoConverter.convert(requestDto));
 
-    val row = rowRepository.save(Objects.requireNonNull(conversionService.convert(requestDto, Row.class)));
-    return conversionService.convert(row, FullRowResponseDto.class);
+    if (rowRepository.existsByOrdinalAndRowCluster(joinedRequestDto.ordinal(), joinedRequestDto.rowCluster()))
+      mapOrdinalWhereOrdinalGreaterThanEqualAndRowCluster(joinedRequestDto.ordinal(), joinedRequestDto.rowCluster(), IntegerUtils::increment);
+
+    val row = rowRepository.save(Objects.requireNonNull(fromJoinedCreateRowRequestDtoConverter.convert(joinedRequestDto)));
+    return toFullRowResponseDtoConverter.convert(row);
   }
 
   @Override
   @Transactional
   public FullRowResponseDto updateRowById(Long id, UpdateRowRequestDto requestDto) {
     val row = getById(id);
+    val joinedRequestDto = Objects.requireNonNull(toJoinedUpdateRowRequestDtoConverter.convert(requestDto));
 
-    if (Objects.nonNull(requestDto.ordinal()) && rowRepository.existsByOrdinalAndRowClusterId(requestDto.ordinal(), Objects.requireNonNullElse(requestDto.rowClusterFk(), row.getRowCluster().getId()))) {
-      mapOrdinalWhereOrdinalGreaterThanEqualAndRowClusterId(
-        requestDto.ordinal(),
-        Objects.requireNonNullElse(requestDto.rowClusterFk(), row.getRowCluster().getId()),
+    if (Objects.nonNull(joinedRequestDto.ordinal()) && rowRepository.existsByOrdinalAndRowCluster(joinedRequestDto.ordinal(), row.getRowCluster())) {
+      mapOrdinalWhereOrdinalGreaterThanEqualAndRowCluster(
+        joinedRequestDto.ordinal(),
+        row.getRowCluster(),
         IntegerUtils::increment
       );
-      mapOrdinalWhereOrdinalGreaterThanEqualAndRowClusterId(
+      mapOrdinalWhereOrdinalGreaterThanEqualAndRowCluster(
         row.getOrdinal() + 1,
-        Objects.requireNonNullElse(requestDto.rowClusterFk(), row.getRowCluster().getId()),
+        row.getRowCluster(),
         IntegerUtils::decrement
       );
     }
 
-    return conversionService.convert(
+    return toFullRowResponseDtoConverter.convert(
       rowRepository.save(
-        rowMapper.partialUpdate(row, requestDto)
-      ),
-      FullRowResponseDto.class
+        rowMapper.partialUpdate(row, joinedRequestDto)
+      )
     );
   }
 
@@ -98,25 +111,40 @@ public class CurrentUserRowService implements RowService {
   public void deleteRowById(Long id) {
     val row = getById(id);
 
-    mapOrdinalWhereOrdinalGreaterThanEqualAndRowClusterId(row.getOrdinal() + 1, row.getRowCluster().getId(), IntegerUtils::decrement);
+    mapOrdinalWhereOrdinalGreaterThanEqualAndRowCluster(row.getOrdinal() + 1, row.getRowCluster(), IntegerUtils::decrement);
 
     rowRepository.delete(row);
   }
 
   @Override
   public Row getById(Long id) {
-    val row = rowRepository.findById(id)
-      .orElseThrow(EntityNotFoundException::new);
-
-    if (!Objects.equals(row.getUser().getId(), currentRequestUserService.getUserId()))
-      throw new ForeignUserDataAccessException();
-
-    return row;
+    return rowRepository.findByIdAndUserId(id, currentRequestUserService.getUserId())
+      .orElseThrow(EntityNotFoundException.supplier("Red"));
   }
 
-  private void mapOrdinalWhereOrdinalGreaterThanEqualAndRowClusterId(Integer ordinal, Long rowClusterId, IntUnaryOperator mapper) {
+  @Override
+  public List<Row> getAllById(List<Long> ids) {
+    return rowRepository.findAllByIdsAndUserId(ids, currentRequestUserService.getUserId());
+  }
+
+  @Override
+  public List<Row> getAllByRowClusterId(Long rowClusterFk) {
+    return rowRepository.findAllByRowClusterAndUserId(rowClusterService.getById(rowClusterFk), currentRequestUserService.getUserId());
+  }
+
+  @Override
+  public List<Row> getAllByArcodeParcelId(Long arcodeParcelFk) {
+    return rowRepository.findAllByArcodeParcelAndUserId(arcodeParcelService.getById(arcodeParcelFk), currentRequestUserService.getUserId());
+  }
+
+  @Override
+  public List<Row> getAllByCadastralParcelId(Long cadastralParcelFk) {
+    return rowRepository.findAllByCadastralParcelAndUserId(cadastralParcelService.getById(cadastralParcelFk), currentRequestUserService.getUserId());
+  }
+
+  private void mapOrdinalWhereOrdinalGreaterThanEqualAndRowCluster(Integer ordinal, RowCluster rowCluster, IntUnaryOperator mapper) {
     val counter = new AtomicInteger(ordinal);
-    val rowsToUpdate = rowRepository.findByOrdinalGreaterThanEqualAndRowClusterIdOrderByOrdinalAsc(ordinal, rowClusterId).stream()
+    val rowsToUpdate = rowRepository.findByOrdinalGreaterThanEqualAndRowClusterOrderByOrdinalAsc(ordinal, rowCluster).stream()
       .filter(it -> it.getOrdinal().equals(counter.getAndIncrement()))
       .peek(it -> it.setOrdinal(mapper.applyAsInt(it.getOrdinal())))
       .toList();

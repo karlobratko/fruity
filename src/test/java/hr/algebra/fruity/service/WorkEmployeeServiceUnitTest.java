@@ -1,20 +1,21 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.request.CreateWorkEmployeeRequestDtoWithWorkAdapter;
-import hr.algebra.fruity.dto.response.FullWorkEmployeeResponseDto;
+import hr.algebra.fruity.converter.CreateWorkEmployeeRequestDtoToJoinedCreateWorkEmployeeRequestDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateWorkEmployeeRequestDtoWithWorkAdapterToWorkEmployeeConverter;
+import hr.algebra.fruity.converter.WorkEmployeeToFullWorkEmployeeResponseDtoConverter;
+import hr.algebra.fruity.converter.WorkEmployeeToWorkEmployeeResponseDtoConverter;
+import hr.algebra.fruity.dto.request.joined.JoinedCreateWorkEmployeeRequestDtoWithWorkAdapter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.WorkEmployeeMapper;
-import hr.algebra.fruity.model.WorkEmployee;
 import hr.algebra.fruity.repository.WorkEmployeeRepository;
 import hr.algebra.fruity.service.impl.CurrentUserWorkEmployeeService;
 import hr.algebra.fruity.utils.mother.dto.CreateWorkEmployeeRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullWorkEmployeeResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedCreateWorkEmployeeRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateWorkEmployeeRequestDtoMother;
-import hr.algebra.fruity.utils.mother.model.UserMother;
 import hr.algebra.fruity.utils.mother.model.WorkEmployeeMother;
 import hr.algebra.fruity.utils.mother.model.WorkMother;
-import hr.algebra.fruity.validator.CreateWorkEmployeeRequestDtoWithWorkAdapterValidator;
+import hr.algebra.fruity.validator.JoinedCreateWorkEmployeeRequestDtoWithWorkAdapterValidator;
 import java.util.Optional;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -45,10 +45,19 @@ public class WorkEmployeeServiceUnitTest implements ServiceUnitTest {
   private CurrentUserWorkEmployeeService workEmployeeService;
 
   @Mock
-  private ConversionService conversionService;
+  private WorkEmployeeToWorkEmployeeResponseDtoConverter toWorkEmployeeResponseDtoConverter;
 
   @Mock
-  private CreateWorkEmployeeRequestDtoWithWorkAdapterValidator createWorkEmployeeRequestDtoWithWorkAdapterValidator;
+  private WorkEmployeeToFullWorkEmployeeResponseDtoConverter toFullWorkEmployeeResponseDtoConverter;
+
+  @Mock
+  private CreateWorkEmployeeRequestDtoToJoinedCreateWorkEmployeeRequestDtoConverter toJoinedCreateWorkEmployeeRequestDtoConverter;
+
+  @Mock
+  private JoinedCreateWorkEmployeeRequestDtoWithWorkAdapterToWorkEmployeeConverter fromJoinedCreateWorkEmployeeRequestDtoWithWorkAdapterConverter;
+
+  @Mock
+  private JoinedCreateWorkEmployeeRequestDtoWithWorkAdapterValidator joinedCreateWorkEmployeeRequestDtoWithWorkAdapterValidator;
 
   @Mock
   private WorkEmployeeMapper workEmployeeMapper;
@@ -71,17 +80,18 @@ public class WorkEmployeeServiceUnitTest implements ServiceUnitTest {
       "... THEN WorkEmployeeResponseDto is returned")
     public void GIVEN_ids_THEN_WorkEmployeeResponseDto() {
       // GIVEN
-      // ... ids
+      // ... invalid ids
       val workId = 1L;
       val employeeId = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkEmployeeRepository successfully finds
       val workEmployee = WorkEmployeeMother.complete().build();
-      given(workEmployeeRepository.findByWorkIdAndEmployeeId(same(workId), same(employeeId))).willReturn(Optional.of(workEmployee));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = workEmployee.getWork().getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... ConversionService successfully converts from User to FullWorkEmployeeResponseDto
+      given(workEmployeeRepository.findByWorkIdAndEmployeeIdAndWorkUserId(same(workId), same(employeeId), same(userId))).willReturn(Optional.of(workEmployee));
+      // ... WorkEmployeeToFullWorkEmployeeResponseDtoConverter successfully converts
       val expectedResponseDto = FullWorkEmployeeResponseDtoMother.complete().build();
-      given(conversionService.convert(same(workEmployee), same(FullWorkEmployeeResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullWorkEmployeeResponseDtoConverter.convert(same(workEmployee))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getWorkEmployeeByWorkIdAndEmployeeId is called
@@ -112,16 +122,19 @@ public class WorkEmployeeServiceUnitTest implements ServiceUnitTest {
       // ... WorkService successfully gets Work by id
       val work = WorkMother.complete().build();
       given(workService.getById(same(workId))).willReturn(work);
-      // ... CreateWorkEmployeeRequestDtoWithWorkAdapterValidator successfully validates requestDto and Work
-      willDoNothing().given(createWorkEmployeeRequestDtoWithWorkAdapterValidator).validate(any(CreateWorkEmployeeRequestDtoWithWorkAdapter.class));
-      // ... ConversionService successfully converts from CreateWorkEmployeeRequestDtoWithWorkAdapter to WorkEmployee
+      // ... CreateWorkEmployeeRequestDtoToJoinedCreateWorkEmployeeRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedCreateWorkEmployeeRequestDtoMother.complete().build();
+      given(toJoinedCreateWorkEmployeeRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
+      // ... JoinedCreateWorkEmployeeRequestDtoWithWorkAdapterValidator successfully validates
+      willDoNothing().given(joinedCreateWorkEmployeeRequestDtoWithWorkAdapterValidator).validate(any(JoinedCreateWorkEmployeeRequestDtoWithWorkAdapter.class));
+      // ... JoinedCreateWorkEmployeeRequestDtoWithWorkAdapterToWorkEmployeeConverter successfully converts
       val workEmployee = WorkEmployeeMother.complete().build();
-      given(conversionService.convert(any(CreateWorkEmployeeRequestDtoWithWorkAdapter.class), same(WorkEmployee.class))).willReturn(workEmployee);
-      // ... WorkEmployeeRepository will successfully save WorkEmployee
+      given(fromJoinedCreateWorkEmployeeRequestDtoWithWorkAdapterConverter.convert(any(JoinedCreateWorkEmployeeRequestDtoWithWorkAdapter.class))).willReturn(workEmployee);
+      // ... WorkEmployeeRepository successfully saves
       given(workEmployeeRepository.save(same(workEmployee))).willReturn(workEmployee);
-      // ... ConversionService successfully converts from WorkEmployee to FullWorkEmployeeResponseDto
+      // ... WorkEmployeeToFullWorkEmployeeResponseDtoConverter successfully converts
       val expectedResponseDto = FullWorkEmployeeResponseDtoMother.complete().build();
-      given(conversionService.convert(same(workEmployee), same(FullWorkEmployeeResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullWorkEmployeeResponseDtoConverter.convert(same(workEmployee))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... createWorkEmployeeForWorkId is called
@@ -146,23 +159,24 @@ public class WorkEmployeeServiceUnitTest implements ServiceUnitTest {
       "... THEN WorkEmployeeResponseDto is returned")
     public void GIVEN_idsAndUpdateWorkEmployeeRequestDto_THEN_WorkEmployeeResponseDto() {
       // GIVEN
-      // ... ids
+      // ... invalid ids
       val workId = 1L;
       val employeeId = 1L;
-      val workEmployee = WorkEmployeeMother.complete().build();
-      given(workEmployeeRepository.findByWorkIdAndEmployeeId(same(workId), same(employeeId))).willReturn(Optional.of(workEmployee));
       // ... UpdateWorkEmployeeRequestDto
       val requestDto = UpdateWorkEmployeeRequestDtoMother.complete().build();
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = workEmployee.getWork().getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkEmployeeRepository successfully finds
+      val workEmployee = WorkEmployeeMother.complete().build();
+      given(workEmployeeRepository.findByWorkIdAndEmployeeIdAndWorkUserId(same(workId), same(employeeId), same(userId))).willReturn(Optional.of(workEmployee));
       // ... WorkEmployeeMapper successfully partially updates WorkEmployee with UpdateWorkEmployeeRequestDto
       given(workEmployeeMapper.partialUpdate(same(workEmployee), same(requestDto))).willReturn(workEmployee);
       // ... WorkEmployeeRepository successfully saves WorkEmployee
       given(workEmployeeRepository.save(same(workEmployee))).willReturn(workEmployee);
-      // ... ConversionService successfully converts from WorkEmployee to FullWorkEmployeeResponseDto
+      // ... WorkEmployeeToFullWorkEmployeeResponseDtoConverter successfully converts
       val expectedResponseDto = FullWorkEmployeeResponseDtoMother.complete().build();
-      given(conversionService.convert(same(workEmployee), same(FullWorkEmployeeResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullWorkEmployeeResponseDtoConverter.convert(same(workEmployee))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... updateWorkEmployeeByWorkIdAndEmployeeId is called
@@ -186,14 +200,15 @@ public class WorkEmployeeServiceUnitTest implements ServiceUnitTest {
       "... THEN void")
     public void GIVEN_ids_THEN_void() {
       // GIVEN
-      // ... ids
+      // ... invalid ids
       val workId = 1L;
       val employeeId = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkEmployeeRepository successfully finds
       val workEmployee = WorkEmployeeMother.complete().build();
-      given(workEmployeeRepository.findByWorkIdAndEmployeeId(same(workId), same(employeeId))).willReturn(Optional.of(workEmployee));
-      // ... CurrentUserService's logged-in User is not equal to WorkEmployee User
-      val loggedInUser = workEmployee.getWork().getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(workEmployeeRepository.findByWorkIdAndEmployeeIdAndWorkUserId(same(workId), same(employeeId), same(userId))).willReturn(Optional.of(workEmployee));
       // ... WorkEmployeeRepository successfully deletes WorkEmployee
       willDoNothing().given(workEmployeeRepository).delete(workEmployee);
 
@@ -219,7 +234,11 @@ public class WorkEmployeeServiceUnitTest implements ServiceUnitTest {
       // ... invalid ids
       val workId = 1L;
       val employeeId = 1L;
-      given(workEmployeeRepository.findByWorkIdAndEmployeeId(same(workId), same(employeeId))).willReturn(Optional.empty());
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkEmployeeRepository fails to find
+      given(workEmployeeRepository.findByWorkIdAndEmployeeIdAndWorkUserId(same(workId), same(employeeId), same(userId))).willReturn(Optional.empty());
 
       // WHEN
       // ... getById is called
@@ -229,33 +248,6 @@ public class WorkEmployeeServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN workId, employeeId, and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idsAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... ids
-      val workId = 1L;
-      val employeeId = 1L;
-      val workEmployee = WorkEmployeeMother.complete().build();
-      given(workEmployeeRepository.findByWorkIdAndEmployeeId(same(workId), same(employeeId))).willReturn(Optional.of(workEmployee));
-      // ... CurrentUserService's logged-in User is not equal to WorkEmployee User
-      val loggedInUser = UserMother.complete().id(workEmployee.getWork().getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getById is called
-      when(() -> workEmployeeService.getByWorkIdAndEmployeeId(workId, employeeId));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 
@@ -264,14 +256,15 @@ public class WorkEmployeeServiceUnitTest implements ServiceUnitTest {
       "... THEN WorkEmployee is returned")
     public void GIVEN_ids_THEN_WorkEmployee() {
       // GIVEN
-      // ... ids
+      // ... invalid ids
       val workId = 1L;
       val employeeId = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkEmployeeRepository successfully finds
       val expectedWorkEmployee = WorkEmployeeMother.complete().build();
-      given(workEmployeeRepository.findByWorkIdAndEmployeeId(same(workId), same(employeeId))).willReturn(Optional.of(expectedWorkEmployee));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = expectedWorkEmployee.getWork().getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(workEmployeeRepository.findByWorkIdAndEmployeeIdAndWorkUserId(same(workId), same(employeeId), same(userId))).willReturn(Optional.of(expectedWorkEmployee));
 
       // WHEN
       // ... getById is called

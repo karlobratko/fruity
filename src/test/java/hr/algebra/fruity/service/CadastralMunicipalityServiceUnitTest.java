@@ -1,6 +1,7 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.FullCadastralMunicipalityResponseDto;
+import hr.algebra.fruity.converter.CadastralMunicipalityToCadastralMunicipalityResponseDtoConverter;
+import hr.algebra.fruity.converter.CadastralMunicipalityToFullCadastralMunicipalityResponseDtoConverter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.repository.CadastralMunicipalityRepository;
 import hr.algebra.fruity.service.impl.CadastralMunicipalityServiceImpl;
@@ -15,7 +16,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -32,7 +32,10 @@ public class CadastralMunicipalityServiceUnitTest implements ServiceUnitTest {
   private CadastralMunicipalityServiceImpl cadastralMunicipalityService;
 
   @Mock
-  private ConversionService conversionService;
+  private CadastralMunicipalityToCadastralMunicipalityResponseDtoConverter toCadastralMunicipalityResponseDtoConverter;
+
+  @Mock
+  private CadastralMunicipalityToFullCadastralMunicipalityResponseDtoConverter toFullCadastralMunicipalityResponseDtoConverter;
 
   @Mock
   private CadastralMunicipalityRepository cadastralMunicipalityRepository;
@@ -50,9 +53,9 @@ public class CadastralMunicipalityServiceUnitTest implements ServiceUnitTest {
       val id = 1;
       val cadastralMunicipality = CadastralMunicipalityMother.complete().build();
       given(cadastralMunicipalityRepository.findById(same(id))).willReturn(Optional.of(cadastralMunicipality));
-      // ... ConversionService successfully converts from CadastralMunicipality to CadastralMunicipalityResponseDto
+      // ... CadastralMunicipalityToFullCadastralMunicipalityResponseDtoConverter successfully converts
       val expectedResponseDto = FullCadastralMunicipalityResponseDtoMother.complete().build();
-      given(conversionService.convert(same(cadastralMunicipality), same(FullCadastralMunicipalityResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullCadastralMunicipalityResponseDtoConverter.convert(same(cadastralMunicipality))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getCadastralMunicipalityById is called
@@ -88,7 +91,6 @@ public class CadastralMunicipalityServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 

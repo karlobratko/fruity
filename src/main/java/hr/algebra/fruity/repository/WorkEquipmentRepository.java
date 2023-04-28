@@ -1,6 +1,7 @@
 package hr.algebra.fruity.repository;
 
 import hr.algebra.fruity.model.Equipment;
+import hr.algebra.fruity.model.User;
 import hr.algebra.fruity.model.Work;
 import hr.algebra.fruity.model.WorkEquipment;
 import hr.algebra.fruity.model.WorkEquipment.WorkEquipmentId;
@@ -12,9 +13,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface WorkEquipmentRepository extends JpaRepository<WorkEquipment, WorkEquipmentId> {
 
-  Optional<WorkEquipment> findByWorkIdAndEquipmentId(Long workFk, Long equipmentFk);
+  Optional<WorkEquipment> findByWorkIdAndEquipmentIdAndWorkUserId(Long workFk, Long equipmentFk, Long userFk);
 
-  Optional<WorkEquipment> findByWorkAndEquipment(Work work, Equipment equipment);
+  Optional<WorkEquipment> findByWorkAndEquipmentAndWorkUser(Work work, Equipment equipment, User user);
 
   List<WorkEquipment> findAllByWorkId(Long workFk);
 

@@ -1,19 +1,24 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.FullRowClusterResponseDto;
+import hr.algebra.fruity.converter.CreateRowClusterRequestDtoToJoinedCreateRowClusterRequestDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateRowClusterRequestDtoToRowClusterConverter;
+import hr.algebra.fruity.converter.RowClusterToFullRowClusterResponseDtoConverter;
+import hr.algebra.fruity.converter.RowClusterToRowClusterResponseDtoConverter;
+import hr.algebra.fruity.converter.RowToRowResponseDtoConverter;
+import hr.algebra.fruity.converter.UpdateRowClusterRequestDtoToJoinedUpdateRowClusterRequestDtoConverter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.RowClusterMapper;
-import hr.algebra.fruity.model.RowCluster;
 import hr.algebra.fruity.repository.RowClusterRepository;
+import hr.algebra.fruity.repository.RowRepository;
 import hr.algebra.fruity.service.impl.CurrentUserRowClusterService;
 import hr.algebra.fruity.utils.mother.dto.CreateRowClusterRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullRowClusterResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedCreateRowClusterRequestDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedUpdateRowClusterRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateRowClusterRequestDtoMother;
 import hr.algebra.fruity.utils.mother.model.RowClusterMother;
-import hr.algebra.fruity.utils.mother.model.UserMother;
-import hr.algebra.fruity.validator.RowClusterWithUpdateRowClusterRequestDtoValidator;
-import hr.algebra.fruity.validator.CreateRowClusterRequestDtoValidator;
+import hr.algebra.fruity.validator.JoinedCreateRowClusterRequestDtoValidator;
+import hr.algebra.fruity.validator.RowClusterWithJoinedUpdateRowClusterRequestDtoValidator;
 import java.util.Optional;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +28,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -43,13 +47,28 @@ public class RowClusterServiceUnitTest implements ServiceUnitTest {
   private CurrentUserRowClusterService rowClusterService;
 
   @Mock
-  private ConversionService conversionService;
+  private RowClusterToRowClusterResponseDtoConverter toRowClusterResponseDtoConverter;
 
   @Mock
-  private CreateRowClusterRequestDtoValidator createRowClusterRequestDtoValidator;
+  private RowClusterToFullRowClusterResponseDtoConverter toFullRowClusterResponseDtoConverter;
 
   @Mock
-  private RowClusterWithUpdateRowClusterRequestDtoValidator rowClusterWithUpdateRowClusterRequestDtoValidator;
+  private CreateRowClusterRequestDtoToJoinedCreateRowClusterRequestDtoConverter toJoinedCreateRowClusterRequestDtoConverter;
+
+  @Mock
+  private JoinedCreateRowClusterRequestDtoToRowClusterConverter fromJoinedCreateRowClusterRequestDtoConverter;
+
+  @Mock
+  private UpdateRowClusterRequestDtoToJoinedUpdateRowClusterRequestDtoConverter toJoinedUpdateRowClusterRequestDtoConverter;
+
+  @Mock
+  private RowToRowResponseDtoConverter toRowResponseDtoConverter;
+
+  @Mock
+  private JoinedCreateRowClusterRequestDtoValidator joinedCreateRowClusterRequestDtoValidator;
+
+  @Mock
+  private RowClusterWithJoinedUpdateRowClusterRequestDtoValidator rowClusterWithJoinedUpdateRowClusterRequestDtoValidator;
 
   @Mock
   private RowClusterMapper rowClusterMapper;
@@ -59,6 +78,9 @@ public class RowClusterServiceUnitTest implements ServiceUnitTest {
 
   @Mock
   private RowClusterRepository rowClusterRepository;
+
+  @Mock
+  private RowRepository rowRepository;
 
   @Nested
   @DisplayName("WHEN getRowClusterById is called")
@@ -71,14 +93,15 @@ public class RowClusterServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... RowClusterRepository fails to findByIdAndUserId
       val rowCluster = RowClusterMother.complete().build();
-      given(rowClusterRepository.findById(same(id))).willReturn(Optional.of(rowCluster));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = rowCluster.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... ConversionService successfully converts from User to FullRowClusterResponseDto
+      given(rowClusterRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(rowCluster));
+      // ... RowClusterToFullRowClusterResponseDtoConverter successfully converts
       val expectedResponseDto = FullRowClusterResponseDtoMother.complete().build();
-      given(conversionService.convert(same(rowCluster), same(FullRowClusterResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullRowClusterResponseDtoConverter.convert(same(rowCluster))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getRowClusterById is called
@@ -104,16 +127,19 @@ public class RowClusterServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... CreateRowClusterRequestDto
       val requestDto = CreateRowClusterRequestDtoMother.complete().build();
-      // CreateRowClusterRequestDtoValidator successfully validates CreateRowClusterRequestDto
-      willDoNothing().given(createRowClusterRequestDtoValidator).validate(same(requestDto));
-      // ... ConversionService successfully converts from CreateRowClusterRequestDto to RowCluster
+      // ... CreateRowClusterRequestDtoToJoinedCreateRowClusterRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedCreateRowClusterRequestDtoMother.complete().build();
+      given(toJoinedCreateRowClusterRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
+      // ... JoinedCreateRowClusterRequestDtoValidator successfully validates
+      willDoNothing().given(joinedCreateRowClusterRequestDtoValidator).validate(same(joinedRequestDto));
+      // ... JoinedCreateRowClusterRequestDtoToRowClusterConverter successfully converts
       val rowCluster = RowClusterMother.complete().build();
-      given(conversionService.convert(same(requestDto), same(RowCluster.class))).willReturn(rowCluster);
-      // ... RowClusterRepository will successfully save RowCluster
+      given(fromJoinedCreateRowClusterRequestDtoConverter.convert(same(joinedRequestDto))).willReturn(rowCluster);
+      // ... RowClusterRepository will successfully save
       given(rowClusterRepository.save(same(rowCluster))).willReturn(rowCluster);
-      // ... ConversionService successfully converts from RowCluster to FullRowClusterResponseDto
+      // ... RowClusterToFullRowClusterResponseDtoConverter successfully converts
       val expectedResponseDto = FullRowClusterResponseDtoMother.complete().build();
-      given(conversionService.convert(same(rowCluster), same(FullRowClusterResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullRowClusterResponseDtoConverter.convert(same(rowCluster))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... createRowCluster is called
@@ -140,22 +166,26 @@ public class RowClusterServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
-      val rowCluster = RowClusterMother.complete().build();
-      given(rowClusterRepository.findById(same(id))).willReturn(Optional.of(rowCluster));
       // ... UpdateRowClusterRequestDto
       val requestDto = UpdateRowClusterRequestDtoMother.complete().build();
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = rowCluster.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... RowClusterWithUpdateRowClusterRequestDtoValidator successfully validates RowCluster with UpdateRowClusterRequestDto
-      willDoNothing().given(rowClusterWithUpdateRowClusterRequestDtoValidator).validate(same(rowCluster), same(requestDto));
-      // ... RowClusterMapper successfully partially updates RowCluster with UpdateRowClusterRequestDto
-      given(rowClusterMapper.partialUpdate(same(rowCluster), same(requestDto))).willReturn(rowCluster);
-      // ... RowClusterRepository successfully saves RowCluster
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... RowClusterRepository fails to findByIdAndUserId
+      val rowCluster = RowClusterMother.complete().build();
+      given(rowClusterRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(rowCluster));
+      // ... UpdateRowClusterRequestDtoToJoinedUpdateRowClusterRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedUpdateRowClusterRequestDtoMother.complete().build();
+      given(toJoinedUpdateRowClusterRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
+      // ... RowClusterWithJoinedUpdateRowClusterRequestDtoValidator successfully validates
+      willDoNothing().given(rowClusterWithJoinedUpdateRowClusterRequestDtoValidator).validate(same(rowCluster), same(joinedRequestDto));
+      // ... RowClusterMapper successfully partially updates
+      given(rowClusterMapper.partialUpdate(same(rowCluster), same(joinedRequestDto))).willReturn(rowCluster);
+      // ... RowClusterRepository successfully saves
       given(rowClusterRepository.save(same(rowCluster))).willReturn(rowCluster);
-      // ... ConversionService successfully converts from RowCluster to FullRowClusterResponseDto
+      // ... RowClusterToFullRowClusterResponseDtoConverter successfully converts
       val expectedResponseDto = FullRowClusterResponseDtoMother.complete().build();
-      given(conversionService.convert(same(rowCluster), same(FullRowClusterResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullRowClusterResponseDtoConverter.convert(same(rowCluster))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... updateRowClusterById is called
@@ -181,11 +211,12 @@ public class RowClusterServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... RowClusterRepository fails to findByIdAndUserId
       val rowCluster = RowClusterMother.complete().build();
-      given(rowClusterRepository.findById(same(id))).willReturn(Optional.of(rowCluster));
-      // ... CurrentUserService's logged-in User is not equal to RowCluster User
-      val loggedInUser = rowCluster.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(rowClusterRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(rowCluster));
       // ... RowClusterRepository successfully deletes RowCluster
       willDoNothing().given(rowClusterRepository).delete(rowCluster);
 
@@ -203,13 +234,17 @@ public class RowClusterServiceUnitTest implements ServiceUnitTest {
   public class WHEN_getById {
 
     @Test
-    @DisplayName("GIVEN invalid id " +
+    @DisplayName("GIVEN invalid id or userId " +
       "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
+    public void GIVEN_invalidIdOrUserId_THEN_EntityNotFoundException() {
       // GIVEN
-      // ... invalid id
+      // ... id
       val id = 1L;
-      given(rowClusterRepository.findById(same(id))).willReturn(Optional.empty());
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... RowClusterRepository fails to findByIdAndUserId
+      given(rowClusterRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.empty());
 
       // WHEN
       // ... getById is called
@@ -219,32 +254,6 @@ public class RowClusterServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val rowCluster = RowClusterMother.complete().build();
-      given(rowClusterRepository.findById(same(id))).willReturn(Optional.of(rowCluster));
-      // ... CurrentUserService's logged-in User is not equal to RowCluster User
-      val loggedInUser = UserMother.complete().id(rowCluster.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getById is called
-      when(() -> rowClusterService.getById(id));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 
@@ -255,11 +264,12 @@ public class RowClusterServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... RowClusterRepository fails to findByIdAndUserId
       val expectedRowCluster = RowClusterMother.complete().build();
-      given(rowClusterRepository.findById(same(id))).willReturn(Optional.of(expectedRowCluster));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = expectedRowCluster.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(rowClusterRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(expectedRowCluster));
 
       // WHEN
       // ... getById is called

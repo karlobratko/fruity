@@ -1,35 +1,51 @@
 package hr.algebra.fruity.service.impl;
 
+import hr.algebra.fruity.converter.CreateWorkRequestDtoToJoinedCreateWorkRequestDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateWorkRequestDtoToWorkConverter;
+import hr.algebra.fruity.converter.RealisationToRealisationResponseDtoConverter;
+import hr.algebra.fruity.converter.UpdateWorkRequestDtoToJoinedUpdateWorkRequestDtoConverter;
+import hr.algebra.fruity.converter.WorkToFullWorkResponseDtoConverter;
+import hr.algebra.fruity.converter.WorkToWorkResponseDtoConverter;
 import hr.algebra.fruity.dto.request.CreateWorkRequestDto;
 import hr.algebra.fruity.dto.request.UpdateWorkRequestDto;
 import hr.algebra.fruity.dto.response.FullWorkResponseDto;
+import hr.algebra.fruity.dto.response.RealisationResponseDto;
 import hr.algebra.fruity.dto.response.WorkResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.WorkMapper;
 import hr.algebra.fruity.model.Work;
+import hr.algebra.fruity.repository.RealisationRepository;
 import hr.algebra.fruity.repository.WorkRepository;
 import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.WorkService;
-import hr.algebra.fruity.validator.CreateWorkRequestDtoValidator;
-import hr.algebra.fruity.validator.WorkWithUpdateWorkRequestDtoValidator;
+import hr.algebra.fruity.validator.JoinedCreateWorkRequestDtoValidator;
+import hr.algebra.fruity.validator.WorkWithJoinedUpdateWorkRequestDtoValidator;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CurrentUserWorkService implements WorkService {
 
-  private final ConversionService conversionService;
+  private final WorkToWorkResponseDtoConverter toWorkResponseDtoConverter;
 
-  private final CreateWorkRequestDtoValidator createWorkRequestDtoValidator;
+  private final WorkToFullWorkResponseDtoConverter toFullWorkResponseDtoConverter;
 
-  private final WorkWithUpdateWorkRequestDtoValidator workWithUpdateWorkRequestDtoValidator;
+  private final CreateWorkRequestDtoToJoinedCreateWorkRequestDtoConverter toJoinedCreateWorkRequestDtoConverter;
+
+  private final JoinedCreateWorkRequestDtoToWorkConverter fromJoinedCreateWorkRequestDtoConverter;
+
+  private final UpdateWorkRequestDtoToJoinedUpdateWorkRequestDtoConverter toJoinedUpdateWorkRequestDtoConverter;
+
+  private final RealisationToRealisationResponseDtoConverter toRealisationResponseDtoConverter;
+
+  private final JoinedCreateWorkRequestDtoValidator joinedCreateWorkRequestDtoValidator;
+
+  private final WorkWithJoinedUpdateWorkRequestDtoValidator workWithJoinedUpdateWorkRequestDtoValidator;
 
   private final WorkMapper workMapper;
 
@@ -37,40 +53,51 @@ public class CurrentUserWorkService implements WorkService {
 
   private final WorkRepository workRepository;
 
+  private final RealisationRepository realisationRepository;
+
   @Override
   public List<WorkResponseDto> getAllWorks() {
     return workRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
-      .map(work -> conversionService.convert(work, WorkResponseDto.class))
+      .map(toWorkResponseDtoConverter::convert)
+      .toList();
+  }
+
+  @Override
+  public List<RealisationResponseDto> getAllRealisationsByWorkId(Long workFk) {
+    return realisationRepository.findAllByWork(getById(workFk)).stream()
+      .map(toRealisationResponseDtoConverter::convert)
       .toList();
   }
 
   @Override
   public FullWorkResponseDto getWorkById(Long id) {
-    return conversionService.convert(getById(id), FullWorkResponseDto.class);
+    return toFullWorkResponseDtoConverter.convert(getById(id));
   }
 
   @Override
   @Transactional
   public FullWorkResponseDto createWork(CreateWorkRequestDto requestDto) {
-    createWorkRequestDtoValidator.validate(requestDto);
+    val joinedRequestDto = Objects.requireNonNull(toJoinedCreateWorkRequestDtoConverter.convert(requestDto));
 
-    val work = workRepository.save(Objects.requireNonNull(conversionService.convert(requestDto, Work.class)));
+    joinedCreateWorkRequestDtoValidator.validate(joinedRequestDto);
 
-    return conversionService.convert(work, FullWorkResponseDto.class);
+    val work = workRepository.save(Objects.requireNonNull(fromJoinedCreateWorkRequestDtoConverter.convert(joinedRequestDto)));
+
+    return toFullWorkResponseDtoConverter.convert(work);
   }
 
   @Override
   @Transactional
   public FullWorkResponseDto updateWorkById(Long id, UpdateWorkRequestDto requestDto) {
     val work = getById(id);
+    val joinedRequestDto = Objects.requireNonNull(toJoinedUpdateWorkRequestDtoConverter.convert(requestDto));
 
-    workWithUpdateWorkRequestDtoValidator.validate(work, requestDto);
+    workWithJoinedUpdateWorkRequestDtoValidator.validate(work, joinedRequestDto);
 
-    return conversionService.convert(
+    return toFullWorkResponseDtoConverter.convert(
       workRepository.save(
-        workMapper.partialUpdate(work, requestDto)
-      ),
-      FullWorkResponseDto.class
+        workMapper.partialUpdate(work, joinedRequestDto)
+      )
     );
   }
 
@@ -82,13 +109,8 @@ public class CurrentUserWorkService implements WorkService {
 
   @Override
   public Work getById(Long id) {
-    val work = workRepository.findById(id)
-      .orElseThrow(EntityNotFoundException::new);
-
-    if (!Objects.equals(work.getUser().getId(), currentRequestUserService.getUserId()))
-      throw new ForeignUserDataAccessException();
-
-    return work;
+    return workRepository.findByIdAndUserId(id, currentRequestUserService.getUserId())
+      .orElseThrow(EntityNotFoundException.supplier("Rad"));
   }
 
 }

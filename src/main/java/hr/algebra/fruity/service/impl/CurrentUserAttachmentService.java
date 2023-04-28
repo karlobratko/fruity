@@ -1,16 +1,16 @@
 package hr.algebra.fruity.service.impl;
 
+import hr.algebra.fruity.converter.AttachmentToAttachmentResponseDtoConverter;
+import hr.algebra.fruity.converter.CreateAttachmentRequestDtoToAttachmentConverter;
 import hr.algebra.fruity.dto.request.CreateAttachmentRequestDto;
 import hr.algebra.fruity.dto.request.UpdateAttachmentRequestDto;
 import hr.algebra.fruity.dto.response.AttachmentResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.AttachmentMapper;
 import hr.algebra.fruity.model.Attachment;
 import hr.algebra.fruity.repository.AttachmentRepository;
 import hr.algebra.fruity.service.AttachmentService;
 import hr.algebra.fruity.service.CurrentRequestUserService;
-import hr.algebra.fruity.service.EquipmentService;
 import hr.algebra.fruity.validator.AttachmentWithUpdateAttachmentRequestDtoValidator;
 import hr.algebra.fruity.validator.CreateAttachmentRequestDtoValidator;
 import jakarta.transaction.Transactional;
@@ -18,14 +18,15 @@ import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CurrentUserAttachmentService implements AttachmentService {
 
-  private final ConversionService conversionService;
+  private final AttachmentToAttachmentResponseDtoConverter toAttachmentResponseDtoConverter;
+
+  private final CreateAttachmentRequestDtoToAttachmentConverter fromCreateAttachmentRequestDtoConverter;
 
   private final CreateAttachmentRequestDtoValidator createAttachmentRequestDtoValidator;
 
@@ -37,25 +38,16 @@ public class CurrentUserAttachmentService implements AttachmentService {
 
   private final AttachmentRepository attachmentRepository;
 
-  private final EquipmentService equipmentService;
-
   @Override
   public List<AttachmentResponseDto> getAllAttachments() {
     return attachmentRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
-      .map(equipment -> conversionService.convert(equipment, AttachmentResponseDto.class))
-      .toList();
-  }
-
-  @Override
-  public List<AttachmentResponseDto> getAllAttachmentsByEquipmentId(Long equipmentFk) {
-    return attachmentRepository.findAllByEquipment(equipmentService.getById(equipmentFk)).stream()
-      .map(equipment -> conversionService.convert(equipment, AttachmentResponseDto.class))
+      .map(toAttachmentResponseDtoConverter::convert)
       .toList();
   }
 
   @Override
   public AttachmentResponseDto getAttachmentById(Long id) {
-    return conversionService.convert(getById(id), AttachmentResponseDto.class);
+    return toAttachmentResponseDtoConverter.convert(getById(id));
   }
 
   @Override
@@ -63,9 +55,9 @@ public class CurrentUserAttachmentService implements AttachmentService {
   public AttachmentResponseDto createAttachment(CreateAttachmentRequestDto requestDto) {
     createAttachmentRequestDtoValidator.validate(requestDto);
 
-    val attachment = attachmentRepository.save(Objects.requireNonNull(conversionService.convert(requestDto, Attachment.class)));
+    val attachment = attachmentRepository.save(Objects.requireNonNull(fromCreateAttachmentRequestDtoConverter.convert(requestDto)));
 
-    return conversionService.convert(attachment, AttachmentResponseDto.class);
+    return toAttachmentResponseDtoConverter.convert(attachment);
   }
 
   @Override
@@ -75,11 +67,10 @@ public class CurrentUserAttachmentService implements AttachmentService {
 
     attachmentWithUpdateAttachmentRequestDtoValidator.validate(attachment, requestDto);
 
-    return conversionService.convert(
+    return toAttachmentResponseDtoConverter.convert(
       attachmentRepository.save(
         attachmentMapper.partialUpdate(attachment, requestDto)
-      ),
-      AttachmentResponseDto.class
+      )
     );
   }
 
@@ -91,13 +82,13 @@ public class CurrentUserAttachmentService implements AttachmentService {
 
   @Override
   public Attachment getById(Long id) {
-    val attachment = attachmentRepository.findById(id)
-      .orElseThrow(EntityNotFoundException::new);
+    return attachmentRepository.findByIdAndUserId(id, currentRequestUserService.getUserId())
+      .orElseThrow(EntityNotFoundException.supplier("Priključak"));
+  }
 
-    if (!Objects.equals(attachment.getUser().getId(), currentRequestUserService.getUserId()))
-      throw new ForeignUserDataAccessException();
-
-    return attachment;
+  @Override
+  public List<Attachment> getAllById(List<Long> ids) {
+    return attachmentRepository.findAllByIdsAndUserId(ids, currentRequestUserService.getUserId());
   }
 
 }

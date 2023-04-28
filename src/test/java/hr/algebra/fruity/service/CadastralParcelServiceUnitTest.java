@@ -1,19 +1,24 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.FullCadastralParcelResponseDto;
+import hr.algebra.fruity.converter.ArcodeParcelToArcodeParcelResponseDtoConverter;
+import hr.algebra.fruity.converter.CadastralParcelToCadastralParcelResponseDtoConverter;
+import hr.algebra.fruity.converter.CadastralParcelToFullCadastralParcelResponseDtoConverter;
+import hr.algebra.fruity.converter.CreateCadastralParcelRequestDtoToJoinedCreateCadastralParcelRequestDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateCadastralParcelRequestDtoToCadastralParcelConverter;
+import hr.algebra.fruity.converter.UpdateCadastralParcelRequestDtoToJoinedUpdateCadastralParcelRequestDtoConverter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.CadastralParcelMapper;
-import hr.algebra.fruity.model.CadastralParcel;
+import hr.algebra.fruity.repository.ArcodeParcelRepository;
 import hr.algebra.fruity.repository.CadastralParcelRepository;
 import hr.algebra.fruity.service.impl.CurrentUserCadastralParcelService;
 import hr.algebra.fruity.utils.mother.dto.CreateCadastralParcelRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullCadastralParcelResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedCreateCadastralParcelRequestDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedUpdateCadastralParcelRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateCadastralParcelRequestDtoMother;
 import hr.algebra.fruity.utils.mother.model.CadastralParcelMother;
-import hr.algebra.fruity.utils.mother.model.UserMother;
-import hr.algebra.fruity.validator.CadastralParcelWithUpdateCadastralParcelRequestDtoValidator;
-import hr.algebra.fruity.validator.CreateCadastralParcelRequestDtoValidator;
+import hr.algebra.fruity.validator.CadastralParcelWithJoinedUpdateCadastralParcelRequestDtoValidator;
+import hr.algebra.fruity.validator.JoinedCreateCadastralParcelRequestDtoValidator;
 import java.util.Optional;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +28,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -43,13 +47,28 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
   private CurrentUserCadastralParcelService cadastralParcelService;
 
   @Mock
-  private ConversionService conversionService;
+  private CadastralParcelToCadastralParcelResponseDtoConverter toCadastralParcelResponseDtoConverter;
 
   @Mock
-  private CreateCadastralParcelRequestDtoValidator createCadastralParcelRequestDtoValidator;
+  private CadastralParcelToFullCadastralParcelResponseDtoConverter toFullCadastralParcelResponseDtoConverter;
 
   @Mock
-  private CadastralParcelWithUpdateCadastralParcelRequestDtoValidator cadastralParcelWithUpdateCadastralParcelRequestDtoValidator;
+  private CreateCadastralParcelRequestDtoToJoinedCreateCadastralParcelRequestDtoConverter toJoinedCreateCadastralParcelRequestDtoConverter;
+
+  @Mock
+  private JoinedCreateCadastralParcelRequestDtoToCadastralParcelConverter fromJoinedCreateCadastralParcelRequestDtoConverter;
+
+  @Mock
+  private ArcodeParcelToArcodeParcelResponseDtoConverter toArcodeParcelResponseDtoConverter;
+
+  @Mock
+  private JoinedCreateCadastralParcelRequestDtoValidator joinedCreateCadastralParcelRequestDtoValidator;
+
+  @Mock
+  private UpdateCadastralParcelRequestDtoToJoinedUpdateCadastralParcelRequestDtoConverter toJoinedUpdateCadastralParcelRequestDtoConverter;
+
+  @Mock
+  private CadastralParcelWithJoinedUpdateCadastralParcelRequestDtoValidator cadastralParcelWithJoinedUpdateCadastralParcelRequestDtoValidator;
 
   @Mock
   private CadastralParcelMapper cadastralParcelMapper;
@@ -59,6 +78,9 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
 
   @Mock
   private CadastralParcelRepository cadastralParcelRepository;
+
+  @Mock
+  private ArcodeParcelRepository arcodeParcelRepository;
 
   @Nested
   @DisplayName("WHEN getCadastralParcelById is called")
@@ -71,14 +93,15 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... CadastralParcelRepository fails to findByIdAndUserId
       val cadastralParcel = CadastralParcelMother.complete().build();
-      given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.of(cadastralParcel));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = cadastralParcel.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... ConversionService successfully converts from User to FullCadastralParcelResponseDto
+      given(cadastralParcelRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(cadastralParcel));
+      // ... CadastralParcelToFullCadastralParcelResponseDto successfully converts
       val expectedResponseDto = FullCadastralParcelResponseDtoMother.complete().build();
-      given(conversionService.convert(same(cadastralParcel), same(FullCadastralParcelResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullCadastralParcelResponseDtoConverter.convert(same(cadastralParcel))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getCadastralParcelById is called
@@ -104,16 +127,19 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... CreateCadastralParcelRequestDto
       val requestDto = CreateCadastralParcelRequestDtoMother.complete().build();
-      // CreateCadastralParcelRequestDtoValidator successfully validates CreateCadastralParcelRequestDto
-      willDoNothing().given(createCadastralParcelRequestDtoValidator).validate(same(requestDto));
-      // ... ConversionService successfully converts from CreateCadastralParcelRequestDto to CadastralParcel
+      // ... CreateCadastralParcelRequestDtoToJoinedCreateCadastralParcelRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedCreateCadastralParcelRequestDtoMother.complete().build();
+      given(toJoinedCreateCadastralParcelRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
+      // ... JoinedCreateCadastralParcelRequestDtoValidator successfully validates
+      willDoNothing().given(joinedCreateCadastralParcelRequestDtoValidator).validate(same(joinedRequestDto));
+      // ... JoinedCreateCadastralParcelRequestDtoToCadastralParcelConverter successfully converts
       val cadastralParcel = CadastralParcelMother.complete().build();
-      given(conversionService.convert(same(requestDto), same(CadastralParcel.class))).willReturn(cadastralParcel);
-      // ... CadastralParcelRepository will successfully save CadastralParcel
+      given(fromJoinedCreateCadastralParcelRequestDtoConverter.convert(same(joinedRequestDto))).willReturn(cadastralParcel);
+      // ... CadastralParcelRepository will successfully save
       given(cadastralParcelRepository.save(same(cadastralParcel))).willReturn(cadastralParcel);
-      // ... ConversionService successfully converts from CadastralParcel to FullCadastralParcelResponseDto
+      // ... CadastralParcelToFullCadastralParcelResponseDtoConverter successfully converts
       val expectedResponseDto = FullCadastralParcelResponseDtoMother.complete().build();
-      given(conversionService.convert(same(cadastralParcel), same(FullCadastralParcelResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullCadastralParcelResponseDtoConverter.convert(same(cadastralParcel))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... createCadastralParcel is called
@@ -140,22 +166,26 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
-      val cadastralParcel = CadastralParcelMother.complete().build();
-      given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.of(cadastralParcel));
       // ... UpdateCadastralParcelRequestDto
       val requestDto = UpdateCadastralParcelRequestDtoMother.complete().build();
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = cadastralParcel.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... CadastralParcelWithUpdateCadastralParcelRequestDtoValidator successfully validates CadastralParcel with UpdateCadastralParcelRequestDto
-      willDoNothing().given(cadastralParcelWithUpdateCadastralParcelRequestDtoValidator).validate(same(cadastralParcel), same(requestDto));
-      // ... CadastralParcelMapper successfully partially updates CadastralParcel with UpdateCadastralParcelRequestDto
-      given(cadastralParcelMapper.partialUpdate(same(cadastralParcel), same(requestDto))).willReturn(cadastralParcel);
-      // ... CadastralParcelRepository successfully saves CadastralParcel
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... CadastralParcelRepository fails to findByIdAndUserId
+      val cadastralParcel = CadastralParcelMother.complete().build();
+      given(cadastralParcelRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(cadastralParcel));
+      // ... UpdateCadastralParcelRequestDtoToJoinedUpdateCadastralParcelRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedUpdateCadastralParcelRequestDtoMother.complete().build();
+      given(toJoinedUpdateCadastralParcelRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
+      // ... CadastralParcelWithUpdateCadastralParcelRequestDtoValidator successfully validates
+      willDoNothing().given(cadastralParcelWithJoinedUpdateCadastralParcelRequestDtoValidator).validate(same(cadastralParcel), same(joinedRequestDto));
+      // ... CadastralParcelMapper successfully partially updates
+      given(cadastralParcelMapper.partialUpdate(same(cadastralParcel), same(joinedRequestDto))).willReturn(cadastralParcel);
+      // ... CadastralParcelRepository successfully saves
       given(cadastralParcelRepository.save(same(cadastralParcel))).willReturn(cadastralParcel);
-      // ... ConversionService successfully converts from CadastralParcel to FullCadastralParcelResponseDto
+      // ... CadastralParcelToFullCadastralParcelResponseDtoConverter successfully converts
       val expectedResponseDto = FullCadastralParcelResponseDtoMother.complete().build();
-      given(conversionService.convert(same(cadastralParcel), same(FullCadastralParcelResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullCadastralParcelResponseDtoConverter.convert(same(cadastralParcel))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... updateCadastralParcelById is called
@@ -181,15 +211,17 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... CadastralParcelRepository fails to findByIdAndUserId
       val cadastralParcel = CadastralParcelMother.complete().build();
-      given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.of(cadastralParcel));
-      // ... CurrentUserService's logged-in User is not equal to CadastralParcel User
-      val loggedInUser = cadastralParcel.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(cadastralParcelRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(cadastralParcel));
       // ... CadastralParcelRepository successfully deletes CadastralParcel
       willDoNothing().given(cadastralParcelRepository).delete(cadastralParcel);
 
       // WHEN
+      // ... deleteCadastralParcelById is called
       cadastralParcelService.deleteCadastralParcelById(id);
 
       // THEN
@@ -203,13 +235,17 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
   public class WHEN_getById {
 
     @Test
-    @DisplayName("GIVEN invalid id " +
+    @DisplayName("GIVEN invalid id or userId " +
       "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
+    public void GIVEN_invalidIdOrUserId_THEN_EntityNotFoundException() {
       // GIVEN
-      // ... invalid id
+      // ... id
       val id = 1L;
-      given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.empty());
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... CadastralParcelRepository fails to findByIdAndUserId
+      given(cadastralParcelRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.empty());
 
       // WHEN
       // ... getById is called
@@ -219,32 +255,6 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val cadastralParcel = CadastralParcelMother.complete().build();
-      given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.of(cadastralParcel));
-      // ... CurrentUserService's logged-in User is not equal to CadastralParcel User
-      val loggedInUser = UserMother.complete().id(cadastralParcel.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getById is called
-      when(() -> cadastralParcelService.getById(id));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 
@@ -255,11 +265,12 @@ public class CadastralParcelServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... CadastralParcelRepository fails to findByIdAndUserId
       val expectedCadastralParcel = CadastralParcelMother.complete().build();
-      given(cadastralParcelRepository.findById(same(id))).willReturn(Optional.of(expectedCadastralParcel));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = expectedCadastralParcel.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(cadastralParcelRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(expectedCadastralParcel));
 
       // WHEN
       // ... getById is called

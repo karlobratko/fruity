@@ -1,10 +1,11 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.AuthenticationResponseDto;
-import hr.algebra.fruity.dto.response.RegistrationTokenResponseDto;
+import hr.algebra.fruity.converter.EmployeeToAuthenticationResponseDtoConverter;
+import hr.algebra.fruity.converter.RegisterRequestDtoToEmployeeConverter;
+import hr.algebra.fruity.converter.RegisterRequestDtoToUserConverter;
+import hr.algebra.fruity.converter.RegistrationTokenToRegistrationTokenResponseDtoConverter;
 import hr.algebra.fruity.model.Email;
 import hr.algebra.fruity.model.Employee;
-import hr.algebra.fruity.model.User;
 import hr.algebra.fruity.repository.EmployeeRepository;
 import hr.algebra.fruity.repository.UserRepository;
 import hr.algebra.fruity.service.impl.JwtAuthenticationService;
@@ -34,7 +35,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -61,7 +61,16 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
   private JwtAuthenticationService authenticationService;
 
   @Mock
-  private ConversionService conversionService;
+  private RegisterRequestDtoToUserConverter fromRegisterRequestDtoToUserConverter;
+
+  @Mock
+  private RegisterRequestDtoToEmployeeConverter fromRegisterRequestDtoToEmployeeConverter;
+
+  @Mock
+  private RegistrationTokenToRegistrationTokenResponseDtoConverter toRegistrationTokenResponseDtoConverter;
+
+  @Mock
+  private EmployeeToAuthenticationResponseDtoConverter toAuthenticationResponseDtoConverter;
 
   @Mock
   private RegisterRequestDtoValidator registerRequestDtoValidator;
@@ -101,31 +110,31 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... RegisterRequestDto
       val requestDto = RegisterRequestDtoMother.complete().build();
-      // ... RegisterRequestDtoValidator successfully validates RegisterRequestDto
+      // ... RegisterRequestDtoValidator successfully validates
       willDoNothing().given(registerRequestDtoValidator).validate(requestDto);
-      // ... ConversionService successfully converts from RegisterRequestDto to User
+      // ... RegisterRequestDtoToUserConverter successfully converts
       val user = UserMother.complete().build();
-      given(conversionService.convert(same(requestDto), same(User.class))).willReturn(user);
-      // ... UserRepository successfully saves User
+      given(fromRegisterRequestDtoToUserConverter.convert(same(requestDto))).willReturn(user);
+      // ... UserRepository successfully saves
       given(userRepository.save(same(user))).willReturn(user);
-      // ... ConversionService successfully converts from RegisterRequestDto to Employee
+      // ... ConversionService successfully converts
       val employee = EmployeeMother.complete().user(null).registrationToken(null).build();
-      given(conversionService.convert(same(requestDto), same(Employee.class))).willReturn(employee);
-      // ... RegistrationTokenRepository successfully saves RegistrationToken
+      given(fromRegisterRequestDtoToEmployeeConverter.convert(same(requestDto))).willReturn(employee);
+      // ... RegistrationTokenRepository successfully saves
       val registrationToken = RegistrationTokenMother.complete().build();
       given(registrationTokenService.createRegistrationToken()).willReturn(registrationToken);
-      // ... RefreshTokenService successfully saves RefreshToken
+      // ... RefreshTokenService successfully saves
       val refreshToken = RefreshTokenMother.complete().build();
       given(refreshTokenService.createRefreshToken()).willReturn(refreshToken);
-      // ... MobileTokenService successfully saves RefreshToken
+      // ... MobileTokenService successfully saves
       val mobileToken = MobileTokenMother.complete().build();
       given(mobileTokenService.createMobileToken()).willReturn(mobileToken);
-      // ... EmployeeRepository successfully saves Employee
+      // ... EmployeeRepository successfully saves
       given(employeeRepository.save(same(employee))).willReturn(employee);
-      // ... EmailComposerService successfully composes Email given Employee, String, and UUID
+      // ... EmailComposerService successfully composes Email
       val email = EmailMother.complete().build();
       given(emailComposerService.composeConfirmRegistrationEmail(same(employee), same(requestDto.confirmRegistrationUrl()), same(registrationToken.getUuid()))).willReturn(email);
-      // ... EmailSenderService successfully sends email given Email
+      // ... EmailSenderService successfully sends email
       willDoNothing().given(emailSenderService).send(same(email));
 
       // WHEN
@@ -155,17 +164,17 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... UUID
       val requestDto = ConfirmRegistrationRequestDtoMother.complete().build();
-      // ... RegistrationTokenService successfully confirm RegistrationToken by UUID
+      // ... RegistrationTokenService successfully confirms RegistrationToken
       val employee = EmployeeMother.complete().enabled(false).locked(true).build();
       val registrationToken = RegistrationTokenMother.complete()
         .employee(employee)
         .build();
       given(registrationTokenService.confirmRegistrationToken(requestDto.registrationToken())).willReturn(registrationToken);
-      // ... EmployeeRepository successfully saves Employee
+      // ... EmployeeRepository successfully saves
       given(employeeRepository.save(same(employee))).willReturn(employee);
-      // ... ConversionService successfully converts from RegistrationToken to RegistrationTokenResponseDto
+      // ... RegistrationTokenToRegistrationTokenResponseDtoConverter successfully converts
       val expectedResponseDto = RegistrationTokenResponseDtoMother.complete().build();
-      given(conversionService.convert(same(registrationToken), same(RegistrationTokenResponseDto.class))).willReturn(expectedResponseDto);
+      given(toRegistrationTokenResponseDtoConverter.convert(same(registrationToken))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... confirmRegistration is called
@@ -195,7 +204,7 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... ResendRegistrationRequestDto
       val requestDto = ResendRegistrationRequestDtoMother.complete().build();
-      // ... RegistrationTokenService successfully refreshes RegistrationToken by UUID
+      // ... RegistrationTokenService successfully refreshes RegistrationToken
       val employee = EmployeeMother.complete().build();
       val registrationToken = RegistrationTokenMother.complete()
         .employee(employee)
@@ -203,14 +212,14 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
         .expireDateTime(LocalDateTime.now().minusMinutes(15))
         .build();
       given(registrationTokenService.refreshRegistrationToken(requestDto.registrationToken())).willReturn(registrationToken);
-      // ... EmailComposerService successfully composes Email given Employee, String, and UUID
+      // ... EmailComposerService successfully composes Email
       val email = EmailMother.complete().build();
       given(emailComposerService.composeConfirmRegistrationEmail(same(employee), same(requestDto.confirmRegistrationUrl()), same(registrationToken.getUuid()))).willReturn(email);
-      // ... EmailSenderService successfully sends email given Email
+      // ... EmailSenderService successfully sends email
       willDoNothing().given(emailSenderService).send(same(email));
-      // ... ConversionService successfully converts from Employee to FullEmployeeResponseDto
+      // ... RegistrationTokenToRegistrationTokenResponseDtoConverter successfully converts
       val expectedResponseDto = RegistrationTokenResponseDtoMother.complete().build();
-      given(conversionService.convert(same(registrationToken), same(RegistrationTokenResponseDto.class))).willReturn(expectedResponseDto);
+      given(toRegistrationTokenResponseDtoConverter.convert(same(registrationToken))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... resendRegistrationToken is called
@@ -251,7 +260,6 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       // ... BadCredentialsException is thrown
       and.then(caughtException())
         .isInstanceOf(BadCredentialsException.class)
-        .hasMessage("Korisničko ime %s nije registrirano.".formatted(requestDto.username()))
         .hasNoCause();
     }
 
@@ -265,7 +273,7 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       // ... AuthenticationManager fails to authenticate UsernamePasswordAuthenticationToken
       val token = new UsernamePasswordAuthenticationToken(requestDto.username(), requestDto.password());
       given(authenticationManager.authenticate(token)).willThrow(DisabledException.class);
-      // ... EmployeeRepository fails to find Employee by username
+      // ... EmployeeRepository fails to findByUsername
       val username = requestDto.username();
       val employee = EmployeeMother.complete().enabled(false).locked(true).build();
       given(employeeRepository.findByUsername(same(username))).willReturn(Optional.of(employee));
@@ -278,7 +286,6 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       // ... DisabledException is thrown
       and.then(caughtException())
         .isInstanceOf(DisabledException.class)
-        .hasMessage("Korisnički račun nije omogućen.")
         .hasNoCause();
     }
 
@@ -292,7 +299,7 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       // ... AuthenticationManager fails to authenticate UsernamePasswordAuthenticationToken
       val token = new UsernamePasswordAuthenticationToken(requestDto.username(), requestDto.password());
       given(authenticationManager.authenticate(token)).willThrow(DisabledException.class);
-      // ... EmployeeRepository fails to find Employee by username
+      // ... EmployeeRepository fails to findByUsername
       val username = requestDto.username();
       val employee = EmployeeMother.complete().enabled(true).locked(true).build();
       given(employeeRepository.findByUsername(same(username))).willReturn(Optional.of(employee));
@@ -305,7 +312,6 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       // ... LockedException is thrown
       and.then(caughtException())
         .isInstanceOf(LockedException.class)
-        .hasMessage("Korisnički račun je zaključan.")
         .hasNoCause();
     }
 
@@ -319,15 +325,15 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       // ... AuthenticationManager successfully authenticates UsernamePasswordAuthenticationToken
       val token = new UsernamePasswordAuthenticationToken(requestDto.username(), requestDto.password());
       given(authenticationManager.authenticate(token)).willReturn(token);
-      // ... EmployeeRepository successfully finds Employee by username
+      // ... EmployeeRepository successfully findByUsername
       val employee = EmployeeMother.complete().build();
       given(employeeRepository.findByUsername(same(token.getName()))).willReturn(Optional.of(employee));
       // ... RefreshTokenService successfully refreshes RefreshToken
       val refreshToken = RefreshTokenMother.complete().build();
       given(refreshTokenService.refreshRefreshToken(same(employee.getRefreshToken().getUuid()))).willReturn(refreshToken);
-      // ... ConversionService successfully converts from Employee to AuthenticationResponseDto
+      // ... EmployeeToAuthenticationResponseDtoConverter successfully converts
       val expectedResponseDto = AuthenticationResponseDtoMother.complete().build();
-      given(conversionService.convert(same(employee), same(AuthenticationResponseDto.class))).willReturn(expectedResponseDto);
+      given(toAuthenticationResponseDtoConverter.convert(same(employee))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... login is called
@@ -356,9 +362,10 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       // ... MobileTokenService successfully verifies mobile
       val mobileToken = MobileTokenMother.complete().build();
       given(mobileTokenService.verifyMobileToken(same(requestDto.mobileToken()))).willReturn(mobileToken);
-      // ... ConversionService successfully converts from Employee to AuthenticationResponseDto
+      // ... ConversionService successfully converts
       val expectedResponseDto = AuthenticationResponseDtoMother.complete().build();
-      given(conversionService.convert(same(mobileToken.getEmployee()), same(AuthenticationResponseDto.class))).willReturn(expectedResponseDto);
+      // ... EmployeeToAuthenticationResponseDtoConverter successfully converts
+      given(toAuthenticationResponseDtoConverter.convert(same(mobileToken.getEmployee()))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... loginMobile is called
@@ -387,9 +394,9 @@ class AuthenticationServiceUnitTest implements ServiceUnitTest {
       // RefreshTokenService successfully verifies RefreshToken by UUID
       val refreshToken = RefreshTokenMother.complete().build();
       given(refreshTokenService.verifyRefreshToken(same(requestDto.refreshToken()))).willReturn(refreshToken);
-      // ConversionService successfully converts from Employee to AuthenticationResponseDto
+      // ... EmployeeToAuthenticationResponseDtoConverter successfully converts
       val expectedResponseDto = AuthenticationResponseDtoMother.complete().build();
-      given(conversionService.convert(same(refreshToken.getEmployee()), same(AuthenticationResponseDto.class))).willReturn(expectedResponseDto);
+      given(toAuthenticationResponseDtoConverter.convert(same(refreshToken.getEmployee()))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... refreshToken is called

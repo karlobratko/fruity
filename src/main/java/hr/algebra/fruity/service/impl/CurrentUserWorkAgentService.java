@@ -1,33 +1,41 @@
 package hr.algebra.fruity.service.impl;
 
+import hr.algebra.fruity.converter.CreateWorkAgentRequestDtoToJoinedCreateWorkAgentRequestDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateWorkAgentRequestDtoWithWorkAdapterToWorkAgentConverter;
+import hr.algebra.fruity.converter.WorkAgentToFullWorkAgentResponseDtoConverter;
+import hr.algebra.fruity.converter.WorkAgentToWorkAgentResponseDtoConverter;
 import hr.algebra.fruity.dto.request.CreateWorkAgentRequestDto;
-import hr.algebra.fruity.dto.request.CreateWorkAgentRequestDtoWithWorkAdapter;
 import hr.algebra.fruity.dto.request.UpdateWorkAgentRequestDto;
+import hr.algebra.fruity.dto.request.joined.JoinedCreateWorkAgentRequestDtoWithWorkAdapter;
 import hr.algebra.fruity.dto.response.FullWorkAgentResponseDto;
 import hr.algebra.fruity.dto.response.WorkAgentResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.WorkAgentMapper;
 import hr.algebra.fruity.model.WorkAgent;
 import hr.algebra.fruity.repository.WorkAgentRepository;
 import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.WorkAgentService;
 import hr.algebra.fruity.service.WorkService;
-import hr.algebra.fruity.validator.CreateWorkAgentRequestDtoWithWorkAdapterValidator;
+import hr.algebra.fruity.validator.JoinedCreateWorkAgentRequestDtoWithWorkAdapterValidator;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CurrentUserWorkAgentService implements WorkAgentService {
 
-  private final ConversionService conversionService;
+  private final WorkAgentToWorkAgentResponseDtoConverter toWorkAgentResponseDtoConverter;
 
-  private final CreateWorkAgentRequestDtoWithWorkAdapterValidator createWorkAgentRequestDtoWithWorkAdapterValidator;
+  private final WorkAgentToFullWorkAgentResponseDtoConverter toFullWorkAgentResponseDtoConverter;
+
+  private final CreateWorkAgentRequestDtoToJoinedCreateWorkAgentRequestDtoConverter toJoinedCreateWorkAgentRequestDtoConverter;
+
+  private final JoinedCreateWorkAgentRequestDtoWithWorkAdapterToWorkAgentConverter fromJoinedCreateWorkAgentRequestDtoWithWorkAdapterConverter;
+
+  private final JoinedCreateWorkAgentRequestDtoWithWorkAdapterValidator joinedCreateWorkAgentRequestDtoWithWorkAdapterValidator;
 
   private final WorkAgentMapper workAgentMapper;
 
@@ -40,35 +48,35 @@ public class CurrentUserWorkAgentService implements WorkAgentService {
   @Override
   public List<WorkAgentResponseDto> getAllWorkAgentsByWorkId(Long workFk) {
     return workAgentRepository.findAllByWork(workService.getById(workFk)).stream()
-      .map(workAgent -> conversionService.convert(workAgent, WorkAgentResponseDto.class))
+      .map(toWorkAgentResponseDtoConverter::convert)
       .toList();
   }
 
   @Override
   public FullWorkAgentResponseDto getWorkAgentByWorkIdAndAgentId(Long workFk, Integer agentFk) {
-    return conversionService.convert(getByWorkIdAndAgentId(workFk, agentFk), FullWorkAgentResponseDto.class);
+    return toFullWorkAgentResponseDtoConverter.convert(getByWorkIdAndAgentId(workFk, agentFk));
   }
 
   @Override
   public FullWorkAgentResponseDto createWorkAgentForWorkId(Long workFk, CreateWorkAgentRequestDto requestDto) {
     val work = workService.getById(workFk);
+    val joinedRequestDto = Objects.requireNonNull(toJoinedCreateWorkAgentRequestDtoConverter.convert(requestDto));
 
-    val requestDtoWithWork = new CreateWorkAgentRequestDtoWithWorkAdapter(requestDto, work);
-    createWorkAgentRequestDtoWithWorkAdapterValidator.validate(requestDtoWithWork);
+    val requestDtoWithWork = new JoinedCreateWorkAgentRequestDtoWithWorkAdapter(joinedRequestDto, work);
+    joinedCreateWorkAgentRequestDtoWithWorkAdapterValidator.validate(requestDtoWithWork);
 
-    val workAgent = workAgentRepository.save(Objects.requireNonNull(conversionService.convert(requestDtoWithWork, WorkAgent.class)));
-    return conversionService.convert(workAgent, FullWorkAgentResponseDto.class);
+    val workAgent = workAgentRepository.save(Objects.requireNonNull(fromJoinedCreateWorkAgentRequestDtoWithWorkAdapterConverter.convert(requestDtoWithWork)));
+    return toFullWorkAgentResponseDtoConverter.convert(workAgent);
   }
 
   @Override
   public FullWorkAgentResponseDto updateWorkAgentByWorkIdAndAgentId(Long workFk, Integer agentFk, UpdateWorkAgentRequestDto requestDto) {
     val workAgent = getByWorkIdAndAgentId(workFk, agentFk);
 
-    return conversionService.convert(
+    return toFullWorkAgentResponseDtoConverter.convert(
       workAgentRepository.save(
         workAgentMapper.partialUpdate(workAgent, requestDto)
-      ),
-      FullWorkAgentResponseDto.class
+      )
     );
   }
 
@@ -79,13 +87,8 @@ public class CurrentUserWorkAgentService implements WorkAgentService {
 
   @Override
   public WorkAgent getByWorkIdAndAgentId(Long workFk, Integer agentFk) {
-    val workAgent = workAgentRepository.findByWorkIdAndAgentId(workFk, agentFk)
-      .orElseThrow(EntityNotFoundException::new);
-
-    if (!Objects.equals(workAgent.getWork().getUser().getId(), currentRequestUserService.getUserId()))
-      throw new ForeignUserDataAccessException();
-
-    return workAgent;
+    return workAgentRepository.findByWorkIdAndAgentIdAndWorkUserId(workFk, agentFk, currentRequestUserService.getUserId())
+      .orElseThrow(EntityNotFoundException.supplier("Sredstvo korišteno u radu"));
   }
 
 }

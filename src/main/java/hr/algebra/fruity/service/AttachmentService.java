@@ -10,8 +10,6 @@ public interface AttachmentService {
 
   List<AttachmentResponseDto> getAllAttachments();
 
-  List<AttachmentResponseDto> getAllAttachmentsByEquipmentId(Long equipmentFk);
-
   AttachmentResponseDto getAttachmentById(Long id);
 
   AttachmentResponseDto createAttachment(CreateAttachmentRequestDto requestDto);
@@ -21,5 +19,7 @@ public interface AttachmentService {
   void deleteAttachmentById(Long id);
 
   Attachment getById(Long id);
+
+  List<Attachment> getAllById(List<Long> id);
 
 }

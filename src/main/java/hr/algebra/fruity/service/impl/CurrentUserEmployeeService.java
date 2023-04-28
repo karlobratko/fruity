@@ -1,11 +1,13 @@
 package hr.algebra.fruity.service.impl;
 
+import hr.algebra.fruity.converter.CreateEmployeeRequestDtoToEmployeeConverter;
+import hr.algebra.fruity.converter.EmployeeToEmployeeResponseDtoConverter;
+import hr.algebra.fruity.converter.EmployeeToFullEmployeeResponseDtoConverter;
 import hr.algebra.fruity.dto.request.CreateEmployeeRequestDto;
 import hr.algebra.fruity.dto.request.UpdateEmployeeRequestDto;
 import hr.algebra.fruity.dto.response.EmployeeResponseDto;
 import hr.algebra.fruity.dto.response.FullEmployeeResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.exception.ManagerEmployeeDeleteException;
 import hr.algebra.fruity.mapper.EmployeeMapper;
 import hr.algebra.fruity.model.Employee;
@@ -23,14 +25,17 @@ import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CurrentUserEmployeeService implements EmployeeService {
 
-  private final ConversionService conversionService;
+  private final EmployeeToEmployeeResponseDtoConverter toEmployeeResponseDtoConverter;
+
+  private final EmployeeToFullEmployeeResponseDtoConverter toFullEmployeeResponseDtoConverter;
+
+  private final CreateEmployeeRequestDtoToEmployeeConverter fromCreateEmployeeRequestDtoConverter;
 
   private final CreateEmployeeRequestDtoValidator createEmployeeRequestDtoValidator;
 
@@ -51,13 +56,13 @@ public class CurrentUserEmployeeService implements EmployeeService {
   @Override
   public List<EmployeeResponseDto> getAllEmployees() {
     return employeeRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
-      .map(employee -> conversionService.convert(employee, EmployeeResponseDto.class))
+      .map(toEmployeeResponseDtoConverter::convert)
       .toList();
   }
 
   @Override
   public FullEmployeeResponseDto getEmployeeById(Long id) {
-    return conversionService.convert(getById(id), FullEmployeeResponseDto.class);
+    return toFullEmployeeResponseDtoConverter.convert(getById(id));
   }
 
   @Override
@@ -65,14 +70,13 @@ public class CurrentUserEmployeeService implements EmployeeService {
   public FullEmployeeResponseDto createEmployee(CreateEmployeeRequestDto requestDto) {
     createEmployeeRequestDtoValidator.validate(requestDto);
 
-    val employee = Objects.requireNonNull(conversionService.convert(requestDto, Employee.class));
+    val employee = Objects.requireNonNull(fromCreateEmployeeRequestDtoConverter.convert(requestDto));
     employee.setRefreshToken(refreshTokenService.createRefreshToken());
     employee.setMobileToken(mobileTokenService.createMobileToken());
     employee.activate();
 
-    return conversionService.convert(
-      employeeRepository.save(Objects.requireNonNull(employee)),
-      FullEmployeeResponseDto.class
+    return toFullEmployeeResponseDtoConverter.convert(
+      employeeRepository.save(Objects.requireNonNull(employee))
     );
   }
 
@@ -83,11 +87,10 @@ public class CurrentUserEmployeeService implements EmployeeService {
 
     employeeWithUpdateEmployeeRequestDtoValidator.validate(employee, requestDto);
 
-    return conversionService.convert(
+    return toFullEmployeeResponseDtoConverter.convert(
       employeeRepository.save(
         employeeMapper.partialUpdate(employee, requestDto)
-      ),
-      FullEmployeeResponseDto.class
+      )
     );
   }
 
@@ -104,13 +107,8 @@ public class CurrentUserEmployeeService implements EmployeeService {
 
   @Override
   public Employee getById(Long id) {
-    val employee = employeeRepository.findById(id)
-      .orElseThrow(EntityNotFoundException::new);
-
-    if (!Objects.equals(employee.getUser().getId(), currentRequestUserService.getUserId()))
-      throw new ForeignUserDataAccessException();
-
-    return employee;
+    return employeeRepository.findByIdAndUserId(id, currentRequestUserService.getUserId())
+      .orElseThrow(EntityNotFoundException.supplier("Zaposlenik"));
   }
 
 }

@@ -12,14 +12,19 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ArcodeParcelRepository extends PagingAndSortingRepository<ArcodeParcel, Long>, JpaRepository<ArcodeParcel, Long> {
 
+  Optional<ArcodeParcel> findByIdAndUser(Long id, User user);
+
+  Optional<ArcodeParcel> findByIdAndUserId(Long id, Long userFk);
+
   Set<ArcodeParcel> findAllByUser(User user);
 
   Set<ArcodeParcel> findAllByUserId(Long userFk);
 
-
   Set<ArcodeParcel> findAllByCadastralParcel(CadastralParcel cadastralParcel);
 
   Set<ArcodeParcel> findAllByCadastralParcelId(Long cadastralParcelFk);
+
+  Optional<ArcodeParcel> findByNameAndCadastralParcel(String name, CadastralParcel cadastralParcel);
 
   Optional<ArcodeParcel> findByNameAndCadastralParcelId(String name, Long cadastralParcelFk);
 

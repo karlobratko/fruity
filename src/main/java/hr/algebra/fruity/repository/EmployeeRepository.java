@@ -22,6 +22,10 @@ public interface EmployeeRepository extends PagingAndSortingRepository<Employee,
 
   Boolean existsByUsername(String username);
 
+  Optional<Employee> findByIdAndUser(Long id, User user);
+
+  Optional<Employee> findByIdAndUserId(Long id, Long userFk);
+
   Set<Employee> findAllByUser(User user);
 
   Set<Employee> findAllByUserId(Long userFk);

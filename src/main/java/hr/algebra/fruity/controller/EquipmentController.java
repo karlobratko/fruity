@@ -7,7 +7,6 @@ import hr.algebra.fruity.dto.response.ApiResponse;
 import hr.algebra.fruity.dto.response.AttachmentResponseDto;
 import hr.algebra.fruity.dto.response.EquipmentResponseDto;
 import hr.algebra.fruity.dto.response.FullEquipmentResponseDto;
-import hr.algebra.fruity.service.AttachmentService;
 import hr.algebra.fruity.service.EquipmentService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -30,8 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class EquipmentController {
 
   private final EquipmentService equipmentService;
-
-  private final AttachmentService attachmentService;
 
   @GetMapping(Mappings.getAllEquipmentGetMapping)
   public ResponseEntity<ApiResponse<List<EquipmentResponseDto>>> getAllEquipment() {
@@ -89,8 +86,8 @@ public class EquipmentController {
     return ResponseEntity
       .ok(
         ApiResponse.ok(
-          attachmentService.getAllAttachmentsByEquipmentId(id),
-          "Arkod parcele katastarske čestice uspješno dohvaćene."
+          equipmentService.getAllAttachmentsByEquipmentId(id),
+          "Priključci opreme uspješno dohvaćeni."
         )
       );
   }

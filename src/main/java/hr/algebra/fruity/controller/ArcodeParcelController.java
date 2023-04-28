@@ -8,7 +8,6 @@ import hr.algebra.fruity.dto.response.ArcodeParcelResponseDto;
 import hr.algebra.fruity.dto.response.FullArcodeParcelResponseDto;
 import hr.algebra.fruity.dto.response.RowClusterResponseDto;
 import hr.algebra.fruity.service.ArcodeParcelService;
-import hr.algebra.fruity.service.RowClusterService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.AccessLevel;
@@ -30,8 +29,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ArcodeParcelController {
 
   private final ArcodeParcelService arcodeParcelService;
-
-  private final RowClusterService rowClusterService;
 
   @GetMapping(Mappings.getAllArcodeParcelsGetMapping)
   public ResponseEntity<ApiResponse<List<ArcodeParcelResponseDto>>> getAllArcodeParcels() {
@@ -89,7 +86,7 @@ public class ArcodeParcelController {
     return ResponseEntity
       .ok(
         ApiResponse.ok(
-          rowClusterService.getAllRowClustersByArcodeParcelId(id),
+          arcodeParcelService.getAllRowClustersByArcodeParcelId(id),
           "Table ARKOD parcele uspješno dohvaćene."
         )
       );

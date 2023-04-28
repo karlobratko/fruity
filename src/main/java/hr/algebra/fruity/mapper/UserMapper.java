@@ -1,10 +1,9 @@
 package hr.algebra.fruity.mapper;
 
 import hr.algebra.fruity.dto.request.UpdateUserRequestDto;
-import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.model.County;
 import hr.algebra.fruity.model.User;
-import hr.algebra.fruity.repository.CountyRepository;
+import hr.algebra.fruity.service.CountyService;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.mapstruct.BeanMapping;
@@ -21,12 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class UserMapper {
 
   @Autowired
-  private CountyRepository countyRepository;
+  private CountyService countyService;
 
   @Named(MappingHelpers.mapIdToCounty)
   protected County mapIdToCounty(Integer value) {
-    return countyRepository.findById(value)
-      .orElseThrow(EntityNotFoundException::new);
+    return countyService.getById(value);
   }
 
   @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, unmappedTargetPolicy = ReportingPolicy.IGNORE)

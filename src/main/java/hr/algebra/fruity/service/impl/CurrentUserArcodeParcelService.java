@@ -1,36 +1,51 @@
 package hr.algebra.fruity.service.impl;
 
+import hr.algebra.fruity.converter.ArcodeParcelToArcodeParcelResponseDtoConverter;
+import hr.algebra.fruity.converter.ArcodeParcelToFullArcodeParcelResponseDtoConverter;
+import hr.algebra.fruity.converter.CreateArcodeParcelRequestDtoToJoinedCreateArcodeParcelRequestDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateArcodeParcelRequestDtoToArcodeParcelConverter;
+import hr.algebra.fruity.converter.RowClusterToRowClusterResponseDtoConverter;
+import hr.algebra.fruity.converter.UpdateArcodeParcelRequestDtoToJoinedUpdateArcodeParcelRequestDtoConverter;
 import hr.algebra.fruity.dto.request.CreateArcodeParcelRequestDto;
 import hr.algebra.fruity.dto.request.UpdateArcodeParcelRequestDto;
 import hr.algebra.fruity.dto.response.ArcodeParcelResponseDto;
 import hr.algebra.fruity.dto.response.FullArcodeParcelResponseDto;
+import hr.algebra.fruity.dto.response.RowClusterResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.ArcodeParcelMapper;
 import hr.algebra.fruity.model.ArcodeParcel;
 import hr.algebra.fruity.repository.ArcodeParcelRepository;
+import hr.algebra.fruity.repository.RowClusterRepository;
 import hr.algebra.fruity.service.ArcodeParcelService;
-import hr.algebra.fruity.service.CadastralParcelService;
 import hr.algebra.fruity.service.CurrentRequestUserService;
-import hr.algebra.fruity.validator.ArcodeParcelWithUpdateArcodeParcelRequestDtoValidator;
-import hr.algebra.fruity.validator.CreateArcodeParcelRequestDtoValidator;
+import hr.algebra.fruity.validator.ArcodeParcelWithJoinedUpdateArcodeParcelRequestDtoValidator;
+import hr.algebra.fruity.validator.JoinedCreateArcodeParcelRequestDtoValidator;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import org.springframework.core.convert.ConversionService;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class CurrentUserArcodeParcelService implements ArcodeParcelService {
 
-  private final ConversionService conversionService;
+  private final ArcodeParcelToArcodeParcelResponseDtoConverter toArcodeParcelResponseDtoConverter;
 
-  private final CreateArcodeParcelRequestDtoValidator createArcodeParcelRequestDtoValidator;
+  private final ArcodeParcelToFullArcodeParcelResponseDtoConverter toFullArcodeParcelResponseDtoConverter;
 
-  private final ArcodeParcelWithUpdateArcodeParcelRequestDtoValidator arcodeParcelWithUpdateArcodeParcelRequestDtoValidator;
+  private final CreateArcodeParcelRequestDtoToJoinedCreateArcodeParcelRequestDtoConverter toJoinedCreateArcodeParcelRequestDtoConverter;
+
+  private final JoinedCreateArcodeParcelRequestDtoToArcodeParcelConverter fromJoinedCreateArcodeParcelRequestDtoConverter;
+
+  private final UpdateArcodeParcelRequestDtoToJoinedUpdateArcodeParcelRequestDtoConverter toJoinedUpdateArcodeParcelRequestDtoConverter;
+
+  private final RowClusterToRowClusterResponseDtoConverter toRowClusterResponseDtoConverter;
+
+  private final JoinedCreateArcodeParcelRequestDtoValidator joinedCreateArcodeParcelRequestDtoValidator;
+
+  private final ArcodeParcelWithJoinedUpdateArcodeParcelRequestDtoValidator arcodeParcelWithJoinedUpdateArcodeParcelRequestDtoValidator;
 
   private final ArcodeParcelMapper arcodeParcelMapper;
 
@@ -38,49 +53,51 @@ public class CurrentUserArcodeParcelService implements ArcodeParcelService {
 
   private final ArcodeParcelRepository arcodeParcelRepository;
 
-  private final CadastralParcelService cadastralParcelService;
+  private final RowClusterRepository rowClusterRepository;
 
   @Override
   public List<ArcodeParcelResponseDto> getAllArcodeParcels() {
     return arcodeParcelRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
-      .map(arcodeParcel -> conversionService.convert(arcodeParcel, ArcodeParcelResponseDto.class))
+      .map(toArcodeParcelResponseDtoConverter::convert)
       .toList();
   }
 
   @Override
-  public List<ArcodeParcelResponseDto> getAllArcodeParcelsByCadastralParcelId(Long cadastralParcelFk) {
-    return arcodeParcelRepository.findAllByCadastralParcel(cadastralParcelService.getById(cadastralParcelFk)).stream()
-      .map(arcodeParcel -> conversionService.convert(arcodeParcel, ArcodeParcelResponseDto.class))
+  public List<RowClusterResponseDto> getAllRowClustersByArcodeParcelId(Long arcodeParcelId) {
+    return rowClusterRepository.findAllByArcodeParcel(getById(arcodeParcelId)).stream()
+      .map(toRowClusterResponseDtoConverter::convert)
       .toList();
   }
 
   @Override
   public FullArcodeParcelResponseDto getArcodeParcelById(Long id) {
-    return conversionService.convert(getById(id), FullArcodeParcelResponseDto.class);
+    return toFullArcodeParcelResponseDtoConverter.convert(getById(id));
   }
 
   @Override
   @Transactional
   public FullArcodeParcelResponseDto createArcodeParcel(CreateArcodeParcelRequestDto requestDto) {
-    createArcodeParcelRequestDtoValidator.validate(requestDto);
+    val joinedRequestDto = Objects.requireNonNull(toJoinedCreateArcodeParcelRequestDtoConverter.convert(requestDto));
 
-    val arcodeParcel = arcodeParcelRepository.save(Objects.requireNonNull(conversionService.convert(requestDto, ArcodeParcel.class)));
+    joinedCreateArcodeParcelRequestDtoValidator.validate(joinedRequestDto);
 
-    return conversionService.convert(arcodeParcel, FullArcodeParcelResponseDto.class);
+    val arcodeParcel = arcodeParcelRepository.save(Objects.requireNonNull(fromJoinedCreateArcodeParcelRequestDtoConverter.convert(joinedRequestDto)));
+
+    return toFullArcodeParcelResponseDtoConverter.convert(arcodeParcel);
   }
 
   @Override
   @Transactional
   public FullArcodeParcelResponseDto updateArcodeParcelById(Long id, UpdateArcodeParcelRequestDto requestDto) {
     val arcodeParcel = getById(id);
+    val joinedRequestDto = Objects.requireNonNull(toJoinedUpdateArcodeParcelRequestDtoConverter.convert(requestDto));
 
-    arcodeParcelWithUpdateArcodeParcelRequestDtoValidator.validate(arcodeParcel, requestDto);
+    arcodeParcelWithJoinedUpdateArcodeParcelRequestDtoValidator.validate(arcodeParcel, joinedRequestDto);
 
-    return conversionService.convert(
+    return toFullArcodeParcelResponseDtoConverter.convert(
       arcodeParcelRepository.save(
-        arcodeParcelMapper.partialUpdate(arcodeParcel, requestDto)
-      ),
-      FullArcodeParcelResponseDto.class
+        arcodeParcelMapper.partialUpdate(arcodeParcel, joinedRequestDto)
+      )
     );
   }
 
@@ -92,13 +109,8 @@ public class CurrentUserArcodeParcelService implements ArcodeParcelService {
 
   @Override
   public ArcodeParcel getById(Long id) {
-    val arcodeParcel = arcodeParcelRepository.findById(id)
-      .orElseThrow(EntityNotFoundException::new);
-
-    if (!Objects.equals(arcodeParcel.getUser().getId(), currentRequestUserService.getUserId()))
-      throw new ForeignUserDataAccessException();
-
-    return arcodeParcel;
+    return arcodeParcelRepository.findByIdAndUserId(id, currentRequestUserService.getUserId())
+      .orElseThrow(EntityNotFoundException.supplier("ARKOD parcela"));
   }
 
 }

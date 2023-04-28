@@ -43,7 +43,7 @@ public class EmployeeRoleServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... EmployeeRoles
       val employeeRoles = EmployeeRoles.ROLE_MANAGER;
-      // ... EmployeeRoleRepository will fail to find EmployeeRole by name
+      // ... EmployeeRoleRepository will fail to findByName
       given(employeeRoleRepository.findByName(same(employeeRoles.name()))).willReturn(Optional.empty());
 
       // WHEN
@@ -65,7 +65,7 @@ public class EmployeeRoleServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... EmployeeRoles
       val employeeRoles = EmployeeRoles.ROLE_MANAGER;
-      // ... EmployeeRoleRepository will successfully find EmployeeRole by name
+      // ... EmployeeRoleRepository will successfully findByName
       val expectedEmployeeRole = EmployeeRoleMother.complete().build();
       given(employeeRoleRepository.findByName(same(employeeRoles.name()))).willReturn(Optional.of(expectedEmployeeRole));
 

@@ -1,17 +1,20 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.FullRowResponseDto;
+import hr.algebra.fruity.converter.CreateRowRequestDtoToJoinedCreateRowRequestDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateRowRequestDtoToRowConverter;
+import hr.algebra.fruity.converter.RowToFullRowResponseDtoConverter;
+import hr.algebra.fruity.converter.RowToRowResponseDtoConverter;
+import hr.algebra.fruity.converter.UpdateRowRequestDtoToJoinedUpdateRowRequestDtoConverter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.RowMapper;
-import hr.algebra.fruity.model.Row;
 import hr.algebra.fruity.repository.RowRepository;
 import hr.algebra.fruity.service.impl.CurrentUserRowService;
 import hr.algebra.fruity.utils.mother.dto.CreateRowRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullRowResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedCreateRowRequestDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedUpdateRowRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateRowRequestDtoMother;
 import hr.algebra.fruity.utils.mother.model.RowMother;
-import hr.algebra.fruity.utils.mother.model.UserMother;
 import java.util.Collections;
 import java.util.Optional;
 import lombok.val;
@@ -22,7 +25,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -34,7 +36,7 @@ import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Row Unit Test")
+@DisplayName("Row Service Unit Test")
 @SuppressWarnings("static-access")
 public class RowServiceUnitTest implements ServiceUnitTest {
 
@@ -42,7 +44,19 @@ public class RowServiceUnitTest implements ServiceUnitTest {
   private CurrentUserRowService rowService;
 
   @Mock
-  private ConversionService conversionService;
+  private RowToRowResponseDtoConverter toRowResponseDtoConverter;
+
+  @Mock
+  private RowToFullRowResponseDtoConverter toFullRowResponseDtoConverter;
+
+  @Mock
+  private CreateRowRequestDtoToJoinedCreateRowRequestDtoConverter toJoinedCreateRowRequestDtoConverter;
+
+  @Mock
+  private JoinedCreateRowRequestDtoToRowConverter fromJoinedCreateRowRequestDtoConverter;
+
+  @Mock
+  private UpdateRowRequestDtoToJoinedUpdateRowRequestDtoConverter toJoinedUpdateRowRequestDtoConverter;
 
   @Mock
   private RowMapper rowMapper;
@@ -56,9 +70,14 @@ public class RowServiceUnitTest implements ServiceUnitTest {
   @Mock
   private RowClusterService rowClusterService;
 
+  @Mock
+  private ArcodeParcelService arcodeParcelService;
+
+  @Mock
+  private CadastralParcelService cadastralParcelService;
+
   @Nested
   @DisplayName("WHEN getRowById is called")
-
   public class WHEN_getRowById {
 
     @Test
@@ -68,14 +87,15 @@ public class RowServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... RowRepository fails to findByIdAndUserId
       val row = RowMother.complete().build();
-      given(rowRepository.findById(same(id))).willReturn(Optional.of(row));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = row.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... ConversionService successfully converts from User to FullRowResponseDto
+      given(rowRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(row));
+      // ... RowToFullRowResponseDtoConverter successfully converts
       val expectedResponseDto = FullRowResponseDtoMother.complete().build();
-      given(conversionService.convert(same(row), same(FullRowResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullRowResponseDtoConverter.convert(same(row))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getRowById is called
@@ -101,18 +121,19 @@ public class RowServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... CreateRowRequestDto
       val requestDto = CreateRowRequestDtoMother.complete().build();
+      // ... CreateRowRequestDtoToJoinedCreateRowRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedCreateRowRequestDtoMother.complete().build();
+      given(toJoinedCreateRowRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
       // ... not exists by ordinal and rowClusterFk
-      val ordinal = requestDto.ordinal();
-      val rowClusterFk = requestDto.rowClusterFk();
-      given(rowRepository.existsByOrdinalAndRowClusterId(same(ordinal), same(rowClusterFk))).willReturn(false);
-      // ... ConversionService successfully converts from CreateRowRequestDto to Row
+      given(rowRepository.existsByOrdinalAndRowCluster(same(joinedRequestDto.ordinal()), same(joinedRequestDto.rowCluster()))).willReturn(false);
+      // ... JoinedCreateRowRequestDtoToRowConverter successfully converts
       val row = RowMother.complete().build();
-      given(conversionService.convert(same(requestDto), same(Row.class))).willReturn(row);
-      // ... RowRepository will successfully save Row
+      given(fromJoinedCreateRowRequestDtoConverter.convert(same(joinedRequestDto))).willReturn(row);
+      // ... RowRepository successfully saves
       given(rowRepository.save(same(row))).willReturn(row);
-      // ... ConversionService successfully converts from Row to FullRowResponseDto
+      // ... RowToFullRowResponseDtoConverter successfully converts
       val expectedResponseDto = FullRowResponseDtoMother.complete().build();
-      given(conversionService.convert(same(row), same(FullRowResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullRowResponseDtoConverter.convert(same(row))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... createRow is called
@@ -139,24 +160,29 @@ public class RowServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
-      val row = RowMother.complete().build();
-      given(rowRepository.findById(same(id))).willReturn(Optional.of(row));
       // ... UpdateRowRequestDto
       val requestDto = UpdateRowRequestDtoMother.complete().build();
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... RowRepository successfully finds
+      val row = RowMother.complete().build();
+      given(rowRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(row));
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = row.getUser();
       given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      // ... UpdateRowRequestDtoToJoinedUpdateRowRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedUpdateRowRequestDtoMother.complete().build();
+      given(toJoinedUpdateRowRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
       // ... not exists by ordinal and rowClusterFk
-      val ordinal = requestDto.ordinal();
-      val rowClusterFk = requestDto.rowClusterFk();
-      given(rowRepository.existsByOrdinalAndRowClusterId(same(ordinal), same(rowClusterFk))).willReturn(false);
-      // ... RowMapper successfully partially updates Row with UpdateRowRequestDto
-      given(rowMapper.partialUpdate(same(row), same(requestDto))).willReturn(row);
-      // ... RowRepository successfully saves Row
+      given(rowRepository.existsByOrdinalAndRowCluster(same(joinedRequestDto.ordinal()), same(row.getRowCluster()))).willReturn(false);
+      // ... RowMapper successfully partially updates
+      given(rowMapper.partialUpdate(same(row), same(joinedRequestDto))).willReturn(row);
+      // ... RowRepository successfully saves
       given(rowRepository.save(same(row))).willReturn(row);
-      // ... ConversionService successfully converts from Row to FullRowResponseDto
+      // ... RowToFullRowResponseDtoConverter successfully converts
       val expectedResponseDto = FullRowResponseDtoMother.complete().build();
-      given(conversionService.convert(same(row), same(FullRowResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullRowResponseDtoConverter.convert(same(row))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... updateRowById is called
@@ -182,15 +208,15 @@ public class RowServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... RowRepository successfully finds
       val row = RowMother.complete().build();
-      given(rowRepository.findById(same(id))).willReturn(Optional.of(row));
-      // ... CurrentUserService's logged-in User is not equal to Row User
-      val loggedInUser = row.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(rowRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(row));
       // ... RowRepository returns empty set
       val ordinal = row.getOrdinal() + 1;
-      val rowClusterFk = row.getRowCluster().getId();
-      given(rowRepository.findByOrdinalGreaterThanEqualAndRowClusterIdOrderByOrdinalAsc(same(ordinal), same(rowClusterFk))).willReturn(Collections.emptySet());
+      given(rowRepository.findByOrdinalGreaterThanEqualAndRowClusterOrderByOrdinalAsc(same(ordinal), same(row.getRowCluster()))).willReturn(Collections.emptySet());
       // ... RowRepository successfully deletes Row
       willDoNothing().given(rowRepository).delete(row);
 
@@ -212,9 +238,13 @@ public class RowServiceUnitTest implements ServiceUnitTest {
       "... THEN EntityNotFoundException is thrown")
     public void GIVEN_invalidId_THEN_EntityNotFoundException() {
       // GIVEN
-      // ... invalid id
+      // ... id
       val id = 1L;
-      given(rowRepository.findById(same(id))).willReturn(Optional.empty());
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... RowRepository fails to findByIdAndUserId
+      given(rowRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.empty());
 
       // WHEN
       // ... getById is called
@@ -224,32 +254,6 @@ public class RowServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val row = RowMother.complete().build();
-      given(rowRepository.findById(same(id))).willReturn(Optional.of(row));
-      // ... CurrentUserService's logged-in User is not equal to Row User
-      val loggedInUser = UserMother.complete().id(row.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getById is called
-      when(() -> rowService.getById(id));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 
@@ -260,11 +264,12 @@ public class RowServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... RowRepository fails to findByIdAndUserId
       val expectedRow = RowMother.complete().build();
-      given(rowRepository.findById(same(id))).willReturn(Optional.of(expectedRow));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = expectedRow.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(rowRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(expectedRow));
 
       // WHEN
       // ... getById is called

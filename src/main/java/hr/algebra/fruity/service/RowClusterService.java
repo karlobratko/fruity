@@ -4,6 +4,7 @@ import hr.algebra.fruity.dto.request.CreateRowClusterRequestDto;
 import hr.algebra.fruity.dto.request.UpdateRowClusterRequestDto;
 import hr.algebra.fruity.dto.response.FullRowClusterResponseDto;
 import hr.algebra.fruity.dto.response.RowClusterResponseDto;
+import hr.algebra.fruity.dto.response.RowResponseDto;
 import hr.algebra.fruity.model.RowCluster;
 import java.util.List;
 
@@ -11,7 +12,7 @@ public interface RowClusterService {
 
   List<RowClusterResponseDto> getAllRowClusters();
 
-  List<RowClusterResponseDto> getAllRowClustersByArcodeParcelId(Long arcodeParcelId);
+  List<RowResponseDto> getAllRowsByRowClusterId(Long rowClusterFk);
 
   FullRowClusterResponseDto getRowClusterById(Long id);
 

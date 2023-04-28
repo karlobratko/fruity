@@ -1,19 +1,24 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.FullArcodeParcelResponseDto;
+import hr.algebra.fruity.converter.ArcodeParcelToArcodeParcelResponseDtoConverter;
+import hr.algebra.fruity.converter.ArcodeParcelToFullArcodeParcelResponseDtoConverter;
+import hr.algebra.fruity.converter.CreateArcodeParcelRequestDtoToJoinedCreateArcodeParcelRequestDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateArcodeParcelRequestDtoToArcodeParcelConverter;
+import hr.algebra.fruity.converter.RowClusterToRowClusterResponseDtoConverter;
+import hr.algebra.fruity.converter.UpdateArcodeParcelRequestDtoToJoinedUpdateArcodeParcelRequestDtoConverter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.ArcodeParcelMapper;
-import hr.algebra.fruity.model.ArcodeParcel;
 import hr.algebra.fruity.repository.ArcodeParcelRepository;
+import hr.algebra.fruity.repository.RowClusterRepository;
 import hr.algebra.fruity.service.impl.CurrentUserArcodeParcelService;
 import hr.algebra.fruity.utils.mother.dto.CreateArcodeParcelRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullArcodeParcelResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedCreateArcodeParcelRequestDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedUpdateArcodeParcelRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateArcodeParcelRequestDtoMother;
 import hr.algebra.fruity.utils.mother.model.ArcodeParcelMother;
-import hr.algebra.fruity.utils.mother.model.UserMother;
-import hr.algebra.fruity.validator.ArcodeParcelWithUpdateArcodeParcelRequestDtoValidator;
-import hr.algebra.fruity.validator.CreateArcodeParcelRequestDtoValidator;
+import hr.algebra.fruity.validator.ArcodeParcelWithJoinedUpdateArcodeParcelRequestDtoValidator;
+import hr.algebra.fruity.validator.JoinedCreateArcodeParcelRequestDtoValidator;
 import java.util.Optional;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +28,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -43,13 +47,28 @@ public class ArcodeParcelServiceUnitTest implements ServiceUnitTest {
   private CurrentUserArcodeParcelService arcodeParcelService;
 
   @Mock
-  private ConversionService conversionService;
+  private ArcodeParcelToArcodeParcelResponseDtoConverter toArcodeParcelResponseDtoConverter;
 
   @Mock
-  private CreateArcodeParcelRequestDtoValidator createArcodeParcelRequestDtoValidator;
+  private ArcodeParcelToFullArcodeParcelResponseDtoConverter toFullArcodeParcelResponseDtoConverter;
 
   @Mock
-  private ArcodeParcelWithUpdateArcodeParcelRequestDtoValidator arcodeParcelWithUpdateArcodeParcelRequestDtoValidator;
+  private CreateArcodeParcelRequestDtoToJoinedCreateArcodeParcelRequestDtoConverter toJoinedCreateArcodeParcelRequestDtoConverter;
+
+  @Mock
+  private JoinedCreateArcodeParcelRequestDtoToArcodeParcelConverter fromJoinedCreateArcodeParcelRequestDtoConverter;
+
+  @Mock
+  private UpdateArcodeParcelRequestDtoToJoinedUpdateArcodeParcelRequestDtoConverter toJoinedUpdateArcodeParcelRequestDtoConverter;
+
+  @Mock
+  private RowClusterToRowClusterResponseDtoConverter toRowClusterResponseDtoConverter;
+
+  @Mock
+  private JoinedCreateArcodeParcelRequestDtoValidator joinedCreateArcodeParcelRequestDtoValidator;
+
+  @Mock
+  private ArcodeParcelWithJoinedUpdateArcodeParcelRequestDtoValidator arcodeParcelWithJoinedUpdateArcodeParcelRequestDtoValidator;
 
   @Mock
   private ArcodeParcelMapper arcodeParcelMapper;
@@ -59,6 +78,9 @@ public class ArcodeParcelServiceUnitTest implements ServiceUnitTest {
 
   @Mock
   private ArcodeParcelRepository arcodeParcelRepository;
+
+  @Mock
+  private RowClusterRepository rowClusterRepository;
 
   @Nested
   @DisplayName("WHEN getArcodeParcelById is called")
@@ -71,14 +93,15 @@ public class ArcodeParcelServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... ArcodeParcelRepository fails to findByIdAndUserId
       val arcodeParcel = ArcodeParcelMother.complete().build();
-      given(arcodeParcelRepository.findById(same(id))).willReturn(Optional.of(arcodeParcel));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = arcodeParcel.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... ConversionService successfully converts from User to FullArcodeParcelResponseDto
+      given(arcodeParcelRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(arcodeParcel));
+      // ... ArcodeParcelToFullArcodeParcelResponseDtoConverter successfully converts
       val expectedResponseDto = FullArcodeParcelResponseDtoMother.complete().build();
-      given(conversionService.convert(same(arcodeParcel), same(FullArcodeParcelResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullArcodeParcelResponseDtoConverter.convert(same(arcodeParcel))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getArcodeParcelById is called
@@ -104,16 +127,19 @@ public class ArcodeParcelServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... CreateArcodeParcelRequestDto
       val requestDto = CreateArcodeParcelRequestDtoMother.complete().build();
-      // CreateArcodeParcelRequestDtoValidator successfully validates CreateArcodeParcelRequestDto
-      willDoNothing().given(createArcodeParcelRequestDtoValidator).validate(same(requestDto));
-      // ... ConversionService successfully converts from CreateArcodeParcelRequestDto to ArcodeParcel
+      // ... CreateArcodeParcelRequestDtoToJoinedCreateArcodeParcelRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedCreateArcodeParcelRequestDtoMother.complete().build();
+      given(toJoinedCreateArcodeParcelRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
+      // ... JoinedCreateArcodeParcelRequestDtoValidator successfully validates
+      willDoNothing().given(joinedCreateArcodeParcelRequestDtoValidator).validate(same(joinedRequestDto));
+      // ... JoinedArcodeParcelRequestDtoToArcodeParcelConverter successfully converts
       val arcodeParcel = ArcodeParcelMother.complete().build();
-      given(conversionService.convert(same(requestDto), same(ArcodeParcel.class))).willReturn(arcodeParcel);
-      // ... ArcodeParcelRepository will successfully save ArcodeParcel
+      given(fromJoinedCreateArcodeParcelRequestDtoConverter.convert(same(joinedRequestDto))).willReturn(arcodeParcel);
+      // ... ArcodeParcelRepository successfully saves
       given(arcodeParcelRepository.save(same(arcodeParcel))).willReturn(arcodeParcel);
-      // ... ConversionService successfully converts from ArcodeParcel to FullArcodeParcelResponseDto
+      // ... ArcodeParcelToFullArcodeParcelResponseDtoConverter successfully converts
       val expectedResponseDto = FullArcodeParcelResponseDtoMother.complete().build();
-      given(conversionService.convert(same(arcodeParcel), same(FullArcodeParcelResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullArcodeParcelResponseDtoConverter.convert(same(arcodeParcel))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... createArcodeParcel is called
@@ -140,22 +166,29 @@ public class ArcodeParcelServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... ArcodeParcelRepository fails to findByIdAndUserId
       val arcodeParcel = ArcodeParcelMother.complete().build();
-      given(arcodeParcelRepository.findById(same(id))).willReturn(Optional.of(arcodeParcel));
+      given(arcodeParcelRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(arcodeParcel));
       // ... UpdateArcodeParcelRequestDto
       val requestDto = UpdateArcodeParcelRequestDtoMother.complete().build();
       // ... CurrentUserService's logged-in User is equal to User
       val loggedInUser = arcodeParcel.getUser();
       given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... ArcodeParcelWithUpdateArcodeParcelRequestDtoValidator successfully validates ArcodeParcel with UpdateArcodeParcelRequestDto
-      willDoNothing().given(arcodeParcelWithUpdateArcodeParcelRequestDtoValidator).validate(same(arcodeParcel), same(requestDto));
-      // ... ArcodeParcelMapper successfully partially updates ArcodeParcel with UpdateArcodeParcelRequestDto
-      given(arcodeParcelMapper.partialUpdate(same(arcodeParcel), same(requestDto))).willReturn(arcodeParcel);
+      // ... UpdateArcodeParcelRequestDtoToJoinedUpdateArcodeParcelRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedUpdateArcodeParcelRequestDtoMother.complete().build();
+      given(toJoinedUpdateArcodeParcelRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
+      // ... ArcodeParcelWithJoinedUpdateArcodeParcelRequestDtoValidator successfully validates
+      willDoNothing().given(arcodeParcelWithJoinedUpdateArcodeParcelRequestDtoValidator).validate(same(arcodeParcel), same(joinedRequestDto));
+      // ... ArcodeParcelMapper successfully partially updates
+      given(arcodeParcelMapper.partialUpdate(same(arcodeParcel), same(joinedRequestDto))).willReturn(arcodeParcel);
       // ... ArcodeParcelRepository successfully saves ArcodeParcel
       given(arcodeParcelRepository.save(same(arcodeParcel))).willReturn(arcodeParcel);
-      // ... ConversionService successfully converts from ArcodeParcel to FullArcodeParcelResponseDto
+      // ... ArcodeParcelToFullArcodeParcelResponseDtoConverter successfully converts
       val expectedResponseDto = FullArcodeParcelResponseDtoMother.complete().build();
-      given(conversionService.convert(same(arcodeParcel), same(FullArcodeParcelResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullArcodeParcelResponseDtoConverter.convert(same(arcodeParcel))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... updateArcodeParcelById is called
@@ -181,15 +214,20 @@ public class ArcodeParcelServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... ArcodeParcelRepository fails to findByIdAndUserId
       val arcodeParcel = ArcodeParcelMother.complete().build();
-      given(arcodeParcelRepository.findById(same(id))).willReturn(Optional.of(arcodeParcel));
+      given(arcodeParcelRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(arcodeParcel));
       // ... CurrentUserService's logged-in User is not equal to ArcodeParcel User
       val loggedInUser = arcodeParcel.getUser();
       given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... ArcodeParcelRepository successfully deletes ArcodeParcel
+      // ... ArcodeParcelRepository successfully deletes
       willDoNothing().given(arcodeParcelRepository).delete(arcodeParcel);
 
       // WHEN
+      // ... deleteArcodeParcelById is called
       arcodeParcelService.deleteArcodeParcelById(id);
 
       // THEN
@@ -203,13 +241,17 @@ public class ArcodeParcelServiceUnitTest implements ServiceUnitTest {
   public class WHEN_getById {
 
     @Test
-    @DisplayName("GIVEN invalid id " +
+    @DisplayName("GIVEN invalid id or userId " +
       "... THEN EntityNotFoundException is thrown")
-    public void GIVEN_invalidId_THEN_EntityNotFoundException() {
+    public void GIVEN_invalidIdOrUserId_THEN_EntityNotFoundException() {
       // GIVEN
-      // ... invalid id
+      // ... id
       val id = 1L;
-      given(arcodeParcelRepository.findById(same(id))).willReturn(Optional.empty());
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... ArcodeParcelRepository fails to findByIdAndUserId
+      given(arcodeParcelRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.empty());
 
       // WHEN
       // ... getById is called
@@ -219,32 +261,6 @@ public class ArcodeParcelServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val arcodeParcel = ArcodeParcelMother.complete().build();
-      given(arcodeParcelRepository.findById(same(id))).willReturn(Optional.of(arcodeParcel));
-      // ... CurrentUserService's logged-in User is not equal to ArcodeParcel User
-      val loggedInUser = UserMother.complete().id(arcodeParcel.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getById is called
-      when(() -> arcodeParcelService.getById(id));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 
@@ -255,11 +271,12 @@ public class ArcodeParcelServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... ArcodeParcelRepository fails to findByIdAndUserId
       val expectedArcodeParcel = ArcodeParcelMother.complete().build();
-      given(arcodeParcelRepository.findById(same(id))).willReturn(Optional.of(expectedArcodeParcel));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = expectedArcodeParcel.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(arcodeParcelRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(expectedArcodeParcel));
 
       // WHEN
       // ... getById is called

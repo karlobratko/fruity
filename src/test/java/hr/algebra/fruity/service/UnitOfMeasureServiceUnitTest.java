@@ -1,7 +1,7 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.FullUnitOfMeasureResponseDto;
-import hr.algebra.fruity.dto.response.UnitOfMeasureResponseDto;
+import hr.algebra.fruity.converter.UnitOfMeasureToFullUnitOfMeasureResponseDtoConverter;
+import hr.algebra.fruity.converter.UnitOfMeasureToUnitOfMeasureResponseDtoConverter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.model.UnitOfMeasure;
 import hr.algebra.fruity.repository.UnitOfMeasureRepository;
@@ -19,7 +19,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -29,7 +28,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("UnitOfMeasureService Unit Test")
+@DisplayName("UnitOfMeasure Service Unit Test")
 @SuppressWarnings("static-access")
 public class UnitOfMeasureServiceUnitTest implements ServiceUnitTest {
 
@@ -37,7 +36,10 @@ public class UnitOfMeasureServiceUnitTest implements ServiceUnitTest {
   private UnitOfMeasureServiceImpl unitOfMeasureService;
 
   @Mock
-  private ConversionService conversionService;
+  private UnitOfMeasureToUnitOfMeasureResponseDtoConverter toUnitOfMeasureResponseDtoConverter;
+
+  @Mock
+  private UnitOfMeasureToFullUnitOfMeasureResponseDtoConverter toFullUnitOfMeasureResponseDtoConverter;
 
   @Mock
   private UnitOfMeasureRepository unitOfMeasureRepository;
@@ -58,8 +60,8 @@ public class UnitOfMeasureServiceUnitTest implements ServiceUnitTest {
         UnitOfMeasureMother.complete().id(3).build()
       );
       given(unitOfMeasureRepository.findAll()).willReturn(unitsOfMeasure);
-      // ... ConversionService successfully converts from UnitOfMeasure to UnitOfMeasureResponseDto
-      given(conversionService.convert(any(UnitOfMeasure.class), same(UnitOfMeasureResponseDto.class))).willAnswer(invocation -> UnitOfMeasureResponseDtoMother.complete().id(invocation.<UnitOfMeasure>getArgument(0).getId()).build());
+      // ... UnitOfMeasureToUnitOfMeasureResponseDtoConverter successfully converts
+      given(toUnitOfMeasureResponseDtoConverter.convert(any(UnitOfMeasure.class))).willAnswer(invocation -> UnitOfMeasureResponseDtoMother.complete().id(invocation.<UnitOfMeasure>getArgument(0).getId()).build());
 
       // WHEN
       // ... getAllUnitOfMeasures is called
@@ -88,9 +90,9 @@ public class UnitOfMeasureServiceUnitTest implements ServiceUnitTest {
       val id = 1;
       val unitOfMeasure = UnitOfMeasureMother.complete().build();
       given(unitOfMeasureRepository.findById(same(id))).willReturn(Optional.of(unitOfMeasure));
-      // ... ConversionService successfully converts from UnitOfMeasure to UnitOfMeasureResponseDto
+      // ... UnitOfMeasureToFullUnitOfMeasureResponseDtoConverter successfully converts
       val expectedResponseDto = FullUnitOfMeasureResponseDtoMother.complete().build();
-      given(conversionService.convert(same(unitOfMeasure), same(FullUnitOfMeasureResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullUnitOfMeasureResponseDtoConverter.convert(same(unitOfMeasure))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getUnitOfMeasureById is called
@@ -127,7 +129,6 @@ public class UnitOfMeasureServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 

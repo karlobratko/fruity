@@ -1,10 +1,9 @@
 package hr.algebra.fruity.mapper;
 
 import hr.algebra.fruity.dto.request.UpdateWorkAgentRequestDto;
-import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.model.UnitOfMeasure;
 import hr.algebra.fruity.model.WorkAgent;
-import hr.algebra.fruity.repository.UnitOfMeasureRepository;
+import hr.algebra.fruity.service.UnitOfMeasureService;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.mapstruct.BeanMapping;
@@ -21,12 +20,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 public abstract class WorkAgentMapper {
 
   @Autowired
-  private UnitOfMeasureRepository unitOfMeasureRepository;
+  private UnitOfMeasureService unitOfMeasureService;
 
   @Named(MappingHelpers.mapIdToUnitOfMeasure)
   protected UnitOfMeasure mapIdToUnitOfMeasure(Integer value) {
-    return unitOfMeasureRepository.findById(value)
-      .orElseThrow(EntityNotFoundException::new);
+    return unitOfMeasureService.getById(value);
   }
 
   @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE, unmappedTargetPolicy = ReportingPolicy.IGNORE)

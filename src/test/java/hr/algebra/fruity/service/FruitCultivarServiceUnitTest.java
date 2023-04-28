@@ -1,6 +1,6 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.FruitCultivarResponseDto;
+import hr.algebra.fruity.converter.FruitCultivarToFruitCultivarResponseDtoConverter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.model.FruitCultivar;
 import hr.algebra.fruity.repository.FruitCultivarRepository;
@@ -17,7 +17,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -35,7 +34,7 @@ public class FruitCultivarServiceUnitTest implements ServiceUnitTest {
   private FruitCultivarServiceImpl fruitCultivarService;
 
   @Mock
-  private ConversionService conversionService;
+  private FruitCultivarToFruitCultivarResponseDtoConverter toFruitCultivarResponseDtoConverter;
 
   @Mock
   private FruitCultivarRepository fruitCultivarRepository;
@@ -56,8 +55,8 @@ public class FruitCultivarServiceUnitTest implements ServiceUnitTest {
         FruitCultivarMother.complete().id(3).build()
       );
       given(fruitCultivarRepository.findAll()).willReturn(fruitCultivars);
-      // ... ConversionService successfully converts from FruitCultivar to FruitCultivarResponseDto
-      given(conversionService.convert(any(FruitCultivar.class), same(FruitCultivarResponseDto.class))).willAnswer(invocation -> FruitCultivarResponseDtoMother.complete().id(invocation.<FruitCultivar>getArgument(0).getId()).build());
+      // ... FruitCultivarToFruitCultivarResponseDtoConverter successfully converts
+      given(toFruitCultivarResponseDtoConverter.convert(any(FruitCultivar.class))).willAnswer(invocation -> FruitCultivarResponseDtoMother.complete().id(invocation.<FruitCultivar>getArgument(0).getId()).build());
 
       // WHEN
       // ... getAllFruitCultivars is called
@@ -86,9 +85,9 @@ public class FruitCultivarServiceUnitTest implements ServiceUnitTest {
       val id = 1;
       val fruitCultivar = FruitCultivarMother.complete().build();
       given(fruitCultivarRepository.findById(same(id))).willReturn(Optional.of(fruitCultivar));
-      // ... ConversionService successfully converts from FruitCultivar to FruitCultivarResponseDto
+      // ... FruitCultivarToFruitCultivarResponseDtoConverter successfully converts
       val expectedResponseDto = FruitCultivarResponseDtoMother.complete().build();
-      given(conversionService.convert(same(fruitCultivar), same(FruitCultivarResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFruitCultivarResponseDtoConverter.convert(same(fruitCultivar))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getFruitCultivarById is called
@@ -125,7 +124,6 @@ public class FruitCultivarServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 

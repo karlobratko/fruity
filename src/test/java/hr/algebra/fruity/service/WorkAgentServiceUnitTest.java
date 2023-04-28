@@ -1,20 +1,21 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.request.CreateWorkAgentRequestDtoWithWorkAdapter;
-import hr.algebra.fruity.dto.response.FullWorkAgentResponseDto;
+import hr.algebra.fruity.converter.CreateWorkAgentRequestDtoToJoinedCreateWorkAgentRequestDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateWorkAgentRequestDtoWithWorkAdapterToWorkAgentConverter;
+import hr.algebra.fruity.converter.WorkAgentToFullWorkAgentResponseDtoConverter;
+import hr.algebra.fruity.converter.WorkAgentToWorkAgentResponseDtoConverter;
+import hr.algebra.fruity.dto.request.joined.JoinedCreateWorkAgentRequestDtoWithWorkAdapter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.WorkAgentMapper;
-import hr.algebra.fruity.model.WorkAgent;
 import hr.algebra.fruity.repository.WorkAgentRepository;
 import hr.algebra.fruity.service.impl.CurrentUserWorkAgentService;
 import hr.algebra.fruity.utils.mother.dto.CreateWorkAgentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullWorkAgentResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedCreateWorkAgentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateWorkAgentRequestDtoMother;
-import hr.algebra.fruity.utils.mother.model.UserMother;
 import hr.algebra.fruity.utils.mother.model.WorkAgentMother;
 import hr.algebra.fruity.utils.mother.model.WorkMother;
-import hr.algebra.fruity.validator.CreateWorkAgentRequestDtoWithWorkAdapterValidator;
+import hr.algebra.fruity.validator.JoinedCreateWorkAgentRequestDtoWithWorkAdapterValidator;
 import java.util.Optional;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
@@ -24,7 +25,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -45,10 +45,19 @@ public class WorkAgentServiceUnitTest implements ServiceUnitTest {
   private CurrentUserWorkAgentService workAgentService;
 
   @Mock
-  private ConversionService conversionService;
+  private WorkAgentToWorkAgentResponseDtoConverter toWorkAgentResponseDtoConverter;
 
   @Mock
-  private CreateWorkAgentRequestDtoWithWorkAdapterValidator createWorkAgentRequestDtoWithWorkAdapterValidator;
+  private WorkAgentToFullWorkAgentResponseDtoConverter toFullWorkAgentResponseDtoConverter;
+
+  @Mock
+  private CreateWorkAgentRequestDtoToJoinedCreateWorkAgentRequestDtoConverter toJoinedCreateWorkAgentRequestDtoConverter;
+
+  @Mock
+  private JoinedCreateWorkAgentRequestDtoWithWorkAdapterToWorkAgentConverter fromJoinedCreateWorkAgentRequestDtoWithWorkAdapterConverter;
+
+  @Mock
+  private JoinedCreateWorkAgentRequestDtoWithWorkAdapterValidator joinedCreateWorkAgentRequestDtoWithWorkAdapterValidator;
 
   @Mock
   private WorkAgentMapper workAgentMapper;
@@ -71,17 +80,18 @@ public class WorkAgentServiceUnitTest implements ServiceUnitTest {
       "... THEN WorkAgentResponseDto is returned")
     public void GIVEN_ids_THEN_WorkAgentResponseDto() {
       // GIVEN
-      // ... ids
+      // ... invalid ids
       val workId = 1L;
       val agentId = 1;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkAgentRepository successfully finds
       val workAgent = WorkAgentMother.complete().build();
-      given(workAgentRepository.findByWorkIdAndAgentId(same(workId), same(agentId))).willReturn(Optional.of(workAgent));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = workAgent.getWork().getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... ConversionService successfully converts from User to FullWorkAgentResponseDto
+      given(workAgentRepository.findByWorkIdAndAgentIdAndWorkUserId(same(workId), same(agentId), same(userId))).willReturn(Optional.of(workAgent));
+      // ... WorkAgentToFullWorkAgentResponseDtoConverter successfully converts
       val expectedResponseDto = FullWorkAgentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(workAgent), same(FullWorkAgentResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullWorkAgentResponseDtoConverter.convert(same(workAgent))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getWorkAgentByWorkIdAndAgentId is called
@@ -112,16 +122,19 @@ public class WorkAgentServiceUnitTest implements ServiceUnitTest {
       // ... WorkService successfully gets Work by id
       val work = WorkMother.complete().build();
       given(workService.getById(same(workId))).willReturn(work);
-      // ... CreateWorkAgentRequestDtoWithWorkAdapterValidator successfully validates requestDto and Work
-      willDoNothing().given(createWorkAgentRequestDtoWithWorkAdapterValidator).validate(any(CreateWorkAgentRequestDtoWithWorkAdapter.class));
-      // ... ConversionService successfully converts from CreateWorkAgentRequestDtoWithWorkAdapter to WorkAgent
+      // ... CreateWorkAgentRequestDtoToJoinedCreateWorkAgentRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedCreateWorkAgentRequestDtoMother.complete().build();
+      given(toJoinedCreateWorkAgentRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
+      // ... JoinedCreateWorkAgentRequestDtoWithWorkAdapterValidator successfully validates
+      willDoNothing().given(joinedCreateWorkAgentRequestDtoWithWorkAdapterValidator).validate(any(JoinedCreateWorkAgentRequestDtoWithWorkAdapter.class));
+      // ... JoinedCreateWorkAgentRequestDtoWithWorkAdapterToWorkAgentConverter successfully converts
       val workAgent = WorkAgentMother.complete().build();
-      given(conversionService.convert(any(CreateWorkAgentRequestDtoWithWorkAdapter.class), same(WorkAgent.class))).willReturn(workAgent);
-      // ... WorkAgentRepository will successfully save WorkAgent
+      given(fromJoinedCreateWorkAgentRequestDtoWithWorkAdapterConverter.convert(any(JoinedCreateWorkAgentRequestDtoWithWorkAdapter.class))).willReturn(workAgent);
+      // ... WorkAgentRepository successfully saves
       given(workAgentRepository.save(same(workAgent))).willReturn(workAgent);
-      // ... ConversionService successfully converts from WorkAgent to FullWorkAgentResponseDto
+      // ... WorkAgentToFullWorkAgentResponseDtoConverter successfully converts
       val expectedResponseDto = FullWorkAgentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(workAgent), same(FullWorkAgentResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullWorkAgentResponseDtoConverter.convert(same(workAgent))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... createWorkAgentForWorkId is called
@@ -146,23 +159,24 @@ public class WorkAgentServiceUnitTest implements ServiceUnitTest {
       "... THEN WorkAgentResponseDto is returned")
     public void GIVEN_idsAndUpdateWorkAgentRequestDto_THEN_WorkAgentResponseDto() {
       // GIVEN
-      // ... ids
+      // ... invalid ids
       val workId = 1L;
       val agentId = 1;
-      val workAgent = WorkAgentMother.complete().build();
-      given(workAgentRepository.findByWorkIdAndAgentId(same(workId), same(agentId))).willReturn(Optional.of(workAgent));
       // ... UpdateWorkAgentRequestDto
       val requestDto = UpdateWorkAgentRequestDtoMother.complete().build();
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = workAgent.getWork().getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkAgentRepository successfully finds
+      val workAgent = WorkAgentMother.complete().build();
+      given(workAgentRepository.findByWorkIdAndAgentIdAndWorkUserId(same(workId), same(agentId), same(userId))).willReturn(Optional.of(workAgent));
       // ... WorkAgentMapper successfully partially updates WorkAgent with UpdateWorkAgentRequestDto
       given(workAgentMapper.partialUpdate(same(workAgent), same(requestDto))).willReturn(workAgent);
       // ... WorkAgentRepository successfully saves WorkAgent
       given(workAgentRepository.save(same(workAgent))).willReturn(workAgent);
-      // ... ConversionService successfully converts from WorkAgent to FullWorkAgentResponseDto
+      // ... WorkAgentToFullWorkAgentResponseDtoConverter successfully converts
       val expectedResponseDto = FullWorkAgentResponseDtoMother.complete().build();
-      given(conversionService.convert(same(workAgent), same(FullWorkAgentResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullWorkAgentResponseDtoConverter.convert(same(workAgent))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... updateWorkAgentByWorkIdAndAgentId is called
@@ -186,14 +200,15 @@ public class WorkAgentServiceUnitTest implements ServiceUnitTest {
       "... THEN void")
     public void GIVEN_ids_THEN_void() {
       // GIVEN
-      // ... ids
+      // ... invalid ids
       val workId = 1L;
       val agentId = 1;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkAgentRepository successfully finds
       val workAgent = WorkAgentMother.complete().build();
-      given(workAgentRepository.findByWorkIdAndAgentId(same(workId), same(agentId))).willReturn(Optional.of(workAgent));
-      // ... CurrentUserService's logged-in User is not equal to WorkAgent User
-      val loggedInUser = workAgent.getWork().getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(workAgentRepository.findByWorkIdAndAgentIdAndWorkUserId(same(workId), same(agentId), same(userId))).willReturn(Optional.of(workAgent));
       // ... WorkAgentRepository successfully deletes WorkAgent
       willDoNothing().given(workAgentRepository).delete(workAgent);
 
@@ -219,7 +234,11 @@ public class WorkAgentServiceUnitTest implements ServiceUnitTest {
       // ... invalid ids
       val workId = 1L;
       val agentId = 1;
-      given(workAgentRepository.findByWorkIdAndAgentId(same(workId), same(agentId))).willReturn(Optional.empty());
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkAgentRepository fails to find
+      given(workAgentRepository.findByWorkIdAndAgentIdAndWorkUserId(same(workId), same(agentId), same(userId))).willReturn(Optional.empty());
 
       // WHEN
       // ... getById is called
@@ -229,33 +248,6 @@ public class WorkAgentServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN workId, agentId, and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idsAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... ids
-      val workId = 1L;
-      val agentId = 1;
-      val workAgent = WorkAgentMother.complete().build();
-      given(workAgentRepository.findByWorkIdAndAgentId(same(workId), same(agentId))).willReturn(Optional.of(workAgent));
-      // ... CurrentUserService's logged-in User is not equal to WorkAgent User
-      val loggedInUser = UserMother.complete().id(workAgent.getWork().getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getById is called
-      when(() -> workAgentService.getByWorkIdAndAgentId(workId, agentId));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 
@@ -264,14 +256,15 @@ public class WorkAgentServiceUnitTest implements ServiceUnitTest {
       "... THEN WorkAgent is returned")
     public void GIVEN_ids_THEN_WorkAgent() {
       // GIVEN
-      // ... ids
+      // ... invalid ids
       val workId = 1L;
       val agentId = 1;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkAgentRepository successfully finds
       val expectedWorkAgent = WorkAgentMother.complete().build();
-      given(workAgentRepository.findByWorkIdAndAgentId(same(workId), same(agentId))).willReturn(Optional.of(expectedWorkAgent));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = expectedWorkAgent.getWork().getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(workAgentRepository.findByWorkIdAndAgentIdAndWorkUserId(same(workId), same(agentId), same(userId))).willReturn(Optional.of(expectedWorkAgent));
 
       // WHEN
       // ... getById is called

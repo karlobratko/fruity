@@ -1,19 +1,24 @@
 package hr.algebra.fruity.service;
 
-import hr.algebra.fruity.dto.response.FullWorkResponseDto;
+import hr.algebra.fruity.converter.CreateWorkRequestDtoToJoinedCreateWorkRequestDtoConverter;
+import hr.algebra.fruity.converter.JoinedCreateWorkRequestDtoToWorkConverter;
+import hr.algebra.fruity.converter.RealisationToRealisationResponseDtoConverter;
+import hr.algebra.fruity.converter.UpdateWorkRequestDtoToJoinedUpdateWorkRequestDtoConverter;
+import hr.algebra.fruity.converter.WorkToFullWorkResponseDtoConverter;
+import hr.algebra.fruity.converter.WorkToWorkResponseDtoConverter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
-import hr.algebra.fruity.exception.ForeignUserDataAccessException;
 import hr.algebra.fruity.mapper.WorkMapper;
-import hr.algebra.fruity.model.Work;
+import hr.algebra.fruity.repository.RealisationRepository;
 import hr.algebra.fruity.repository.WorkRepository;
 import hr.algebra.fruity.service.impl.CurrentUserWorkService;
 import hr.algebra.fruity.utils.mother.dto.CreateWorkRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullWorkResponseDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedCreateWorkRequestDtoMother;
+import hr.algebra.fruity.utils.mother.dto.JoinedUpdateWorkRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateWorkRequestDtoMother;
-import hr.algebra.fruity.utils.mother.model.UserMother;
 import hr.algebra.fruity.utils.mother.model.WorkMother;
-import hr.algebra.fruity.validator.CreateWorkRequestDtoValidator;
-import hr.algebra.fruity.validator.WorkWithUpdateWorkRequestDtoValidator;
+import hr.algebra.fruity.validator.JoinedCreateWorkRequestDtoValidator;
+import hr.algebra.fruity.validator.WorkWithJoinedUpdateWorkRequestDtoValidator;
 import java.util.Optional;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
@@ -23,7 +28,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.convert.ConversionService;
 
 import static com.googlecode.catchexception.apis.BDDCatchException.caughtException;
 import static com.googlecode.catchexception.apis.BDDCatchException.when;
@@ -35,7 +39,7 @@ import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("WorkService Unit Test")
+@DisplayName("Work Service Unit Test")
 @SuppressWarnings("static-access")
 public class WorkServiceUnitTest implements ServiceUnitTest {
 
@@ -43,13 +47,28 @@ public class WorkServiceUnitTest implements ServiceUnitTest {
   private CurrentUserWorkService workService;
 
   @Mock
-  private ConversionService conversionService;
+  private WorkToWorkResponseDtoConverter toWorkResponseDtoConverter;
 
   @Mock
-  private CreateWorkRequestDtoValidator createWorkRequestDtoValidator;
+  private WorkToFullWorkResponseDtoConverter toFullWorkResponseDtoConverter;
 
   @Mock
-  private WorkWithUpdateWorkRequestDtoValidator workWithUpdateWorkRequestDtoValidator;
+  private CreateWorkRequestDtoToJoinedCreateWorkRequestDtoConverter toJoinedCreateWorkRequestDtoConverter;
+
+  @Mock
+  private JoinedCreateWorkRequestDtoToWorkConverter fromJoinedCreateWorkRequestDtoConverter;
+
+  @Mock
+  private UpdateWorkRequestDtoToJoinedUpdateWorkRequestDtoConverter toJoinedUpdateWorkRequestDtoConverter;
+
+  @Mock
+  private RealisationToRealisationResponseDtoConverter toRealisationResponseDtoConverter;
+
+  @Mock
+  private JoinedCreateWorkRequestDtoValidator joinedCreateWorkRequestDtoValidator;
+
+  @Mock
+  private WorkWithJoinedUpdateWorkRequestDtoValidator workWithJoinedUpdateWorkRequestDtoValidator;
 
   @Mock
   private WorkMapper workMapper;
@@ -59,6 +78,9 @@ public class WorkServiceUnitTest implements ServiceUnitTest {
 
   @Mock
   private WorkRepository workRepository;
+
+  @Mock
+  private RealisationRepository realisationRepository;
 
   @Nested
   @DisplayName("WHEN getWorkById is called")
@@ -71,14 +93,15 @@ public class WorkServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkRepository fails to findByIdAndUserId
       val work = WorkMother.complete().build();
-      given(workRepository.findById(same(id))).willReturn(Optional.of(work));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = work.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-      // ... ConversionService successfully converts from User to FullWorkResponseDto
+      given(workRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(work));
+      // ... WorkToFullWorkResponseDtoConverter successfully converts
       val expectedResponseDto = FullWorkResponseDtoMother.complete().build();
-      given(conversionService.convert(same(work), same(FullWorkResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullWorkResponseDtoConverter.convert(same(work))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getWorkById is called
@@ -104,16 +127,19 @@ public class WorkServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... CreateWorkRequestDto
       val requestDto = CreateWorkRequestDtoMother.complete().build();
-      // CreateWorkRequestDtoValidator successfully validates CreateWorkRequestDto
-      willDoNothing().given(createWorkRequestDtoValidator).validate(same(requestDto));
-      // ... ConversionService successfully converts from CreateWorkRequestDto to Work
+      // ... CreateWorkRequestDtoToJoinedCreateWorkRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedCreateWorkRequestDtoMother.complete().build();
+      given(toJoinedCreateWorkRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
+      // CreateWorkRequestDtoValidator successfully validates
+      willDoNothing().given(joinedCreateWorkRequestDtoValidator).validate(same(joinedRequestDto));
+      // ... JoinedCreateWorkRequestDtoToWorkConverter successfully converts
       val work = WorkMother.complete().build();
-      given(conversionService.convert(same(requestDto), same(Work.class))).willReturn(work);
-      // ... WorkRepository will successfully save Work
+      given(fromJoinedCreateWorkRequestDtoConverter.convert(same(joinedRequestDto))).willReturn(work);
+      // ... WorkRepository successfully saves
       given(workRepository.save(same(work))).willReturn(work);
-      // ... ConversionService successfully converts from Work to FullWorkResponseDto
+      // ... WorkToFullWorkResponseDtoConverter successfully converts
       val expectedResponseDto = FullWorkResponseDtoMother.complete().build();
-      given(conversionService.convert(same(work), same(FullWorkResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullWorkResponseDtoConverter.convert(same(work))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... createWork is called
@@ -140,22 +166,26 @@ public class WorkServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
-      val work = WorkMother.complete().build();
-      given(workRepository.findById(same(id))).willReturn(Optional.of(work));
       // ... UpdateWorkRequestDto
       val requestDto = UpdateWorkRequestDtoMother.complete().build();
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = work.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkRepository successfully finds
+      val work = WorkMother.complete().build();
+      given(workRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(work));
+      // ... UpdateWorkRequestDtoToJoinedUpdateWorkRequestDtoConverter successfully converts
+      val joinedRequestDto = JoinedUpdateWorkRequestDtoMother.complete().build();
+      given(toJoinedUpdateWorkRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
       // ... WorkWithUpdateWorkRequestDtoValidator successfully validates Work with UpdateWorkRequestDto
-      willDoNothing().given(workWithUpdateWorkRequestDtoValidator).validate(same(work), same(requestDto));
+      willDoNothing().given(workWithJoinedUpdateWorkRequestDtoValidator).validate(same(work), same(joinedRequestDto));
       // ... WorkMapper successfully partially updates Work with UpdateWorkRequestDto
-      given(workMapper.partialUpdate(same(work), same(requestDto))).willReturn(work);
+      given(workMapper.partialUpdate(same(work), same(joinedRequestDto))).willReturn(work);
       // ... WorkRepository successfully saves Work
       given(workRepository.save(same(work))).willReturn(work);
-      // ... ConversionService successfully converts from Work to FullWorkResponseDto
+      // ... WorkToFullWorkResponseDtoConverter successfully converts
       val expectedResponseDto = FullWorkResponseDtoMother.complete().build();
-      given(conversionService.convert(same(work), same(FullWorkResponseDto.class))).willReturn(expectedResponseDto);
+      given(toFullWorkResponseDtoConverter.convert(same(work))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... updateWorkById is called
@@ -181,11 +211,12 @@ public class WorkServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkRepository successfully finds
       val work = WorkMother.complete().build();
-      given(workRepository.findById(same(id))).willReturn(Optional.of(work));
-      // ... CurrentUserService's logged-in User is not equal to Work User
-      val loggedInUser = work.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(workRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(work));
       // ... WorkRepository successfully deletes Work
       willDoNothing().given(workRepository).delete(work);
 
@@ -207,9 +238,13 @@ public class WorkServiceUnitTest implements ServiceUnitTest {
       "... THEN EntityNotFoundException is thrown")
     public void GIVEN_invalidId_THEN_EntityNotFoundException() {
       // GIVEN
-      // ... invalid id
+      // ... id
       val id = 1L;
-      given(workRepository.findById(same(id))).willReturn(Optional.empty());
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkRepository fails to findByIdAndUserId
+      given(workRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.empty());
 
       // WHEN
       // ... getById is called
@@ -219,32 +254,6 @@ public class WorkServiceUnitTest implements ServiceUnitTest {
       // ... EntityNotFoundException is thrown
       and.then(caughtException())
         .isInstanceOf(EntityNotFoundException.class)
-        .hasMessage(EntityNotFoundException.Constants.exceptionMessageFormat)
-        .hasNoCause();
-    }
-
-    @Test
-    @DisplayName("GIVEN id and foreign logged-in User " +
-      "... THEN ForeignUserDataAccessException is thrown")
-    public void GIVEN_idAndForeignUser_THEN_ForeignUserDataAccessException() {
-      // GIVEN
-      // ... id
-      val id = 1L;
-      val work = WorkMother.complete().build();
-      given(workRepository.findById(same(id))).willReturn(Optional.of(work));
-      // ... CurrentUserService's logged-in User is not equal to Work User
-      val loggedInUser = UserMother.complete().id(work.getUser().getId() + 1).build();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
-
-      // WHEN
-      // ... getById is called
-      when(() -> workService.getById(id));
-
-      // THEN
-      // ... ForeignUserDataAccessException is thrown
-      and.then(caughtException())
-        .isInstanceOf(ForeignUserDataAccessException.class)
-        .hasMessage(ForeignUserDataAccessException.Constants.exceptionMessageFormat)
         .hasNoCause();
     }
 
@@ -255,11 +264,12 @@ public class WorkServiceUnitTest implements ServiceUnitTest {
       // GIVEN
       // ... id
       val id = 1L;
+      // ... CurrentRequestUserService successfully returns userId
+      val userId = 1L;
+      given(currentRequestUserService.getUserId()).willReturn(userId);
+      // ... WorkRepository fails to findByIdAndUserId
       val expectedWork = WorkMother.complete().build();
-      given(workRepository.findById(same(id))).willReturn(Optional.of(expectedWork));
-      // ... CurrentUserService's logged-in User is equal to User
-      val loggedInUser = expectedWork.getUser();
-      given(currentRequestUserService.getUserId()).willReturn(loggedInUser.getId());
+      given(workRepository.findByIdAndUserId(same(id), same(userId))).willReturn(Optional.of(expectedWork));
 
       // WHEN
       // ... getById is called
