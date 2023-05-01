@@ -26,13 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class WorkAgentController {
 
-  private final WorkAgentService workService;
+  private final WorkAgentService workAgentService;
 
   @GetMapping(Mappings.getAllWorkAgentsGetMapping)
   public ResponseEntity<ApiResponse<List<WorkAgentResponseDto>>> getAllWorkAgentsByWorkId(@PathVariable Long workFk) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workService.getAllWorkAgentsByWorkId(workFk),
+        workAgentService.getAllWorkAgentsByWorkId(workFk),
         "Sredstva korištena u radu uspješno dohvaćena."
       )
     );
@@ -42,7 +42,7 @@ public class WorkAgentController {
   public ResponseEntity<ApiResponse<FullWorkAgentResponseDto>> getWorkAgentByWorkIdAndAgentId(@PathVariable Long workFk, @PathVariable Integer agentFk) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workService.getWorkAgentByWorkIdAndAgentId(workFk, agentFk),
+        workAgentService.getWorkAgentByWorkIdAndAgentId(workFk, agentFk),
         "Sredstvo korišteno u radu uspješno dohvaćeno."
       )
     );
@@ -52,7 +52,7 @@ public class WorkAgentController {
   public ResponseEntity<ApiResponse<FullWorkAgentResponseDto>> createWorkAgentForWorkId(@PathVariable Long workFk, @Valid @RequestBody CreateWorkAgentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workService.createWorkAgentForWorkId(workFk, requestDto),
+        workAgentService.createWorkAgentForWorkId(workFk, requestDto),
         "Sredstvo uspješno dodano u rad."
       )
     );
@@ -62,7 +62,7 @@ public class WorkAgentController {
   public ResponseEntity<ApiResponse<FullWorkAgentResponseDto>> updateWorkAgentByWorkIdAndAgentId(@PathVariable Long workFk, @PathVariable Integer agentFk, @Valid @RequestBody UpdateWorkAgentRequestDto requestDto) {
     return ResponseEntity.ok(
       ApiResponse.ok(
-        workService.updateWorkAgentByWorkIdAndAgentId(workFk, agentFk, requestDto),
+        workAgentService.updateWorkAgentByWorkIdAndAgentId(workFk, agentFk, requestDto),
         "Sredstvo korišteno u radu uspješno promijenjeno."
       )
     );
@@ -70,7 +70,7 @@ public class WorkAgentController {
 
   @DeleteMapping(Mappings.deleteWorkAgentByIdDeleteMapping)
   public ResponseEntity<ApiResponse<?>> deleteWorkAgentByWorkIdAndAgentId(@PathVariable Long workFk, @PathVariable Integer agentFk) {
-    workService.deleteWorkAgentByWorkIdAndAgentId(workFk, agentFk);
+    workAgentService.deleteWorkAgentByWorkIdAndAgentId(workFk, agentFk);
     return ResponseEntity
       .ok(
         ApiResponse.ok(

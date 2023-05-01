@@ -1,26 +1,25 @@
-package hr.algebra.fruity.dto.response;
+package hr.algebra.fruity.dto.request.joined;
 
+import hr.algebra.fruity.model.Agent;
+import hr.algebra.fruity.model.UnitOfMeasure;
 import java.math.BigDecimal;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 @Builder
-public record WorkAgentResponseDto(
-  Long workFk,
-  AgentResponseDto agent,
+public record JoinedCreateRealisationAgentRequestDto(
+  Agent agent,
   BigDecimal agentQuantity,
-  UnitOfMeasureResponseDto agentUnitOfMeasure,
+  UnitOfMeasure agentUnitOfMeasure,
   BigDecimal costPerUnitOfMeasure,
   BigDecimal waterQuantity,
-  UnitOfMeasureResponseDto waterUnitOfMeasure,
+  UnitOfMeasure waterUnitOfMeasure,
   String note
 ) {
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Fields {
-
-    public static final String workFk = "workFk";
 
     public static final String agent = "agent";
 

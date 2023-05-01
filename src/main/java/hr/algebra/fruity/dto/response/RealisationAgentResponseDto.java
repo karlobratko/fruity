@@ -6,8 +6,8 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 @Builder
-public record WorkAgentResponseDto(
-  Long workFk,
+public record RealisationAgentResponseDto(
+  Long realisationFk,
   AgentResponseDto agent,
   BigDecimal agentQuantity,
   UnitOfMeasureResponseDto agentUnitOfMeasure,
@@ -20,7 +20,7 @@ public record WorkAgentResponseDto(
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Fields {
 
-    public static final String workFk = "workFk";
+    public static final String realisationFk = "realisationFk";
 
     public static final String agent = "agent";
 
@@ -39,3 +39,4 @@ public record WorkAgentResponseDto(
   }
 
 }
+

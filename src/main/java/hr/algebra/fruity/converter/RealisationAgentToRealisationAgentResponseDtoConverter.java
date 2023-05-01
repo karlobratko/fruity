@@ -1,7 +1,7 @@
 package hr.algebra.fruity.converter;
 
-import hr.algebra.fruity.dto.response.WorkAgentResponseDto;
-import hr.algebra.fruity.model.WorkAgent;
+import hr.algebra.fruity.dto.response.RealisationAgentResponseDto;
+import hr.algebra.fruity.model.RealisationAgent;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
@@ -9,16 +9,16 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class WorkAgentToWorkAgentResponseDtoConverter implements Converter<WorkAgent, WorkAgentResponseDto> {
+public class RealisationAgentToRealisationAgentResponseDtoConverter implements Converter<RealisationAgent, RealisationAgentResponseDto> {
 
   private final AgentToAgentResponseDtoConverter agentConverter;
 
   private final UnitOfMeasureToUnitOfMeasureResponseDtoConverter unitOfMeasureConverter;
 
   @Override
-  public WorkAgentResponseDto convert(@NonNull WorkAgent source) {
-    return new WorkAgentResponseDto(
-      source.getWork().getId(),
+  public RealisationAgentResponseDto convert(@NonNull RealisationAgent source) {
+    return new RealisationAgentResponseDto(
+      source.getRealisation().getId(),
       agentConverter.convert(source.getAgent()),
       source.getAgentQuantity(),
       unitOfMeasureConverter.convert(source.getAgentUnitOfMeasure()),
