@@ -16,6 +16,7 @@ import hr.algebra.fruity.utils.mother.dto.UpdateRealisationAgentRequestDtoMother
 import hr.algebra.fruity.utils.mother.model.RealisationAgentMother;
 import hr.algebra.fruity.utils.mother.model.RealisationMother;
 import hr.algebra.fruity.validator.JoinedCreateRealisationAgentRequestDtoWithRealisationAdapterValidator;
+import hr.algebra.fruity.validator.RealisationAgentWithUpdateRealisationAgentRequestDtoValidator;
 import java.util.Optional;
 import lombok.val;
 import org.junit.jupiter.api.DisplayName;
@@ -60,6 +61,9 @@ public class RealisationAgentServiceUnitTest implements ServiceUnitTest {
   private JoinedCreateRealisationAgentRequestDtoWithRealisationAdapterValidator joinedCreateRealisationAgentRequestDtoWithRealisationAdapterValidator;
 
   @Mock
+  private RealisationAgentWithUpdateRealisationAgentRequestDtoValidator realisationAgentWithUpdateRealisationAgentRequestDtoValidator;
+
+  @Mock
   private RealisationAgentMapper realisationAgentMapper;
 
   @Mock
@@ -69,33 +73,33 @@ public class RealisationAgentServiceUnitTest implements ServiceUnitTest {
   private RealisationAgentRepository realisationAgentRepository;
 
   @Mock
-  private RealisationService workService;
+  private RealisationService realisationService;
 
   @Nested
   @DisplayName("WHEN getRealisationAgentByRealisationIdAndAgentId is called")
   public class WHEN_getRealisationAgentByRealisationIdAndAgentId {
 
     @Test
-    @DisplayName("GIVEN workId and agentId " +
+    @DisplayName("GIVEN realisationId and agentId " +
       "... THEN RealisationAgentResponseDto is returned")
     public void GIVEN_ids_THEN_RealisationAgentResponseDto() {
       // GIVEN
       // ... invalid ids
-      val workId = 1L;
+      val realisationId = 1L;
       val agentId = 1;
       // ... CurrentRequestUserService successfully returns userId
       val userId = 1L;
       given(currentRequestUserService.getUserId()).willReturn(userId);
       // ... RealisationAgentRepository successfully finds
       val realisationAgent = RealisationAgentMother.complete().build();
-      given(realisationAgentRepository.findByRealisationIdAndAgentIdAndRealisationWorkUserId(same(workId), same(agentId), same(userId))).willReturn(Optional.of(realisationAgent));
+      given(realisationAgentRepository.findByRealisationIdAndAgentIdAndRealisationWorkUserId(same(realisationId), same(agentId), same(userId))).willReturn(Optional.of(realisationAgent));
       // ... RealisationAgentToFullRealisationAgentResponseDtoConverter successfully converts
       val expectedResponseDto = FullRealisationAgentResponseDtoMother.complete().build();
       given(toFullRealisationAgentResponseDtoConverter.convert(same(realisationAgent))).willReturn(expectedResponseDto);
 
       // WHEN
       // ... getRealisationAgentByRealisationIdAndAgentId is called
-      val responseDto = realisationAgentService.getRealisationAgentByRealisationIdAndAgentId(workId, agentId);
+      val responseDto = realisationAgentService.getRealisationAgentByRealisationIdAndAgentId(realisationId, agentId);
 
       // THEN
       // ... FullRealisationAgentResponseDto is returned
@@ -111,17 +115,17 @@ public class RealisationAgentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_createRealisationAgentForRealisationId {
 
     @Test
-    @DisplayName("GIVEN workId and CreateRealisationAgentRequestDto " +
+    @DisplayName("GIVEN realisationId and CreateRealisationAgentRequestDto " +
       "... THEN RealisationAgentResponseDto")
     public void GIVEN_LongAndCreateRealisationAgentRequestDto_THEN_RealisationAgentResponseDto() {
       // GIVEN
-      // ... workId
-      val workId = 1L;
+      // ... realisationId
+      val realisationId = 1L;
       // ... CreateRealisationAgentRequestDto
       val requestDto = CreateRealisationAgentRequestDtoMother.complete().build();
       // ... RealisationService successfully gets Realisation by id
-      val work = RealisationMother.complete().build();
-      given(workService.getById(same(workId))).willReturn(work);
+      val realisation = RealisationMother.complete().build();
+      given(realisationService.getById(same(realisationId))).willReturn(realisation);
       // ... CreateRealisationAgentRequestDtoToJoinedCreateRealisationAgentRequestDtoConverter successfully converts
       val joinedRequestDto = JoinedCreateRealisationAgentRequestDtoMother.complete().build();
       given(toJoinedCreateRealisationAgentRequestDtoConverter.convert(same(requestDto))).willReturn(joinedRequestDto);
@@ -138,7 +142,7 @@ public class RealisationAgentServiceUnitTest implements ServiceUnitTest {
 
       // WHEN
       // ... createRealisationAgentForRealisationId is called
-      val responseDto = realisationAgentService.createRealisationAgentForRealisationId(workId, requestDto);
+      val responseDto = realisationAgentService.createRealisationAgentForRealisationId(realisationId, requestDto);
 
       // THEN
       // ... RealisationAgentResponseDto
@@ -155,12 +159,12 @@ public class RealisationAgentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_updateRealisationAgentByRealisationIdAndAgentId {
 
     @Test
-    @DisplayName("GIVEN workId, agentId, and UpdateRealisationAgentRequestDto " +
+    @DisplayName("GIVEN realisationId, agentId, and UpdateRealisationAgentRequestDto " +
       "... THEN RealisationAgentResponseDto is returned")
     public void GIVEN_idsAndUpdateRealisationAgentRequestDto_THEN_RealisationAgentResponseDto() {
       // GIVEN
       // ... invalid ids
-      val workId = 1L;
+      val realisationId = 1L;
       val agentId = 1;
       // ... UpdateRealisationAgentRequestDto
       val requestDto = UpdateRealisationAgentRequestDtoMother.complete().build();
@@ -169,7 +173,9 @@ public class RealisationAgentServiceUnitTest implements ServiceUnitTest {
       given(currentRequestUserService.getUserId()).willReturn(userId);
       // ... RealisationAgentRepository successfully finds
       val realisationAgent = RealisationAgentMother.complete().build();
-      given(realisationAgentRepository.findByRealisationIdAndAgentIdAndRealisationWorkUserId(same(workId), same(agentId), same(userId))).willReturn(Optional.of(realisationAgent));
+      given(realisationAgentRepository.findByRealisationIdAndAgentIdAndRealisationWorkUserId(same(realisationId), same(agentId), same(userId))).willReturn(Optional.of(realisationAgent));
+      // ... RealisationAgentWithUpdateRealisationAgentRequestDtoValidator successfully validates
+      willDoNothing().given(realisationAgentWithUpdateRealisationAgentRequestDtoValidator).validate(same(realisationAgent), same(requestDto));
       // ... RealisationAgentMapper successfully partially updates RealisationAgent with UpdateRealisationAgentRequestDto
       given(realisationAgentMapper.partialUpdate(same(realisationAgent), same(requestDto))).willReturn(realisationAgent);
       // ... RealisationAgentRepository successfully saves RealisationAgent
@@ -180,7 +186,7 @@ public class RealisationAgentServiceUnitTest implements ServiceUnitTest {
 
       // WHEN
       // ... updateRealisationAgentByRealisationIdAndAgentId is called
-      val responseDto = realisationAgentService.updateRealisationAgentByRealisationIdAndAgentId(workId, agentId, requestDto);
+      val responseDto = realisationAgentService.updateRealisationAgentByRealisationIdAndAgentId(realisationId, agentId, requestDto);
 
       // THEN
       // ... RealisationAgentResponseDto is returned
@@ -196,25 +202,25 @@ public class RealisationAgentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_deleteRealisationAgentByRealisationIdAndAgentId {
 
     @Test
-    @DisplayName("GIVEN workId and agentId " +
+    @DisplayName("GIVEN realisationId and agentId " +
       "... THEN void")
     public void GIVEN_ids_THEN_void() {
       // GIVEN
       // ... invalid ids
-      val workId = 1L;
+      val realisationId = 1L;
       val agentId = 1;
       // ... CurrentRequestUserService successfully returns userId
       val userId = 1L;
       given(currentRequestUserService.getUserId()).willReturn(userId);
       // ... RealisationAgentRepository successfully finds
       val realisationAgent = RealisationAgentMother.complete().build();
-      given(realisationAgentRepository.findByRealisationIdAndAgentIdAndRealisationWorkUserId(same(workId), same(agentId), same(userId))).willReturn(Optional.of(realisationAgent));
+      given(realisationAgentRepository.findByRealisationIdAndAgentIdAndRealisationWorkUserId(same(realisationId), same(agentId), same(userId))).willReturn(Optional.of(realisationAgent));
       // ... RealisationAgentRepository successfully deletes RealisationAgent
       willDoNothing().given(realisationAgentRepository).delete(realisationAgent);
 
       // WHEN
       // ... deleteRealisationAgentByRealisationIdAndAgentId is called
-      realisationAgentService.deleteRealisationAgentByRealisationIdAndAgentId(workId, agentId);
+      realisationAgentService.deleteRealisationAgentByRealisationIdAndAgentId(realisationId, agentId);
 
       // THEN
       // ... void
@@ -227,22 +233,22 @@ public class RealisationAgentServiceUnitTest implements ServiceUnitTest {
   public class WHEN_getById {
 
     @Test
-    @DisplayName("GIVEN invalid workId and agentId " +
+    @DisplayName("GIVEN invalid realisationId and agentId " +
       "... THEN EntityNotFoundException is thrown")
     public void GIVEN_invalidIds_THEN_EntityNotFoundException() {
       // GIVEN
       // ... invalid ids
-      val workId = 1L;
+      val realisationId = 1L;
       val agentId = 1;
       // ... CurrentRequestUserService successfully returns userId
       val userId = 1L;
       given(currentRequestUserService.getUserId()).willReturn(userId);
       // ... RealisationAgentRepository fails to find
-      given(realisationAgentRepository.findByRealisationIdAndAgentIdAndRealisationWorkUserId(same(workId), same(agentId), same(userId))).willReturn(Optional.empty());
+      given(realisationAgentRepository.findByRealisationIdAndAgentIdAndRealisationWorkUserId(same(realisationId), same(agentId), same(userId))).willReturn(Optional.empty());
 
       // WHEN
       // ... getById is called
-      when(() -> realisationAgentService.getByRealisationIdAndAgentId(workId, agentId));
+      when(() -> realisationAgentService.getByRealisationIdAndAgentId(realisationId, agentId));
 
       // THEN
       // ... EntityNotFoundException is thrown
@@ -252,23 +258,23 @@ public class RealisationAgentServiceUnitTest implements ServiceUnitTest {
     }
 
     @Test
-    @DisplayName("GIVEN workId and agentId " +
+    @DisplayName("GIVEN realisationId and agentId " +
       "... THEN RealisationAgent is returned")
     public void GIVEN_ids_THEN_RealisationAgent() {
       // GIVEN
       // ... invalid ids
-      val workId = 1L;
+      val realisationId = 1L;
       val agentId = 1;
       // ... CurrentRequestUserService successfully returns userId
       val userId = 1L;
       given(currentRequestUserService.getUserId()).willReturn(userId);
       // ... RealisationAgentRepository successfully finds
       val expectedRealisationAgent = RealisationAgentMother.complete().build();
-      given(realisationAgentRepository.findByRealisationIdAndAgentIdAndRealisationWorkUserId(same(workId), same(agentId), same(userId))).willReturn(Optional.of(expectedRealisationAgent));
+      given(realisationAgentRepository.findByRealisationIdAndAgentIdAndRealisationWorkUserId(same(realisationId), same(agentId), same(userId))).willReturn(Optional.of(expectedRealisationAgent));
 
       // WHEN
       // ... getById is called
-      val returnedRealisationAgent = realisationAgentService.getByRealisationIdAndAgentId(workId, agentId);
+      val returnedRealisationAgent = realisationAgentService.getByRealisationIdAndAgentId(realisationId, agentId);
 
       // THEN
       // ... RealisationAgentResponseDto is returned

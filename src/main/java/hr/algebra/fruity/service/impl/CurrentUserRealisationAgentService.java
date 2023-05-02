@@ -17,6 +17,7 @@ import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.RealisationAgentService;
 import hr.algebra.fruity.service.RealisationService;
 import hr.algebra.fruity.validator.JoinedCreateRealisationAgentRequestDtoWithRealisationAdapterValidator;
+import hr.algebra.fruity.validator.RealisationAgentWithUpdateRealisationAgentRequestDtoValidator;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,8 @@ public class CurrentUserRealisationAgentService implements RealisationAgentServi
   private final JoinedCreateRealisationAgentRequestDtoWithRealisationAdapterToRealisationAgentConverter fromJoinedCreateRealisationAgentRequestDtoWithRealisationAdapterConverter;
 
   private final JoinedCreateRealisationAgentRequestDtoWithRealisationAdapterValidator joinedCreateRealisationAgentRequestDtoWithRealisationAdapterValidator;
+
+  private final RealisationAgentWithUpdateRealisationAgentRequestDtoValidator realisationAgentWithUpdateRealisationAgentRequestDtoValidator;
 
   private final RealisationAgentMapper realisationAgentMapper;
 
@@ -72,6 +75,8 @@ public class CurrentUserRealisationAgentService implements RealisationAgentServi
   @Override
   public FullRealisationAgentResponseDto updateRealisationAgentByRealisationIdAndAgentId(Long realisationFk, Integer agentFk, UpdateRealisationAgentRequestDto requestDto) {
     val realisationAgent = getByRealisationIdAndAgentId(realisationFk, agentFk);
+
+    realisationAgentWithUpdateRealisationAgentRequestDtoValidator.validate(realisationAgent, requestDto);
 
     return toFullRealisationAgentResponseDtoConverter.convert(
       realisationAgentRepository.save(
