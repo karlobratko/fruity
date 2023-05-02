@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 public class RealisationAttachmentWithUpdateRealisationAttachmentRequestDtoValidator implements WithValidator<RealisationAttachment, UpdateRealisationAttachmentRequestDto> {
 
   @Override
