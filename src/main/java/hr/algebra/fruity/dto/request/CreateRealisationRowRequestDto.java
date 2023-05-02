@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 @Builder
-public record CreateWorkRowRequestDto(
+public record CreateRealisationRowRequestDto(
   Long cadastralParcelFk,
   Long arcodeParcelFk,
   Long rowClusterFk,

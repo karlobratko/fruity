@@ -12,7 +12,6 @@ import hr.algebra.fruity.mapper.WorkRowMapper;
 import hr.algebra.fruity.model.Row;
 import hr.algebra.fruity.model.Work;
 import hr.algebra.fruity.model.WorkRow;
-import hr.algebra.fruity.repository.RowRepository;
 import hr.algebra.fruity.repository.WorkRowRepository;
 import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.WorkRowService;
@@ -43,8 +42,6 @@ public class CurrentUserWorkRowService implements WorkRowService {
   private final CurrentRequestUserService currentRequestUserService;
 
   private final WorkRowRepository workRowRepository;
-
-  private final RowRepository rowRepository;
 
   private final WorkService workService;
 
