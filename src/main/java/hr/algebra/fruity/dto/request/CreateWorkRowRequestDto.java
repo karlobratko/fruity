@@ -12,7 +12,6 @@ public record CreateWorkRowRequestDto(
   Long arcodeParcelFk,
   Long rowClusterFk,
   List<Long> rowFks,
-  Long rowFk,
   @Size(max = 500, message = "Napomena mora biti duljine maksimalno 500 znakova.")
   String note
 ) {
@@ -27,8 +26,6 @@ public record CreateWorkRowRequestDto(
     public static final String rowClusterFk = "rowClusterFk";
 
     public static final String rowFks = "rowFks";
-
-    public static final String rowFk = "rowFk";
 
     public static final String note = "note";
 

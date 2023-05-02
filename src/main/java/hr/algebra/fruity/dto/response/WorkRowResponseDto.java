@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public record WorkRowResponseDto(
   Long workFk,
-  RowResponseDto row,
+  FullRowResponseDto row,
   String note
 ) {
 

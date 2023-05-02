@@ -22,9 +22,6 @@ public class CreateWorkRowRequestDtoToJoinedCreateWorkRowRequestDtoConverter imp
   public JoinedCreateWorkRowRequestDto convert(@NonNull CreateWorkRowRequestDto source) {
     Set<Row> rows = new HashSet<>();
 
-    if (Objects.nonNull(source.rowFk()))
-      rows.add(rowService.getById(source.rowFk()));
-
     if (Objects.nonNull(source.rowFks()))
       rows.addAll(rowService.getAllById(source.rowFks()));
 
