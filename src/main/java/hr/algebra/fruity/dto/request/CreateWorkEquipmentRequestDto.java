@@ -12,7 +12,6 @@ import lombok.NoArgsConstructor;
 public record CreateWorkEquipmentRequestDto(
   @NotNull(message = "Oprema je obavezno polje.")
   Long equipmentFk,
-  @NotNull(message = "Cijena po satu je obavezno polje.")
   @DecimalMin(value = "0.00", message = "Cijena po satu mora biti pozitivan broj ili nula.")
   BigDecimal costPerHour,
   @Size(max = 500, message = "Napomena mora biti duljine maksimalno 500 znakova.")

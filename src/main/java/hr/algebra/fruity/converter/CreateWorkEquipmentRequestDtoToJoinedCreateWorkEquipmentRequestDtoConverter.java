@@ -3,8 +3,10 @@ package hr.algebra.fruity.converter;
 import hr.algebra.fruity.dto.request.CreateWorkEquipmentRequestDto;
 import hr.algebra.fruity.dto.request.joined.JoinedCreateWorkEquipmentRequestDto;
 import hr.algebra.fruity.service.EquipmentService;
+import java.util.Objects;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -16,9 +18,11 @@ public class CreateWorkEquipmentRequestDtoToJoinedCreateWorkEquipmentRequestDtoC
 
   @Override
   public JoinedCreateWorkEquipmentRequestDto convert(@NonNull CreateWorkEquipmentRequestDto source) {
+    val equipment = equipmentService.getById(source.equipmentFk());
+
     return new JoinedCreateWorkEquipmentRequestDto(
-      equipmentService.getById(source.equipmentFk()),
-      source.costPerHour(),
+      equipment,
+      Objects.requireNonNullElse(source.costPerHour(), equipment.getCostPerHour()),
       source.note()
     );
   }

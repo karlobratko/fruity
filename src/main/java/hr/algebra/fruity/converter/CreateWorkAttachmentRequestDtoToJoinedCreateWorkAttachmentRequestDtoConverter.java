@@ -3,8 +3,10 @@ package hr.algebra.fruity.converter;
 import hr.algebra.fruity.dto.request.CreateWorkAttachmentRequestDto;
 import hr.algebra.fruity.dto.request.joined.JoinedCreateWorkAttachmentRequestDto;
 import hr.algebra.fruity.service.AttachmentService;
+import java.util.Objects;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.val;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
@@ -16,9 +18,11 @@ public class CreateWorkAttachmentRequestDtoToJoinedCreateWorkAttachmentRequestDt
 
   @Override
   public JoinedCreateWorkAttachmentRequestDto convert(@NonNull CreateWorkAttachmentRequestDto source) {
+    val attachment = attachmentService.getById(source.attachmentFk());
+
     return new JoinedCreateWorkAttachmentRequestDto(
-      attachmentService.getById(source.attachmentFk()),
-      source.costPerHour(),
+      attachment,
+      Objects.requireNonNullElse(source.costPerHour(), attachment.getCostPerHour()),
       source.note()
     );
   }
