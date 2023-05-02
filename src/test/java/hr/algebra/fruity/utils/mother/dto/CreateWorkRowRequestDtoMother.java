@@ -14,7 +14,6 @@ public class CreateWorkRowRequestDtoMother {
       .arcodeParcelFk(Constants.instanceArcodeParcelFk)
       .rowClusterFk(Constants.instanceRowClusterFk)
       .rowFks(Constants.instanceRowFks)
-      .rowFk(Constants.instanceRowFk)
       .note(Constants.instanceNote);
   }
 
