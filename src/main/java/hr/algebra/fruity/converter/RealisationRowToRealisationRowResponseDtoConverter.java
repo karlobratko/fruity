@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class RealisationRowToRealisationRowResponseDtoConverter implements Converter<RealisationRow, RealisationRowResponseDto> {
 
-  private final RowToRowResponseDtoConverter rowConverter;
+  private final RowToFullRowResponseDtoConverter rowConverter;
 
   @Override
   public RealisationRowResponseDto convert(@NonNull RealisationRow source) {
