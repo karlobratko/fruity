@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public record RealisationRowResponseDto(
   Long realisationFk,
-  RowResponseDto row,
+  FullRowResponseDto row,
   String note
 ) {
 

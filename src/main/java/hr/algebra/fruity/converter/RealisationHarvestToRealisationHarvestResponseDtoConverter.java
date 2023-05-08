@@ -24,7 +24,8 @@ public class RealisationHarvestToRealisationHarvestResponseDtoConverter implemen
       fruitCultivarConverter.convert(source.getFruitCultivar()),
       harvestedFruitClassConverter.convert(source.getHarvestedFruitClass()),
       source.getQuantity(),
-      unitOfMeasureConverter.convert(source.getUnitOfMeasure())
+      unitOfMeasureConverter.convert(source.getUnitOfMeasure()),
+      source.getNote()
     );
   }
 

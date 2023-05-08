@@ -11,7 +11,8 @@ public record RealisationHarvestResponseDto(
   FruitCultivarResponseDto fruitCultivar,
   HarvestedFruitClassResponseDto fruitClass,
   BigDecimal quantity,
-  UnitOfMeasureResponseDto unitOfMeasure
+  UnitOfMeasureResponseDto unitOfMeasure,
+  String note
 ) {
 
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -26,6 +27,8 @@ public record RealisationHarvestResponseDto(
     private static final String quantity = "quantity";
 
     private static final String unitOfMeasure = "unitOfMeasure";
+
+    public static final String note = "note";
 
 
   }
