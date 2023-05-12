@@ -11,9 +11,9 @@ public class WorkWithJoinedUpdateWorkRequestDtoValidator implements WithValidato
 
   @Override
   public void validate(Work target, JoinedUpdateWorkRequestDto with) {
-    if ((Objects.nonNull(with.startDateTime()) && target.getEndDateTime().isBefore(with.startDateTime()))
-      || (Objects.nonNull(with.endDateTime()) && target.getStartDateTime().isAfter(with.endDateTime()))
-      || (Objects.nonNull(with.startDateTime()) && Objects.nonNull(with.endDateTime()) && with.endDateTime().isBefore(with.startDateTime())))
+    if ((Objects.nonNull(with.startDateTime()) && Objects.nonNull(with.endDateTime()) && with.endDateTime().isBefore(with.startDateTime()))
+      || (Objects.nonNull(with.startDateTime()) && target.getEndDateTime().isBefore(with.startDateTime()))
+      || (Objects.nonNull(with.endDateTime()) && target.getStartDateTime().isAfter(with.endDateTime())))
       throw new InvalidTimePointsException();
   }
 
