@@ -3,16 +3,19 @@ package hr.algebra.fruity.service.impl;
 import hr.algebra.fruity.converter.CreateEmployeeRequestDtoToEmployeeConverter;
 import hr.algebra.fruity.converter.EmployeeToEmployeeResponseDtoConverter;
 import hr.algebra.fruity.converter.EmployeeToFullEmployeeResponseDtoConverter;
+import hr.algebra.fruity.converter.WorkToWorkResponseDtoConverter;
 import hr.algebra.fruity.dto.request.CreateEmployeeRequestDto;
 import hr.algebra.fruity.dto.request.UpdateEmployeeRequestDto;
 import hr.algebra.fruity.dto.response.EmployeeResponseDto;
 import hr.algebra.fruity.dto.response.FullEmployeeResponseDto;
+import hr.algebra.fruity.dto.response.WorkResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.exception.ManagerEmployeeDeleteException;
 import hr.algebra.fruity.mapper.EmployeeMapper;
 import hr.algebra.fruity.model.Employee;
 import hr.algebra.fruity.model.codebook.EmployeeRoles;
 import hr.algebra.fruity.repository.EmployeeRepository;
+import hr.algebra.fruity.repository.WorkRepository;
 import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.EmployeeRoleService;
 import hr.algebra.fruity.service.EmployeeService;
@@ -37,6 +40,8 @@ public class CurrentUserEmployeeService implements EmployeeService {
 
   private final CreateEmployeeRequestDtoToEmployeeConverter fromCreateEmployeeRequestDtoConverter;
 
+  private final WorkToWorkResponseDtoConverter toWorkResponseDtoConverter;
+
   private final CreateEmployeeRequestDtoValidator createEmployeeRequestDtoValidator;
 
   private final EmployeeWithUpdateEmployeeRequestDtoValidator employeeWithUpdateEmployeeRequestDtoValidator;
@@ -52,6 +57,8 @@ public class CurrentUserEmployeeService implements EmployeeService {
   private final MobileTokenService mobileTokenService;
 
   private final EmployeeRoleService employeeRoleService;
+
+  private final WorkRepository workRepository;
 
   @Override
   public List<EmployeeResponseDto> getAllEmployees() {
@@ -109,6 +116,13 @@ public class CurrentUserEmployeeService implements EmployeeService {
   public Employee getById(Long id) {
     return employeeRepository.findByIdAndUserId(id, currentRequestUserService.getUserId())
       .orElseThrow(EntityNotFoundException.supplier("Zaposlenik"));
+  }
+
+  @Override
+  public List<WorkResponseDto> getAllAssignedWorks() {
+    return workRepository.findAllByEmployee(getById(currentRequestUserService.getEmployeeId())).stream()
+      .map(toWorkResponseDtoConverter::convert)
+      .toList();
   }
 
 }

@@ -6,6 +6,7 @@ import hr.algebra.fruity.dto.request.UpdateEmployeeRequestDto;
 import hr.algebra.fruity.dto.response.ApiResponse;
 import hr.algebra.fruity.dto.response.EmployeeResponseDto;
 import hr.algebra.fruity.dto.response.FullEmployeeResponseDto;
+import hr.algebra.fruity.dto.response.WorkResponseDto;
 import hr.algebra.fruity.service.EmployeeService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -80,6 +81,17 @@ public class EmployeeController {
       );
   }
 
+  @GetMapping(Mappings.getAllAssignedWorksGetMapping)
+  public ResponseEntity<ApiResponse<List<WorkResponseDto>>> getAllAssignedWorks() {
+    return ResponseEntity
+      .ok(
+        ApiResponse.ok(
+          employeeService.getAllAssignedWorks(),
+          "Radovi dodjeljeni radniku uspješno dohvaćeni."
+        )
+      );
+  }
+
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Mappings {
 
@@ -94,6 +106,8 @@ public class EmployeeController {
     public static final String updateEmployeeByIdPutMapping = "/{id}";
 
     public static final String deleteEmployeeByIdDeleteMapping = "/{id}";
+
+    public static final String getAllAssignedWorksGetMapping = "/works";
 
   }
 

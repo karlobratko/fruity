@@ -4,6 +4,7 @@ import hr.algebra.fruity.dto.request.CreateEmployeeRequestDto;
 import hr.algebra.fruity.dto.request.UpdateEmployeeRequestDto;
 import hr.algebra.fruity.dto.response.EmployeeResponseDto;
 import hr.algebra.fruity.dto.response.FullEmployeeResponseDto;
+import hr.algebra.fruity.dto.response.WorkResponseDto;
 import hr.algebra.fruity.model.ArcodeParcel;
 import hr.algebra.fruity.model.Employee;
 import java.util.List;
@@ -21,5 +22,7 @@ public interface EmployeeService {
   void deleteEmployeeById(Long id);
 
   Employee getById(Long id);
+
+  List<WorkResponseDto> getAllAssignedWorks();
 
 }
