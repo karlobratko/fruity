@@ -44,10 +44,14 @@ public class RealisationWithJoinedUpdateRealisationRequestDtoValidator implement
             throw new UniquenessViolatedException("Realizacija za traženi rad, radnika te vrijeme početka i završetka već postoji.");
         });
 
-    if ((Objects.nonNull(with.startDateTime()) && Objects.nonNull(with.endDateTime()) && with.endDateTime().isBefore(with.startDateTime()))
-      || (Objects.nonNull(with.startDateTime()) && target.getEndDateTime().isBefore(with.startDateTime()))
-      || (Objects.nonNull(with.endDateTime()) && target.getStartDateTime().isAfter(with.endDateTime())))
-      throw new InvalidTimePointsException();
-  }
 
+    if (Objects.nonNull(with.startDateTime()) && Objects.nonNull(with.endDateTime())) {
+      if (with.endDateTime().isBefore(with.startDateTime()))
+        throw new InvalidTimePointsException();
+    } else {
+      if ((Objects.nonNull(with.startDateTime()) && target.getEndDateTime().isBefore(with.startDateTime()))
+        || (Objects.nonNull(with.endDateTime()) && target.getStartDateTime().isAfter(with.endDateTime())))
+        throw new InvalidTimePointsException();
+    }
+  }
 }
