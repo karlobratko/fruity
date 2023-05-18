@@ -16,7 +16,7 @@ public class WorkAlreadyFinishedException extends BadRequestException {
   @NoArgsConstructor(access = AccessLevel.PRIVATE)
   public static class Constants {
 
-    public static final String exceptionMessageFormat = "Dodavanje i uređivanje realizacije nije moguće jer je rad označen kao dovršen.";
+    public static final String exceptionMessageFormat = "Dodavanje, uređivanje i brisanje informacija o realizaciji nije moguće jer je rad označen kao dovršen.";
 
   }
 

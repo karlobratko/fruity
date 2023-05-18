@@ -10,6 +10,7 @@ import hr.algebra.fruity.dto.request.joined.JoinedCreateRealisationAgentRequestD
 import hr.algebra.fruity.dto.response.FullRealisationAgentResponseDto;
 import hr.algebra.fruity.dto.response.RealisationAgentResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
+import hr.algebra.fruity.exception.WorkAlreadyFinishedException;
 import hr.algebra.fruity.mapper.RealisationAgentMapper;
 import hr.algebra.fruity.model.RealisationAgent;
 import hr.algebra.fruity.repository.RealisationAgentRepository;
@@ -87,7 +88,12 @@ public class CurrentUserRealisationAgentService implements RealisationAgentServi
 
   @Override
   public void deleteRealisationAgentByRealisationIdAndAgentId(Long realisationFk, Integer agentFk) {
-    realisationAgentRepository.delete(getByRealisationIdAndAgentId(realisationFk, agentFk));
+    val realisationAgent = getByRealisationIdAndAgentId(realisationFk, agentFk);
+
+    if (realisationAgent.getRealisation().getWork().isFinished())
+      throw new WorkAlreadyFinishedException();
+
+    realisationAgentRepository.delete(realisationAgent);
   }
 
   @Override

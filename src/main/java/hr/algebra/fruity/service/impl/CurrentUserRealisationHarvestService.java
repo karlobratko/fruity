@@ -10,6 +10,7 @@ import hr.algebra.fruity.dto.request.joined.JoinedCreateRealisationHarvestReques
 import hr.algebra.fruity.dto.response.FullRealisationHarvestResponseDto;
 import hr.algebra.fruity.dto.response.RealisationHarvestResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
+import hr.algebra.fruity.exception.WorkAlreadyFinishedException;
 import hr.algebra.fruity.mapper.RealisationHarvestMapper;
 import hr.algebra.fruity.model.RealisationHarvest;
 import hr.algebra.fruity.repository.RealisationHarvestRepository;
@@ -97,7 +98,12 @@ public class CurrentUserRealisationHarvestService implements RealisationHarvestS
 
   @Override
   public void deleteRealisationHarvestByRealisationIdAndFruitCultivarIdAndClassId(Long realisationFk, Integer fruitCultivarFk, Integer classFk) {
-    realisationHarvestRepository.delete(getByRealisationIdAndFruitCultivarIdAndClassId(realisationFk, fruitCultivarFk, classFk));
+    val realisationHarvest = getByRealisationIdAndFruitCultivarIdAndClassId(realisationFk, fruitCultivarFk, classFk);
+
+    if (realisationHarvest.getRealisation().getWork().isFinished())
+      throw new WorkAlreadyFinishedException();
+
+    realisationHarvestRepository.delete(realisationHarvest);
   }
 
   @Override

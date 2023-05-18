@@ -10,6 +10,7 @@ import hr.algebra.fruity.dto.request.joined.JoinedCreateRealisationAttachmentReq
 import hr.algebra.fruity.dto.response.FullRealisationAttachmentResponseDto;
 import hr.algebra.fruity.dto.response.RealisationAttachmentResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
+import hr.algebra.fruity.exception.WorkAlreadyFinishedException;
 import hr.algebra.fruity.mapper.RealisationAttachmentMapper;
 import hr.algebra.fruity.model.RealisationAttachment;
 import hr.algebra.fruity.repository.RealisationAttachmentRepository;
@@ -87,7 +88,12 @@ public class CurrentUserRealisationAttachmentService implements RealisationAttac
 
   @Override
   public void deleteRealisationAttachmentByRealisationIdAndAttachmentId(Long realisationFk, Long attachmentFk) {
-    realisationAttachmentRepository.delete(getByRealisationIdAndAttachmentId(realisationFk, attachmentFk));
+    val realisationAttachment = getByRealisationIdAndAttachmentId(realisationFk, attachmentFk);
+
+    if (realisationAttachment.getRealisation().getWork().isFinished())
+      throw new WorkAlreadyFinishedException();
+
+    realisationAttachmentRepository.delete(realisationAttachment);
   }
 
   @Override

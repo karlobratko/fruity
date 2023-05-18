@@ -9,6 +9,7 @@ import hr.algebra.fruity.dto.request.joined.JoinedCreateRealisationRowRequestDto
 import hr.algebra.fruity.dto.response.FullRealisationRowResponseDto;
 import hr.algebra.fruity.dto.response.RealisationRowResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
+import hr.algebra.fruity.exception.WorkAlreadyFinishedException;
 import hr.algebra.fruity.mapper.RealisationRowMapper;
 import hr.algebra.fruity.model.Realisation;
 import hr.algebra.fruity.model.RealisationRow;
@@ -87,7 +88,12 @@ public class CurrentUserRealisationRowService implements RealisationRowService {
 
   @Override
   public void deleteRealisationRowByRealisationIdAndRowId(Long realisationFk, Long rowFk) {
-    realisationRowRepository.delete(getByRealisationIdAndRowId(realisationFk, rowFk));
+    val realisationRow = getByRealisationIdAndRowId(realisationFk, rowFk);
+
+    if (realisationRow.getRealisation().getWork().isFinished())
+      throw new WorkAlreadyFinishedException();
+
+    realisationRowRepository.delete(realisationRow);
   }
 
   @Override

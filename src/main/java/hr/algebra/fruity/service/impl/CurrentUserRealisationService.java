@@ -10,6 +10,7 @@ import hr.algebra.fruity.dto.request.UpdateRealisationRequestDto;
 import hr.algebra.fruity.dto.response.FullRealisationResponseDto;
 import hr.algebra.fruity.dto.response.RealisationResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
+import hr.algebra.fruity.exception.WorkAlreadyFinishedException;
 import hr.algebra.fruity.mapper.RealisationMapper;
 import hr.algebra.fruity.model.Realisation;
 import hr.algebra.fruity.repository.RealisationRepository;
@@ -90,7 +91,12 @@ public class CurrentUserRealisationService implements RealisationService {
   @Override
   @Transactional
   public void deleteRealisationById(Long id) {
-    realisationRepository.delete(getById(id));
+    val realisation = getById(id);
+
+    if (realisation.getWork().isFinished())
+      throw new WorkAlreadyFinishedException();
+
+     realisationRepository.delete(realisation);
   }
 
   @Override

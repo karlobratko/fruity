@@ -10,6 +10,7 @@ import hr.algebra.fruity.dto.request.joined.JoinedCreateRealisationEquipmentRequ
 import hr.algebra.fruity.dto.response.FullRealisationEquipmentResponseDto;
 import hr.algebra.fruity.dto.response.RealisationEquipmentResponseDto;
 import hr.algebra.fruity.exception.EntityNotFoundException;
+import hr.algebra.fruity.exception.WorkAlreadyFinishedException;
 import hr.algebra.fruity.mapper.RealisationEquipmentMapper;
 import hr.algebra.fruity.model.RealisationEquipment;
 import hr.algebra.fruity.repository.RealisationEquipmentRepository;
@@ -56,8 +57,8 @@ public class CurrentUserRealisationEquipmentService implements RealisationEquipm
   }
 
   @Override
-  public FullRealisationEquipmentResponseDto getRealisationEquipmentByRealisationIdAndEquipmentId(Long realisationFk, Long attachmentFk) {
-    return toFullRealisationEquipmentResponseDtoConverter.convert(getByRealisationIdAndEquipmentId(realisationFk, attachmentFk));
+  public FullRealisationEquipmentResponseDto getRealisationEquipmentByRealisationIdAndEquipmentId(Long realisationFk, Long equipmentFk) {
+    return toFullRealisationEquipmentResponseDtoConverter.convert(getByRealisationIdAndEquipmentId(realisationFk, equipmentFk));
   }
 
   @Override
@@ -73,8 +74,8 @@ public class CurrentUserRealisationEquipmentService implements RealisationEquipm
   }
 
   @Override
-  public FullRealisationEquipmentResponseDto updateRealisationEquipmentByRealisationIdAndEquipmentId(Long realisationFk, Long attachmentFk, UpdateRealisationEquipmentRequestDto requestDto) {
-    val realisationEquipment = getByRealisationIdAndEquipmentId(realisationFk, attachmentFk);
+  public FullRealisationEquipmentResponseDto updateRealisationEquipmentByRealisationIdAndEquipmentId(Long realisationFk, Long equipmentFk, UpdateRealisationEquipmentRequestDto requestDto) {
+    val realisationEquipment = getByRealisationIdAndEquipmentId(realisationFk, equipmentFk);
 
     realisationEquipmentWithUpdateRealisationEquipmentRequestDtoValidator.validate(realisationEquipment, requestDto);
 
@@ -86,13 +87,18 @@ public class CurrentUserRealisationEquipmentService implements RealisationEquipm
   }
 
   @Override
-  public void deleteRealisationEquipmentByRealisationIdAndEquipmentId(Long realisationFk, Long attachmentFk) {
-    realisationEquipmentRepository.delete(getByRealisationIdAndEquipmentId(realisationFk, attachmentFk));
+  public void deleteRealisationEquipmentByRealisationIdAndEquipmentId(Long realisationFk, Long equipmentFk) {
+    val realisationEquipment = getByRealisationIdAndEquipmentId(realisationFk, equipmentFk);
+
+    if (realisationEquipment.getRealisation().getWork().isFinished())
+      throw new WorkAlreadyFinishedException();
+
+    realisationEquipmentRepository.delete(realisationEquipment);
   }
 
   @Override
-  public RealisationEquipment getByRealisationIdAndEquipmentId(Long realisationFk, Long attachmentFk) {
-    return realisationEquipmentRepository.findByRealisationIdAndEquipmentIdAndRealisationWorkUserId(realisationFk, attachmentFk, currentRequestUserService.getUserId())
+  public RealisationEquipment getByRealisationIdAndEquipmentId(Long realisationFk, Long equipmentFk) {
+    return realisationEquipmentRepository.findByRealisationIdAndEquipmentIdAndRealisationWorkUserId(realisationFk, equipmentFk, currentRequestUserService.getUserId())
       .orElseThrow(EntityNotFoundException.supplier("Oprema korištena u realizaciji"));
   }
 

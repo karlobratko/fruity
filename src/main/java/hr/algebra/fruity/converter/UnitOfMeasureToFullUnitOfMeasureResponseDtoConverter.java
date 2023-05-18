@@ -2,6 +2,7 @@ package hr.algebra.fruity.converter;
 
 import hr.algebra.fruity.dto.response.FullUnitOfMeasureResponseDto;
 import hr.algebra.fruity.model.UnitOfMeasure;
+import java.util.Objects;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.convert.converter.Converter;
@@ -19,7 +20,7 @@ public class UnitOfMeasureToFullUnitOfMeasureResponseDtoConverter implements Con
       source.getId(),
       source.getAbbreviation(),
       source.getName(),
-      unitOfMeasureConverter.convert(source.getBase()),
+      Objects.nonNull(source.getBase()) ? unitOfMeasureConverter.convert(source.getBase()) : null,
       source.getBaseMultiplier()
     );
   }
