@@ -20,11 +20,13 @@ import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.RowClusterService;
 import hr.algebra.fruity.validator.JoinedCreateRowClusterRequestDtoValidator;
 import hr.algebra.fruity.validator.RowClusterWithJoinedUpdateRowClusterRequestDtoValidator;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.hibernate.Session;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -55,6 +57,8 @@ public class CurrentUserRowClusterService implements RowClusterService {
 
   private final RowRepository rowRepository;
 
+  private final EntityManager entityManager;
+
   @Override
   public List<RowClusterResponseDto> getAllRowClusters() {
     return rowClusterRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
@@ -64,9 +68,16 @@ public class CurrentUserRowClusterService implements RowClusterService {
 
   @Override
   public List<RowResponseDto> getAllRowsByRowClusterId(Long rowClusterId) {
-    return rowRepository.findAllByRowClusterOrderByOrdinalAsc(getById(rowClusterId)).stream()
+    val session = entityManager.unwrap(Session.class);
+    val filter = session.enableFilter("isNotDeleted");
+
+    val rows = rowRepository.findAllByRowClusterOrderByOrdinalAsc(getById(rowClusterId)).stream()
       .map(toRowResponseDtoConverter::convert)
       .toList();
+
+    session.disableFilter("isNotDeleted");
+
+    return rows;
   }
 
   @Override

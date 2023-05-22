@@ -25,4 +25,8 @@ public interface RealisationEquipmentRepository extends JpaRepository<Realisatio
 
   boolean existsByRealisationAndEquipment(Realisation work, Equipment equipment);
 
+  void deleteByEquipmentIdAndRealisationWorkFinishedFalse(Long equipmentFk);
+
+  void deleteByEquipmentAndRealisationWorkFinishedFalse(Equipment equipment);
+
 }

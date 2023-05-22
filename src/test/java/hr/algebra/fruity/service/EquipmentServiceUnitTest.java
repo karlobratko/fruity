@@ -10,6 +10,8 @@ import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.mapper.EquipmentMapper;
 import hr.algebra.fruity.repository.AttachmentRepository;
 import hr.algebra.fruity.repository.EquipmentRepository;
+import hr.algebra.fruity.repository.RealisationEquipmentRepository;
+import hr.algebra.fruity.repository.WorkEquipmentRepository;
 import hr.algebra.fruity.service.impl.CurrentUserEquipmentService;
 import hr.algebra.fruity.utils.mother.dto.CreateEquipmentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullEquipmentResponseDtoMother;
@@ -19,8 +21,11 @@ import hr.algebra.fruity.utils.mother.dto.UpdateEquipmentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.model.EquipmentMother;
 import hr.algebra.fruity.validator.EquipmentWithJoinedUpdateEquipmentRequestDtoValidator;
 import hr.algebra.fruity.validator.JoinedCreateEquipmentRequestDtoValidator;
+import jakarta.persistence.EntityManager;
 import java.util.Optional;
 import lombok.val;
+import org.hibernate.Session;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -36,6 +41,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
@@ -81,6 +87,21 @@ public class EquipmentServiceUnitTest implements ServiceUnitTest {
 
   @Mock
   private AttachmentRepository attachmentRepository;
+
+  @Mock
+  private WorkEquipmentRepository workEquipmentRepository;
+
+  @Mock
+  private RealisationEquipmentRepository realisationEquipmentRepository;
+
+  @Mock
+  private EntityManager entityManager;
+
+  @BeforeEach
+  public void beforeEach() {
+    // ... EntityManager successfully returns session
+    given(entityManager.unwrap(same(Session.class))).willReturn(mock(Session.class));
+  }
 
   @Nested
   @DisplayName("WHEN getEquipmentById is called")

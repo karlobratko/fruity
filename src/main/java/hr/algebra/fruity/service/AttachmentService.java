@@ -20,6 +20,8 @@ public interface AttachmentService {
 
   Attachment getById(Long id);
 
+  Attachment getByIdIgnoreSoftDelete(Long id);
+
   List<Attachment> getAllById(List<Long> id);
 
 }

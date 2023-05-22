@@ -29,4 +29,8 @@ public interface RealisationRowRepository extends JpaRepository<RealisationRow, 
 
   boolean existsByRealisationAndRow(Realisation work, Row row);
 
+  void deleteByRowIdAndRealisationWorkFinishedFalse(Long rowFk);
+
+  void deleteByRowAndRealisationWorkFinishedFalse(Row row);
+
 }

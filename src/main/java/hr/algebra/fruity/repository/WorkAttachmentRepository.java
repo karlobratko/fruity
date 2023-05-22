@@ -25,5 +25,8 @@ public interface WorkAttachmentRepository extends JpaRepository<WorkAttachment, 
 
   boolean existsByWorkAndAttachment(Work work, Attachment attachment);
 
+  void deleteByAttachmentIdAndWorkFinishedFalse(Long attachmentFk);
+
+  void deleteByAttachmentAndWorkFinishedFalse(Attachment attachment);
 
 }

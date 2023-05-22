@@ -29,4 +29,8 @@ public interface WorkRowRepository extends JpaRepository<WorkRow, WorkRowId> {
 
   boolean existsByWorkAndRow(Work work, Row row);
 
+  void deleteByRowIdAndWorkFinishedFalse(Long rowFk);
+
+  void deleteByRowAndWorkFinishedFalse(Row row);
+
 }

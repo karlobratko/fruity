@@ -15,6 +15,8 @@ import hr.algebra.fruity.mapper.EmployeeMapper;
 import hr.algebra.fruity.model.Employee;
 import hr.algebra.fruity.model.codebook.EmployeeRoles;
 import hr.algebra.fruity.repository.EmployeeRepository;
+import hr.algebra.fruity.repository.RealisationRepository;
+import hr.algebra.fruity.repository.WorkEmployeeRepository;
 import hr.algebra.fruity.repository.WorkRepository;
 import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.EmployeeRoleService;
@@ -23,11 +25,13 @@ import hr.algebra.fruity.service.MobileTokenService;
 import hr.algebra.fruity.service.RefreshTokenService;
 import hr.algebra.fruity.validator.CreateEmployeeRequestDtoValidator;
 import hr.algebra.fruity.validator.EmployeeWithUpdateEmployeeRequestDtoValidator;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.hibernate.Session;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -60,11 +64,24 @@ public class CurrentUserEmployeeService implements EmployeeService {
 
   private final WorkRepository workRepository;
 
+  private final WorkEmployeeRepository workEmployeeRepository;
+
+  private final RealisationRepository realisationRepository;
+
+  private final EntityManager entityManager;
+
   @Override
   public List<EmployeeResponseDto> getAllEmployees() {
-    return employeeRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
+    val session = entityManager.unwrap(Session.class);
+    session.enableFilter("isNotDeleted");
+
+    val employees = employeeRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
       .map(toEmployeeResponseDtoConverter::convert)
       .toList();
+
+    session.disableFilter("isNotDeleted");
+
+    return employees;
   }
 
   @Override
@@ -82,9 +99,14 @@ public class CurrentUserEmployeeService implements EmployeeService {
     employee.setMobileToken(mobileTokenService.createMobileToken());
     employee.activate();
 
-    return toFullEmployeeResponseDtoConverter.convert(
-      employeeRepository.save(Objects.requireNonNull(employee))
-    );
+    val session = entityManager.unwrap(Session.class);
+    session.enableFilter("isNotDeleted");
+
+    val savedEmployee = employeeRepository.save(Objects.requireNonNull(employee));
+
+    session.disableFilter("isNotDeleted");
+
+    return toFullEmployeeResponseDtoConverter.convert(savedEmployee);
   }
 
   @Override
@@ -94,11 +116,14 @@ public class CurrentUserEmployeeService implements EmployeeService {
 
     employeeWithUpdateEmployeeRequestDtoValidator.validate(employee, requestDto);
 
-    return toFullEmployeeResponseDtoConverter.convert(
-      employeeRepository.save(
-        employeeMapper.partialUpdate(employee, requestDto)
-      )
-    );
+    val session = entityManager.unwrap(Session.class);
+    session.enableFilter("isNotDeleted");
+
+    val savedEmployee = employeeRepository.save(employeeMapper.partialUpdate(employee, requestDto));
+
+    session.disableFilter("isNotDeleted");
+
+    return toFullEmployeeResponseDtoConverter.convert(savedEmployee);
   }
 
   @Override
@@ -109,11 +134,32 @@ public class CurrentUserEmployeeService implements EmployeeService {
     if (Objects.equals(employee.getRole(), employeeRoleService.getEmployeeRole(EmployeeRoles.ROLE_MANAGER)))
       throw new ManagerEmployeeDeleteException();
 
+    val session = entityManager.unwrap(Session.class);
+    session.enableFilter("isNotDeleted");
+
+    workEmployeeRepository.deleteByEmployeeAndWorkFinishedFalse(employee);
+    realisationRepository.deleteByEmployeeAndWorkFinishedFalse(employee);
+
     employeeRepository.delete(employee);
+
+    session.disableFilter("isNotDeleted");
   }
 
   @Override
   public Employee getById(Long id) {
+    val session = entityManager.unwrap(Session.class);
+    session.enableFilter("isNotDeleted");
+
+    val employee = employeeRepository.findByIdAndUserId(id, currentRequestUserService.getUserId())
+      .orElseThrow(EntityNotFoundException.supplier("Zaposlenik"));
+
+    session.disableFilter("isNotDeleted");
+
+    return employee;
+  }
+
+  @Override
+  public Employee getByIdIgnoreSoftDelete(Long id) {
     return employeeRepository.findByIdAndUserId(id, currentRequestUserService.getUserId())
       .orElseThrow(EntityNotFoundException.supplier("Zaposlenik"));
   }

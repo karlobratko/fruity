@@ -31,6 +31,8 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
 import lombok.ToString;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ResultCheckStyle;
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
@@ -60,7 +62,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @ToString(doNotUseGetters = true, onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE attachments SET delete_date = CURRENT_DATE WHERE attachment_id = ?", check = ResultCheckStyle.COUNT)
-@Where(clause = "delete_date IS NULL")
+//@Where(clause = "delete_date IS NULL")
+@FilterDef(name = "isNotDeleted", defaultCondition = "delete_date IS NULL")
+@Filter(name = "isNotDeleted")
 public class Attachment {
 
   @Id
@@ -106,6 +110,7 @@ public class Attachment {
   private @NonNull BigDecimal purchasePrice;
 
   @ManyToMany(mappedBy = Equipment.Fields.attachments, fetch = FetchType.LAZY)
+  @Where(clause = "delete_date IS NULL")
   @Singular
   private Set<Equipment> equipments;
 

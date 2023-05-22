@@ -21,6 +21,8 @@ public interface RowService {
 
   Row getById(Long id);
 
+  Row getByIdIgnoreSoftDelete(Long id);
+
   List<Row> getAllById(List<Long> ids);
 
   List<Row> getAllByRowClusterId(Long rowClusterFk);

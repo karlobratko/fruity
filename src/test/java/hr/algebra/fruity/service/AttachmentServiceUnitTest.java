@@ -5,6 +5,8 @@ import hr.algebra.fruity.converter.CreateAttachmentRequestDtoToAttachmentConvert
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.mapper.AttachmentMapper;
 import hr.algebra.fruity.repository.AttachmentRepository;
+import hr.algebra.fruity.repository.RealisationAttachmentRepository;
+import hr.algebra.fruity.repository.WorkAttachmentRepository;
 import hr.algebra.fruity.service.impl.CurrentUserAttachmentService;
 import hr.algebra.fruity.utils.mother.dto.AttachmentResponseDtoMother;
 import hr.algebra.fruity.utils.mother.dto.CreateAttachmentRequestDtoMother;
@@ -12,8 +14,11 @@ import hr.algebra.fruity.utils.mother.dto.UpdateAttachmentRequestDtoMother;
 import hr.algebra.fruity.utils.mother.model.AttachmentMother;
 import hr.algebra.fruity.validator.AttachmentWithUpdateAttachmentRequestDtoValidator;
 import hr.algebra.fruity.validator.CreateAttachmentRequestDtoValidator;
+import jakarta.persistence.EntityManager;
 import java.util.Optional;
 import lombok.val;
+import org.hibernate.Session;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -29,6 +34,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
@@ -59,6 +65,21 @@ public class AttachmentServiceUnitTest implements ServiceUnitTest {
 
   @Mock
   private AttachmentRepository attachmentRepository;
+
+  @Mock
+  private WorkAttachmentRepository workAttachmentRepository;
+
+  @Mock
+  private RealisationAttachmentRepository realisationAttachmentRepository;
+
+  @Mock
+  private EntityManager entityManager;
+
+  @BeforeEach
+  public void beforeEach() {
+    // ... EntityManager successfully returns session
+    given(entityManager.unwrap(same(Session.class))).willReturn(mock(Session.class));
+  }
 
   @Nested
   @DisplayName("WHEN getAttachmentById is called")

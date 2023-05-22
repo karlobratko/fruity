@@ -1,6 +1,7 @@
 package hr.algebra.fruity.repository;
 
 import hr.algebra.fruity.model.Attachment;
+import hr.algebra.fruity.model.Employee;
 import hr.algebra.fruity.model.Realisation;
 import hr.algebra.fruity.model.RealisationAttachment;
 import hr.algebra.fruity.model.RealisationAttachment.RealisationAttachmentId;
@@ -24,5 +25,9 @@ public interface RealisationAttachmentRepository extends JpaRepository<Realisati
   boolean existsByRealisationIdAndAttachmentId(Long realisationFk, Long attachmentFk);
 
   boolean existsByRealisationAndAttachment(Realisation realisation, Attachment attachment);
+
+  void deleteByAttachmentIdAndRealisationWorkFinishedFalse(Long attachmentFk);
+
+  void deleteByAttachmentAndRealisationWorkFinishedFalse(Attachment attachment);
 
 }

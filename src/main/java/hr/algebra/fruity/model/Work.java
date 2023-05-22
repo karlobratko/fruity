@@ -1,5 +1,6 @@
 package hr.algebra.fruity.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -100,27 +101,27 @@ public class Work {
   @JoinColumn(name = WorkType.Constants.joinColumnName, nullable = false)
   private @NonNull WorkType type;
 
-  @OneToMany(mappedBy = WorkEmployee.Fields.work, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = WorkEmployee.Fields.work, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @Singular
   private Set<WorkEmployee> employees;
 
-  @OneToMany(mappedBy = WorkRow.Fields.work, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = WorkRow.Fields.work, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @Singular
   private Set<WorkRow> rows;
 
-  @OneToMany(mappedBy = WorkEquipment.Fields.work, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = WorkEquipment.Fields.work, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @Singular
   private Set<WorkEquipment> equipments;
 
-  @OneToMany(mappedBy = WorkAttachment.Fields.work, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = WorkAttachment.Fields.work, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @Singular
   private Set<WorkAttachment> attachments;
 
-  @OneToMany(mappedBy = WorkAgent.Fields.work, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = WorkAgent.Fields.work, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @Singular
   private Set<WorkAgent> agents;
 
-  @OneToMany(mappedBy = Realisation.Fields.work, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = Realisation.Fields.work, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @Singular
   private Set<Realisation> realisations;
 

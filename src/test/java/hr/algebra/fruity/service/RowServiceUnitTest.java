@@ -7,7 +7,9 @@ import hr.algebra.fruity.converter.RowToRowResponseDtoConverter;
 import hr.algebra.fruity.converter.UpdateRowRequestDtoToJoinedUpdateRowRequestDtoConverter;
 import hr.algebra.fruity.exception.EntityNotFoundException;
 import hr.algebra.fruity.mapper.RowMapper;
+import hr.algebra.fruity.repository.RealisationRowRepository;
 import hr.algebra.fruity.repository.RowRepository;
+import hr.algebra.fruity.repository.WorkRowRepository;
 import hr.algebra.fruity.service.impl.CurrentUserRowService;
 import hr.algebra.fruity.utils.mother.dto.CreateRowRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullRowResponseDtoMother;
@@ -15,9 +17,12 @@ import hr.algebra.fruity.utils.mother.dto.JoinedCreateRowRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.JoinedUpdateRowRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.UpdateRowRequestDtoMother;
 import hr.algebra.fruity.utils.mother.model.RowMother;
+import jakarta.persistence.EntityManager;
 import java.util.Collections;
 import java.util.Optional;
 import lombok.val;
+import org.hibernate.Session;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -33,6 +38,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
@@ -75,6 +81,22 @@ public class RowServiceUnitTest implements ServiceUnitTest {
 
   @Mock
   private CadastralParcelService cadastralParcelService;
+
+  @Mock
+  private WorkRowRepository workRowRepository;
+
+  @Mock
+  private RealisationRowRepository realisationRowRepository;
+
+  @Mock
+  private EntityManager entityManager;
+
+  @BeforeEach
+  public void beforeEach() {
+    // ... EntityManager successfully returns session
+    given(entityManager.unwrap(same(Session.class))).willReturn(mock(Session.class));
+  }
+
 
   @Nested
   @DisplayName("WHEN getRowById is called")

@@ -25,4 +25,8 @@ public interface WorkEquipmentRepository extends JpaRepository<WorkEquipment, Wo
 
   boolean existsByWorkAndEquipment(Work work, Equipment equipment);
 
+  void deleteByEquipmentIdAndWorkFinishedFalse(Long equipmentFk);
+
+  void deleteByEquipmentAndWorkFinishedFalse(Equipment equipment);
+
 }

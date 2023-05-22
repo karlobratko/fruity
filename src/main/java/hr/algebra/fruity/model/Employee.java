@@ -1,5 +1,6 @@
 package hr.algebra.fruity.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -31,9 +32,12 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
 import lombok.ToString;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.ResultCheckStyle;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -52,7 +56,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 @ToString(doNotUseGetters = true, onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE employees SET delete_date = CURRENT_DATE WHERE employee_id = ?", check = ResultCheckStyle.COUNT)
-@Where(clause = "delete_date IS NULL")
+//@Where(clause = "delete_date IS NULL")
+@FilterDef(name = "isNotDeleted", defaultCondition = "delete_date IS NULL")
+@Filter(name = "isNotDeleted")
 public class Employee implements UserDetails {
 
   @Id
@@ -120,7 +126,7 @@ public class Employee implements UserDetails {
   @JoinColumn(name = EmployeeRole.Constants.joinColumnName, nullable = false)
   private @NonNull EmployeeRole role;
 
-  @OneToOne(optional = true, orphanRemoval = true, fetch = FetchType.EAGER)
+  @OneToOne(optional = true, orphanRemoval = true, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
   @JoinColumn(
     name = RegistrationToken.Constants.joinColumnName,
     referencedColumnName = RegistrationToken.Constants.idColumnName,
@@ -128,7 +134,7 @@ public class Employee implements UserDetails {
   )
   private RegistrationToken registrationToken;
 
-  @OneToOne(optional = false, orphanRemoval = true, fetch = FetchType.LAZY)
+  @OneToOne(optional = false, orphanRemoval = true, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @JoinColumn(
     name = RefreshToken.Constants.joinColumnName,
     referencedColumnName = RefreshToken.Constants.idColumnName,
@@ -136,7 +142,7 @@ public class Employee implements UserDetails {
   )
   private RefreshToken refreshToken;
 
-  @OneToOne(optional = false, orphanRemoval = true, fetch = FetchType.EAGER)
+  @OneToOne(optional = false, orphanRemoval = true, fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
   @JoinColumn(
     name = MobileToken.Constants.joinColumnName,
     referencedColumnName = MobileToken.Constants.idColumnName,

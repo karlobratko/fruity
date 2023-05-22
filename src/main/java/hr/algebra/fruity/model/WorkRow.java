@@ -4,13 +4,20 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreRemove;
 import jakarta.persistence.Table;
+import jakarta.persistence.Temporal;
+import jakarta.persistence.TemporalType;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,21 +27,49 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
+import org.hibernate.annotations.ResultCheckStyle;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(name = WorkRow.Constants.tableName)
 @NoArgsConstructor(force = true)
-@Builder
 @Getter
 @Setter
 @EqualsAndHashCode(doNotUseGetters = true, onlyExplicitlyIncluded = true)
 @ToString(doNotUseGetters = true, onlyExplicitlyIncluded = true)
+@EntityListeners(AuditingEntityListener.class)
+@SQLDelete(sql = "UPDATE works_rows SET delete_date = CURRENT_DATE WHERE row_fk = ? AND work_fk = ?", check = ResultCheckStyle.COUNT)
+@Where(clause = "delete_date IS NULL")
 public class WorkRow {
 
   @EmbeddedId
   @EqualsAndHashCode.Include
   @ToString.Include
   private WorkRowId id;
+
+  @Column(name = Constants.uuidColumnName, nullable = false, unique = true)
+  @EqualsAndHashCode.Include
+  private UUID uuid;
+
+  @CreatedDate
+  @Column(name = Constants.createDateColumnName, nullable = false)
+  @Temporal(TemporalType.DATE)
+  private LocalDate createDate;
+
+  @LastModifiedDate
+  @Column(name = Constants.updateDateColumnName, nullable = false)
+  @Temporal(TemporalType.DATE)
+  private LocalDate updateDate;
+
+  @Column(name = Constants.deleteDateColumnName)
+  @Temporal(TemporalType.DATE)
+  private LocalDate deleteDate;
 
   @MapsId(WorkRowId.Fields.workFk)
   @ManyToOne(optional = false, fetch = FetchType.EAGER)
@@ -55,6 +90,16 @@ public class WorkRow {
     this.work = work;
     this.row = row;
     this.note = note;
+  }
+
+  @PrePersist
+  private void prePersist() {
+    this.uuid = UUID.randomUUID();
+  }
+
+  @PreRemove
+  private void preRemove() {
+    this.deleteDate = LocalDate.now();
   }
 
   @Embeddable
@@ -108,6 +153,12 @@ public class WorkRow {
     public static final String joinColumnName = "work_row_fk";
 
     public static final String uuidColumnName = "uuid";
+
+    public static final String createDateColumnName = "create_date";
+
+    public static final String updateDateColumnName = "update_date";
+
+    public static final String deleteDateColumnName = "delete_date";
 
     public static final String noteColumnName = "note";
 

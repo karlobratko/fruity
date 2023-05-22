@@ -33,4 +33,8 @@ public interface RealisationRepository extends JpaRepository<Realisation, Long> 
 
   boolean existsByWorkIdAndEmployeeIdAndStartDateTimeAndEndDateTime(Long workFk, Long employeeFk, LocalDateTime startDateTime, LocalDateTime endDateTime);
 
+  void deleteByEmployeeIdAndWorkFinishedFalse(Long employeeFk);
+
+  void deleteByEmployeeAndWorkFinishedFalse(Employee employee);
+
 }

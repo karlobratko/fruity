@@ -25,4 +25,8 @@ public interface WorkEmployeeRepository extends JpaRepository<WorkEmployee, Work
 
   boolean existsByWorkAndEmployee(Work work, Employee employee);
 
+  void deleteByEmployeeIdAndWorkFinishedFalse(Long employeeFk);
+
+  void deleteByEmployeeAndWorkFinishedFalse(Employee employee);
+
 }

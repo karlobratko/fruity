@@ -657,9 +657,9 @@ public class BootstrapDbRunner implements CommandLineRunner {
     val realisationRow5 = RealisationRow.builder().realisation(realisation1).row(row5).build();
     val realisationRow6 = RealisationRow.builder().realisation(realisation1).row(row6).build();
 
-    val realisationRow7 = RealisationRow.builder().realisation(realisation1).row(row1).build();
-    val realisationRow8 = RealisationRow.builder().realisation(realisation1).row(row2).build();
-    val realisationRow9 = RealisationRow.builder().realisation(realisation1).row(row3).build();
+    val realisationRow7 = RealisationRow.builder().realisation(realisation2).row(row1).build();
+    val realisationRow8 = RealisationRow.builder().realisation(realisation2).row(row2).build();
+    val realisationRow9 = RealisationRow.builder().realisation(realisation2).row(row3).build();
 
     realisationRowRepository.saveAll(
       List.of(

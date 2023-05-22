@@ -1,5 +1,6 @@
 package hr.algebra.fruity.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -106,7 +107,7 @@ public class ArcodeParcel {
   @Column(name = Constants.surfaceColumnName, precision = 10, scale = 3, nullable = false)
   private @NonNull BigDecimal surface;
 
-  @OneToMany(mappedBy = RowCluster.Fields.arcodeParcel, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = RowCluster.Fields.arcodeParcel, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @Singular
   private Set<RowCluster> rowClusters;
 

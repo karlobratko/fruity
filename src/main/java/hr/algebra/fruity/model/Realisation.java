@@ -1,5 +1,6 @@
 package hr.algebra.fruity.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -110,23 +111,23 @@ public class Realisation {
   @Column(name = Constants.noteColumnName, length = 500)
   private String note;
 
-  @OneToMany(mappedBy = RealisationRow.Fields.realisation, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = RealisationRow.Fields.realisation, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @Singular
   private Set<RealisationRow> rows;
 
-  @OneToMany(mappedBy = RealisationEquipment.Fields.realisation, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = RealisationEquipment.Fields.realisation, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @Singular
   private Set<RealisationEquipment> equipments;
 
-  @OneToMany(mappedBy = RealisationAttachment.Fields.realisation, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = RealisationAttachment.Fields.realisation, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @Singular
   private Set<RealisationAttachment> attachments;
 
-  @OneToMany(mappedBy = RealisationAgent.Fields.realisation, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = RealisationAgent.Fields.realisation, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @Singular
   private Set<RealisationAgent> agents;
 
-  @OneToMany(mappedBy = RealisationHarvest.Fields.realisation, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = RealisationHarvest.Fields.realisation, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @Singular
   private Set<RealisationHarvest> harvests;
 

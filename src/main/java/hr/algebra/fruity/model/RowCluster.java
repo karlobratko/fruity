@@ -1,5 +1,6 @@
 package hr.algebra.fruity.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -9,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreRemove;
 import jakarta.persistence.Table;
@@ -17,6 +19,7 @@ import jakarta.persistence.TemporalType;
 import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -26,6 +29,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.Singular;
 import lombok.ToString;
 import org.hibernate.annotations.ResultCheckStyle;
 import org.hibernate.annotations.SQLDelete;
@@ -99,6 +103,11 @@ public class RowCluster {
   @Column(name = Constants.surfaceColumnName, precision = 10, scale = 3, nullable = false)
   private @NonNull BigDecimal surface;
 
+  @OneToMany(mappedBy = Row.Fields.rowCluster, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+  @Where(clause = "delete_date IS NULL")
+  @Singular
+  private Set<Row> rows;
+
   @PrePersist
   private void prePersist() {
     this.uuid = UUID.randomUUID();
@@ -127,6 +136,8 @@ public class RowCluster {
     public static final String arcodeParcel = "arcodeParcel";
 
     public static final String surface = "surface";
+
+    public static final String rows = "rows";
 
   }
 

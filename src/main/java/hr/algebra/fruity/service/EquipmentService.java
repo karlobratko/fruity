@@ -24,4 +24,6 @@ public interface EquipmentService {
 
   Equipment getById(Long id);
 
+  Equipment getByIdIgnoreSoftDelete(Long id);
+
 }

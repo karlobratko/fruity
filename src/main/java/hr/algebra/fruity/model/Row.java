@@ -28,9 +28,10 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
 import lombok.ToString;
+import org.hibernate.annotations.Filter;
+import org.hibernate.annotations.FilterDef;
 import org.hibernate.annotations.ResultCheckStyle;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -46,7 +47,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @ToString(doNotUseGetters = true, onlyExplicitlyIncluded = true)
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE rows SET delete_date = CURRENT_DATE WHERE row_id = ?", check = ResultCheckStyle.COUNT)
-@Where(clause = "delete_date IS NULL")
+//@Where(clause = "delete_date IS NULL")
+@FilterDef(name = "isNotDeleted", defaultCondition = "delete_date IS NULL")
+@Filter(name = "isNotDeleted")
 public class Row {
 
   @Id

@@ -16,15 +16,19 @@ import hr.algebra.fruity.mapper.EquipmentMapper;
 import hr.algebra.fruity.model.Equipment;
 import hr.algebra.fruity.repository.AttachmentRepository;
 import hr.algebra.fruity.repository.EquipmentRepository;
+import hr.algebra.fruity.repository.RealisationEquipmentRepository;
+import hr.algebra.fruity.repository.WorkEquipmentRepository;
 import hr.algebra.fruity.service.CurrentRequestUserService;
 import hr.algebra.fruity.service.EquipmentService;
 import hr.algebra.fruity.validator.EquipmentWithJoinedUpdateEquipmentRequestDtoValidator;
 import hr.algebra.fruity.validator.JoinedCreateEquipmentRequestDtoValidator;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import org.hibernate.Session;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -55,18 +59,40 @@ public class CurrentUserEquipmentService implements EquipmentService {
 
   private final AttachmentRepository attachmentRepository;
 
+  private final WorkEquipmentRepository workEquipmentRepository;
+
+  private final RealisationEquipmentRepository realisationEquipmentRepository;
+
+  private final EntityManager entityManager;
+
   @Override
   public List<EquipmentResponseDto> getAllEquipment() {
-    return equipmentRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
+    val session = entityManager.unwrap(Session.class);
+    session.enableFilter("isNotDeleted");
+
+    val equipment = equipmentRepository.findAllByUserId(currentRequestUserService.getUserId()).stream()
       .map(toEquipmentResponseDtoConverter::convert)
       .toList();
+
+    session.disableFilter("isNotDeleted");
+
+    return equipment;
   }
 
   @Override
   public List<AttachmentResponseDto> getAllAttachmentsByEquipmentId(Long equipmentFk) {
-    return attachmentRepository.findAllByEquipment(getById(equipmentFk)).stream()
+    val equipment = getById(equipmentFk);
+
+    val session = entityManager.unwrap(Session.class);
+    session.enableFilter("isNotDeleted");
+
+    val attachments = attachmentRepository.findAllByEquipment(equipment).stream()
       .map(toAttachmentResponseDtoConverter::convert)
       .toList();
+
+    session.disableFilter("isNotDeleted");
+
+    return attachments;
   }
 
   @Override
@@ -81,7 +107,12 @@ public class CurrentUserEquipmentService implements EquipmentService {
 
     joinedCreateEquipmentRequestDtoValidator.validate(joinedRequestDto);
 
+    val session = entityManager.unwrap(Session.class);
+    session.enableFilter("isNotDeleted");
+
     val equipment = equipmentRepository.save(Objects.requireNonNull(fromJoinedCreateEquipmentRequestDtoConverter.convert(joinedRequestDto)));
+
+    session.disableFilter("isNotDeleted");
 
     return toFullEquipmentResponseDtoConverter.convert(equipment);
   }
@@ -94,21 +125,47 @@ public class CurrentUserEquipmentService implements EquipmentService {
 
     equipmentWithJoinedUpdateEquipmentRequestDtoValidator.validate(equipment, joinedRequestDto);
 
-    return toFullEquipmentResponseDtoConverter.convert(
-      equipmentRepository.save(
-        equipmentMapper.partialUpdate(equipment, joinedRequestDto)
-      )
-    );
+    val session = entityManager.unwrap(Session.class);
+    session.enableFilter("isNotDeleted");
+
+    val savedEquipment = equipmentRepository.save(equipmentMapper.partialUpdate(equipment, joinedRequestDto));
+
+    session.disableFilter("isNotDeleted");
+
+    return toFullEquipmentResponseDtoConverter.convert(savedEquipment);
   }
 
   @Override
   @Transactional
   public void deleteEquipmentById(Long id) {
-    equipmentRepository.delete(getById(id));
+    val equipment = getById(id);
+
+    val session = entityManager.unwrap(Session.class);
+    session.enableFilter("isNotDeleted");
+
+    workEquipmentRepository.deleteByEquipmentAndWorkFinishedFalse(equipment);
+    realisationEquipmentRepository.deleteByEquipmentAndRealisationWorkFinishedFalse(equipment);
+
+    equipmentRepository.delete(equipment);
+
+    session.disableFilter("isNotDeleted");
   }
 
   @Override
   public Equipment getById(Long id) {
+    val session = entityManager.unwrap(Session.class);
+    session.enableFilter("isNotDeleted");
+
+    val equipment = equipmentRepository.findByIdAndUserId(id, currentRequestUserService.getUserId())
+      .orElseThrow(EntityNotFoundException.supplier("Oprema"));
+
+    session.disableFilter("isNotDeleted");
+
+    return equipment;
+  }
+
+  @Override
+  public Equipment getByIdIgnoreSoftDelete(Long id) {
     return equipmentRepository.findByIdAndUserId(id, currentRequestUserService.getUserId())
       .orElseThrow(EntityNotFoundException.supplier("Oprema"));
   }

@@ -1,5 +1,6 @@
 package hr.algebra.fruity.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -117,7 +118,7 @@ public class CadastralParcel {
   @JoinColumn(name = CadastralParcelOwnershipStatus.Constants.joinColumnName, nullable = false)
   private @NonNull CadastralParcelOwnershipStatus ownershipStatus;
 
-  @OneToMany(mappedBy = ArcodeParcel.Fields.cadastralParcel, fetch = FetchType.LAZY)
+  @OneToMany(mappedBy = ArcodeParcel.Fields.cadastralParcel, fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
   @Singular
   private Set<ArcodeParcel> arcodeParcels;
 

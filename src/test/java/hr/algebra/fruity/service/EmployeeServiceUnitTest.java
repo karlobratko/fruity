@@ -8,6 +8,8 @@ import hr.algebra.fruity.exception.ManagerEmployeeDeleteException;
 import hr.algebra.fruity.mapper.EmployeeMapper;
 import hr.algebra.fruity.model.codebook.EmployeeRoles;
 import hr.algebra.fruity.repository.EmployeeRepository;
+import hr.algebra.fruity.repository.RealisationRepository;
+import hr.algebra.fruity.repository.WorkEmployeeRepository;
 import hr.algebra.fruity.service.impl.CurrentUserEmployeeService;
 import hr.algebra.fruity.utils.mother.dto.CreateEmployeeRequestDtoMother;
 import hr.algebra.fruity.utils.mother.dto.FullEmployeeResponseDtoMother;
@@ -18,8 +20,11 @@ import hr.algebra.fruity.utils.mother.model.MobileTokenMother;
 import hr.algebra.fruity.utils.mother.model.RefreshTokenMother;
 import hr.algebra.fruity.validator.CreateEmployeeRequestDtoValidator;
 import hr.algebra.fruity.validator.EmployeeWithUpdateEmployeeRequestDtoValidator;
+import jakarta.persistence.EntityManager;
 import java.util.Optional;
 import lombok.val;
+import org.hibernate.Session;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -35,6 +40,7 @@ import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
@@ -77,6 +83,21 @@ public class EmployeeServiceUnitTest implements ServiceUnitTest {
 
   @Mock
   private EmployeeRoleService employeeRoleService;
+
+  @Mock
+  private WorkEmployeeRepository workEmployeeRepository;
+
+  @Mock
+  private RealisationRepository realisationRepository;
+
+  @Mock
+  private EntityManager entityManager;
+
+  @BeforeEach
+  public void beforeEach() {
+    // ... EntityManager successfully returns session
+    given(entityManager.unwrap(same(Session.class))).willReturn(mock(Session.class));
+  }
 
   @Nested
   @DisplayName("WHEN getEmployeeById is called")
