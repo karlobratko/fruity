@@ -17,7 +17,6 @@ import jakarta.persistence.PreRemove;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
@@ -43,16 +42,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(
-  name = Equipment.Constants.tableName,
-  uniqueConstraints = {
-    @UniqueConstraint(
-      name = Equipment.Constants.userAndNameUniqueConstraintName,
-      columnNames = {
-        User.Constants.joinColumnName,
-        Equipment.Constants.nameColumnName
-      }
-    )
-  }
+  name = Equipment.Constants.tableName
+//  uniqueConstraints = {
+//    @UniqueConstraint(
+//      name = Equipment.Constants.userAndNameUniqueConstraintName,
+//      columnNames = {
+//        User.Constants.joinColumnName,
+//        Equipment.Constants.nameColumnName
+//      }
+//    )
+//  }
 )
 @NoArgsConstructor(force = true)
 @AllArgsConstructor

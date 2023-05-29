@@ -78,7 +78,7 @@ public class User {
   @ToString.Include
   private String name;
 
-  @Column(name = Constants.oibColumnName, length = 11, nullable = false, unique = true)
+  @Column(name = Constants.oibColumnName, length = 11, nullable = false)
   @ToString.Include
   private @NonNull String oib;
 

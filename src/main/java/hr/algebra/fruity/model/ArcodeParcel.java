@@ -16,7 +16,6 @@ import jakarta.persistence.PreRemove;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
@@ -40,16 +39,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(
-  name = ArcodeParcel.Constants.tableName,
-  uniqueConstraints = {
-    @UniqueConstraint(
-      name = ArcodeParcel.Constants.cadastralParcelAndNameUniqueConstrainName,
-      columnNames = {
-        CadastralParcel.Constants.joinColumnName,
-        ArcodeParcel.Constants.nameColumnName
-      }
-    )
-  }
+  name = ArcodeParcel.Constants.tableName
+//  uniqueConstraints = {
+//    @UniqueConstraint(
+//      name = ArcodeParcel.Constants.cadastralParcelAndNameUniqueConstrainName,
+//      columnNames = {
+//        CadastralParcel.Constants.joinColumnName,
+//        ArcodeParcel.Constants.nameColumnName
+//      }
+//    )
+//  }
 )
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
@@ -100,7 +99,8 @@ public class ArcodeParcel {
   @JoinColumn(name = CadastralParcel.Constants.joinColumnName, nullable = false)
   private @NonNull CadastralParcel cadastralParcel;
 
-  @Column(name = Constants.arcodeColumnName, nullable = false, unique = true)
+  // , unique = true
+  @Column(name = Constants.arcodeColumnName, nullable = false)
   @ToString.Include
   private @NonNull Integer arcode;
 

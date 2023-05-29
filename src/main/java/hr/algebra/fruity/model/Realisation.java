@@ -16,7 +16,6 @@ import jakarta.persistence.PreRemove;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
-import jakarta.persistence.UniqueConstraint;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -40,18 +39,18 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @Entity
 @Table(
-  name = Realisation.Constants.tableName,
-  uniqueConstraints = {
-    @UniqueConstraint(
-      name = Realisation.Constants.workAndEmployeeAndStartAndEndDateTimeUniqueConstraintName,
-      columnNames = {
-        Work.Constants.joinColumnName,
-        Employee.Constants.joinColumnName,
-        Realisation.Constants.startDateTimeColumnName,
-        Realisation.Constants.endDateTimeColumnName
-      }
-    )
-  }
+  name = Realisation.Constants.tableName
+//  uniqueConstraints = {
+//    @UniqueConstraint(
+//      name = Realisation.Constants.workAndEmployeeAndStartAndEndDateTimeUniqueConstraintName,
+//      columnNames = {
+//        Work.Constants.joinColumnName,
+//        Employee.Constants.joinColumnName,
+//        Realisation.Constants.startDateTimeColumnName,
+//        Realisation.Constants.endDateTimeColumnName
+//      }
+//    )
+//  }
 )
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
