@@ -8,3 +8,24 @@ spring:
       file-size-threshold: 2KB
       max-file-size: 200MB
       max-request-size: 215MB
+  mail:
+    host: sandbox.smtp.mailtrap.io
+    port: 2525
+    username: 590d71eb56a4d6
+    password: ea3c551db82879
+    protocol: smtp
+hr:
+  algebra:
+    fruity:
+      security:
+        auth:
+          registration:
+            validity-duration-in-ms: 900000 # 15 min
+        rsa:
+          private-key: classpath:certs/private.pem
+          public-key: classpath:certs/public.pem
+        jwt:
+          validity-duration-in-ms: 3600000 # 1 hour
+          refresh-validity-duration-in-ms: 86400000 # 1 day
+      email:
+        sender: info.fruityapi@gmail.com
